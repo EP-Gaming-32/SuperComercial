@@ -120,6 +120,14 @@ export default function AuthPage() {
             <button type="submit" className={styles.button}>
               {slug === "login" ? "Login" : "Cadastrar"}
             </button>
+            <button
+                type="button"
+                className={styles.button}
+                onClick={() => router.push(slug === "login" ? "/auth/cadastro" : "/auth/login")}
+                >
+                {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
+            </button>
+
           </form>
           {message && <p>{message}</p>}
         </div>

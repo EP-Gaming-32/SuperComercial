@@ -1,0 +1,37 @@
+/* Make the sidebar fixed to the left side */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh; /* Full viewport height */
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  
+  /* Remove default list styling */
+  .navList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Spacing for each navigation item */
+  .navItem {
+    margin-bottom: 1rem;
+  }
+  
+  /* Link styles */
+  .navItem a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  
+  /* Hover effect */
+  .navItem a:hover {
+    text-decoration: underline;
+  }
+  
