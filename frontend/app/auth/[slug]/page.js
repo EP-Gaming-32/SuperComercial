@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./auth.module.css";
 import InputField from "@/components/InputField"; // adjust path if necessary
+import ColoredText from "@/components/InlineColor";
 
 export default function AuthPage() {
   const { slug } = useParams(); // slug will be either "login" or "cadastro"
@@ -61,75 +62,81 @@ export default function AuthPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{slug === "login" ? "Login" : "Cadastro"}</title>
       </Head>
-      <div className={styles.container}>
-        <div className={styles.loginBox}>
-          <div className={styles.header}>
-            {slug === "login" ? "Login" : "Junte-se a Nós!"}
-          </div>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            {/* For registration (cadastro), include the "nome" field */}
-            {slug === "cadastro" && (
+      
+      <div>
+        <div className={styles.container}>
+          <ColoredText></ColoredText>
+        </div>
+        <div className={styles.container}>
+          <div className={styles.loginBox}>
+            <div className={styles.header}>
+              {slug === "login" ? "Login" : "Junte-se a Nós!"}
+            </div>
+            <form className={styles.form} onSubmit={handleSubmit}>
+              {/* For registration (cadastro), include the "nome" field */}
+              {slug === "cadastro" && (
+                <InputField
+                  id="nome"
+                  placeholder="Nome Completo"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  label="Nome"
+                  className={styles.inputWrapper}
+                />
+              )}
               <InputField
-                id="nome"
-                placeholder="Nome Completo"
-                value={formData.nome}
+                id="email"
+                type="email"
+                placeholder="Seu email"
+                value={formData.email}
                 onChange={handleChange}
-                label="Nome"
+                label="Email"
                 className={styles.inputWrapper}
               />
-            )}
-            <InputField
-              id="email"
-              type="email"
-              placeholder="Seu email"
-              value={formData.email}
-              onChange={handleChange}
-              label="Email"
-              className={styles.inputWrapper}
-            />
-            <InputField
-              id="senha"
-              type="password"
-              placeholder="Senha"
-              value={formData.senha}
-              onChange={handleChange}
-              label="Senha"
-              className={styles.inputWrapper}
-            />
-            {/* Optionally, include additional fields for registration */}
-            {slug === "cadastro" && (
-              <>
-                <InputField
-                  id="telefone"
-                  placeholder="+ 99 9999-9999"
-                  value={formData.telefone}
-                  onChange={handleChange}
-                  label="Telefone"
-                  className={styles.inputWrapper}
-                />
-                <InputField
-                  id="celular"
-                  placeholder="+ 99 99999-9999"
-                  value={formData.celular}
-                  onChange={handleChange}
-                  label="Celular"
-                  className={styles.inputWrapper}
-                />
-              </>
-            )}
-            <button type="submit" className={styles.button}>
-              {slug === "login" ? "Login" : "Cadastrar"}
-            </button>
-            <button
-                type="button"
-                className={styles.button}
-                onClick={() => router.push(slug === "login" ? "/auth/cadastro" : "/auth/login")}
-                >
-                {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
-            </button>
+              <InputField
+                id="senha"
+                type="password"
+                placeholder="Senha"
+                value={formData.senha}
+                onChange={handleChange}
+                label="Senha"
+                className={styles.inputWrapper}
+              />
+              {/* Optionally, include additional fields for registration */}
+              {slug === "cadastro" && (
+                <>
+                  <InputField
+                    id="telefone"
+                    placeholder="+ 99 9999-9999"
+                    value={formData.telefone}
+                    onChange={handleChange}
+                    label="Telefone"
+                    className={styles.inputWrapper}
+                  />
+                  <InputField
+                    id="celular"
+                    placeholder="+ 99 99999-9999"
+                    value={formData.celular}
+                    onChange={handleChange}
+                    label="Celular"
+                    className={styles.inputWrapper}
+                  />
+                </>
+              )}
+              <button type="submit" className={styles.button}>
+                {slug === "login" ? "Login" : "Cadastrar"}
+              </button>
+              <button
+                  type="button"
+                  className={styles.button}
+                  onClick={() => router.push(slug === "login" ? "/auth/cadastro" : "/auth/login")}
+                  >
+                  {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
+              </button>
 
-          </form>
-          {message && <p>{message}</p>}
+            </form>
+            {message && <p>{message}</p>}
+          </div>
         </div>
       </div>
     </>
