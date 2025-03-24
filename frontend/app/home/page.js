@@ -11,7 +11,7 @@ export default function Dashboard() {
 
     if (!token) {
       // If no token, redirect to login
-      router.push("/login");
+      router.push("/auth/login");
     } else {
       // Optionally decode the token to get user information or verify its validity
       // Here, you could call an API to verify the token or decode it to get user details
