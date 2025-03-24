@@ -8,7 +8,7 @@ export default function Home() {
 
     if (token) {
       // If a token exists, redirect to the dashboard
-      redirect("/dashboard");
+      redirect("/home");
     } else {
       // Otherwise, redirect to the login page
       redirect("/auth/login");

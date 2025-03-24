@@ -10,8 +10,7 @@
   .sidebar {
     width: 240px; /* Fixed width for the vertical navbar */
     height: 100vh;
-    background-color: #f0f0f0;
-    box-shadow: 2px 0px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--primary-color);
   }
   
   /* Main content area (right side) */
@@ -24,19 +23,17 @@
   
   /* Top horizontal navbar */
   .topNav {
-    background-color: #ffffff;
+    background-color: var(--secondary-color);
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    height: 60px; /* Adjust the height of the horizontal navbar */
+    height: 11vh; /* Adjust the height of the horizontal navbar */
     display: flex;
     align-items: center; /* Center the content vertically within the navbar */
-    padding: 0 20px; /* Add some horizontal padding */
-  }
+  } 
   
   /* Main content (children) */
   .pageContent {
     flex-grow: 1; /* Take all remaining space */
     padding: 1rem 0 0 0; /* Space around the content */
-    background-color: #f9f9f9;
+    background-color: var(--background-light);
   }
   

@@ -40,13 +40,13 @@ export default function AuthPage() {
       const data = await response.json();
       setMessage(data.message);
   
-      // For login, if successful (token exists), redirect to dashboard
+      // For login, if successful (token exists), redirect to home  
       if (slug === "login" && data.token) {
         // Optionally store the token in localStorage
         localStorage.setItem("token", data.token);
   
-        // Redirect to the dashboard
-        router.push("/dashboard");  // Redirects user to the dashboard page
+        // Redirect to the home
+        router.push("/home");  // Redirects user to the home page
       }
     } catch (error) {
       console.error("Submission error:", error);
