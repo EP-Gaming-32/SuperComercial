@@ -5,24 +5,30 @@ export default function VerticalNavBar() {
   return (
     <nav className={styles.verticalNavbar}>
       <ul className={styles.navList}>
+        <button>nomePagina</button>
         <li className={styles.navItem}>
-          <Link href="/dashboard" className={styles.navLink}>
-            Dashboard
+          <Link href="/home" className={styles.navLink}>
+            Home
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/products" className={styles.navLink}>
-            Products
+          <Link href="/produtos/dashboard" className={styles.navLink}>
+            Produtos
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/stock" className={styles.navLink}>
-            Stock
+          <Link href="/estoque/dashboard" className={styles.navLink}>
+            Estoque
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/orders" className={styles.navLink}>
-            Orders
+          <Link href="/compras/dashboard" className={styles.navLink}>
+            Ordens de Compras
+          </Link>
+        </li>
+        <li className={styles.navItem}>
+          <Link href="/relatorios" className={styles.navLink}>
+            Relatorios
           </Link>
         </li>
       </ul>
