@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import styles from "@/app/produtos/detalhes.module.css"; // Page-specific styles
+import styles from "./detalhes.module.css" ; // Page-specific styles
 import BoxComponent from "@/components/BoxComponent"; // The box component that wraps the form
 import FormPageProdutos from "@/components/form/FormPageProdutos"; // The form component
 

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import FormPageProdutos from "@/components/form/FormPageProdutos"; // Form component
 import BoxComponent from "@/components/BoxComponent"; // Box wrapper component
-import styles from "@/app/produtos/detalhes.module.css"; // Importing the same CSS module as detalhes.module.css
+import styles from "./detalhes.module.css"; // Importing the same CSS module as detalhes.module.css
 
 export default function RegistrarProdutosPage() {
   // Initial state for the new product with 12 fields

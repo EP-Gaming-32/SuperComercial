@@ -1,15 +1,11 @@
 import React from "react";
 import Dashboard from "@/components/DashboardComponent";
 
-export default function ProdutosDashbord(){
-    //javascript
+export default function EstoqueDashboard(){
 
-    //javascript
-
-    //html
     return(
         <>
         <Dashboard/>
         </>
-    )//html
+    )
 }
