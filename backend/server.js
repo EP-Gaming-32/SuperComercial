@@ -19,7 +19,7 @@ const db = mysql.createConnection({
   host: 'localhost',  // Update with your MySQL host
   user: 'root',       // Your MySQL username
   password: '1234',   // Your MySQL password
-  database: 'myDB'    // Your MySQL database name
+  database: 'erpDB'    // Your MySQL database name
 });
 
 // Connect to MySQL

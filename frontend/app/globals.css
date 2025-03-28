@@ -4,7 +4,7 @@
   --primary-color: #4a90e2;
   --secondary-color: #29b6f6;
   --background-light: #b3e5fc;
-  --background-dark: #333;
+  --background-lighter: #d1f0ff;
   --text-color: #222;
 }
 
@@ -16,8 +16,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
   margin: 0;
+  
 }
 
 /* Global form styling */
