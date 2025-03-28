@@ -1,0 +1,50 @@
+/* Card container for individual components */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+/* Title styling for cards */
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+  background: #b2ebf2;
+  padding: 12px;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Content area inside cards */
+.card-content {
+  padding: 16px;
+}
+
+/* Table styles for ProductList */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.table th {
+  background: #e0f7fa;
+}
+
+.table-row {
+  border-top: 1px solid #ddd;
+}
+
+/* Utility class for flex alignment */
+.flex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

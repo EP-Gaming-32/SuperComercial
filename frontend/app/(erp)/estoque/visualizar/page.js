@@ -6,7 +6,7 @@ export default function EstoqueVisualizarPage() {
   return (
     <div className={styles.container}>
       <BoxComponent>
-        <SearchPageEstoque />
+        <SearchPageEstoque/>
       </BoxComponent>
     </div>
   );

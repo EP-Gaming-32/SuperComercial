@@ -1,5 +1,4 @@
 /* globals.css */
-
 :root {
   --primary-color: #4a90e2;
   --secondary-color: #29b6f6;
@@ -8,7 +7,6 @@
   --text-color: #222;
 }
 
-/* Base styles applied to the entire application */
 body {
   background-color: var(--background-light);
   color: var(--text-color);
