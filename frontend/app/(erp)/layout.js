@@ -14,19 +14,22 @@ export default function ErpLayout({ children }) {
       return [
         { text: "Visão Geral", url: "/produtos/dashboard" },
         { text: "Produtos", url: "/produtos/visualizar" },
-        { text: "Relatórios", url: "/produtos/relatorios" },
       ];
     } else if (pathname.startsWith("/estoque")) {
       return [
         { text: "Visão Geral", url: "/estoque/dashboard" },
         { text: "Gerenciar Estoque", url: "/estoque/visualizar" },
-        { text: "Relatórios", url: "/estoque/relatorios" },
       ];
     } else if (pathname.startsWith("/cadastros")) {
       return [
         { text: "Fornecedores", url: "/cadastros/fornecedores" },
         { text: "Lojas/Filiais", url: "/cadastros/filiais" },
         { text: "Funcionarios", url: "/cadastros/funcionarios" },
+      ];
+    } else if (pathname.startsWith("/pedidos")) {
+      return [
+        { text: "Pedidos", url: "/pedidos" },
+        { text: "Visualizar", url: "/pedidos/visualizar" },
       ];
     }
     return [];

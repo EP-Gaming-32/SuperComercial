@@ -27,7 +27,7 @@ export default function VerticalNavBar() {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/compras/dashboard" className={styles.navLink}>
+          <Link href="/pedidos/dashboard" className={styles.navLink}>
             Ordens de Compras
           </Link>
         </li>
