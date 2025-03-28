@@ -25,7 +25,7 @@ export default function AuthPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const endpoint = slug === "cadastro" ? "/cadastro" : "/login";
+    const endpoint = slug === "cadastro" ? "/auth/cadastro" : "/auth/login";
   
     try {
       const response = await fetch(`http://localhost:5000${endpoint}`, {
