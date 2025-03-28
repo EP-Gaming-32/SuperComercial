@@ -1,6 +1,7 @@
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./FormPageProdutos";
+import styles from "./FormPageProdutos.module.css"; // Reusing the same CSS module
 
 const FormPageEstoque = ({ data, mode, onSubmit }) => {
   const router = useRouter();
@@ -35,7 +36,7 @@ const FormPageEstoque = ({ data, mode, onSubmit }) => {
         </label>
         <input
           className={styles.input}
-          type={key === "quantidade" ? "number" : "text"}
+          type={["quantidade", "estoque_minimo", "estoque_maximo", "id_produto", "id_fornecedor", "id_filial", "id_lote"].includes(key) ? "number" : "text"}
           name={key}
           value={formData[key] || ""}
           onChange={handleChange}

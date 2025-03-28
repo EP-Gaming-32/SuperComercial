@@ -1,29 +1,35 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import styles from "./detalhes.module.css"; // Estilos específicos
-import BoxComponent from "@/components/BoxComponent"; // Componente de box que envolve o formulário
-import FormPageEstoque from "@/components/form/FormPageEstoque"; // Formulário do estoque
+import styles from "./detalhes.module.css"; // Page-specific styles for details
+import BoxComponent from "@/components/BoxComponent"; // A box component wrapping the form
+import FormPageEstoque from "@/components/form/FormPageEstoque"; // The inventory form component
 
 export default function DetalhesEstoquePage() {
   const { id } = useParams();
   const [estoqueData, setEstoqueData] = useState(null);
 
   useEffect(() => {
-    // Mock de dados para um item do estoque
+    // Mock data for the Estoque table (adjust as necessary)
     const mockData = {
-      id,
-      item: `Item ${id}`,
+      id_estoque: id,
+      id_produto: 101,
+      id_fornecedor: 5,
+      id_filial: 2,
+      id_lote: 10,
+      local_armazenamento: "Depósito Central",
       quantidade: 50,
-      local: "Depósito 1",
-      status: "Disponível",
+      estoque_minimo: 20,
+      estoque_maximo: 100,
+      status_estoque: "normal", // Calculado: 'normal', 'baixo' ou 'critico'
+      data_registro: "2024-01-15 10:00:00"
     };
     setEstoqueData(mockData);
   }, [id]);
 
   const handleUpdate = (updatedData) => {
     console.log("Atualizando item do estoque:", updatedData);
-    // Aqui entraria a chamada para a API para atualizar os dados
+    // API call to update inventory data would go here.
   };
 
   return (

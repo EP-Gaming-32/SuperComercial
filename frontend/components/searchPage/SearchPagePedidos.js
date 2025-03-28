@@ -15,11 +15,11 @@ export default function SearchPagePedidos() {
 
   // 🔹 Mock de dados para pedidos (substitua por API real)
   const mockResults = [
-    { id: 1, cliente: "Cliente A", data: "2024-03-25", status: "Pendente", valor: "R$ 500,00" },
-    { id: 2, cliente: "Cliente B", data: "2024-03-24", status: "Finalizado", valor: "R$ 1200,00" },
-    { id: 3, cliente: "Cliente C", data: "2024-03-23", status: "Cancelado", valor: "R$ 320,00" },
-    { id: 4, cliente: "Cliente D", data: "2024-03-22", status: "Pendente", valor: "R$ 750,00" },
-    { id: 5, cliente: "Cliente E", data: "2024-03-21", status: "Finalizado", valor: "R$ 900,00" },
+    { codigo: "001", fornecedor: "Loja 1", usuario: "Gerente 2", prazo: "10-02", observacao: "TEXTTEXT", status: "Confirmado" },
+    { codigo: "002", fornecedor: "Loja 1", usuario: "Gerente 1", prazo: "03-02", observacao: "TEXTTEXT", status: "A caminho" },
+    { codigo: "003", fornecedor: "Loja 3", usuario: "Gerente 3", prazo: "05-02", observacao: "TEXTTEXT", status: "A caminho" },
+    { codigo: "004", fornecedor: "Loja 2", usuario: "Gerente 2", prazo: "13-05", observacao: "TEXTTEXT", status: "Pendente" },
+    { codigo: "005", fornecedor: "Loja 1", usuario: "Gerente 2", prazo: "10-03", observacao: "TEXTTEXT", status: "Confirmado" },
   ];
 
   useEffect(() => {
@@ -36,11 +36,11 @@ export default function SearchPagePedidos() {
   const handlePageChange = (page) => setCurrentPage(page);
 
   const handleItemClick = (item) => {
-    router.push(`/pedidos/detalhes/${item.id}`);
+    router.push(`/pedidos/detalhes/${item.codigo}`);
   };
 
-  // 🔹 Campos que serão exibidos para os pedidos
-  const fieldsToDisplay = ["cliente", "data", "status", "valor"];
+  // 🔹 Campos que serão exibidos na listagem de pedidos
+  const fieldsToDisplay = ["codigo", "fornecedor", "usuario", "prazo", "status"];
 
   return (
     <div className={styles.searchPageContainer}>
@@ -48,14 +48,15 @@ export default function SearchPagePedidos() {
         <SearchComponent
           keywordPlaceholder="Buscar pedidos..."
           filters={[
-            { name: "cliente", label: "Cliente", placeholder: "Digite o nome do cliente" },
-            { name: "data", label: "Data", type: "date" },
+            { name: "codigo", label: "Código", placeholder: "Digite o código do pedido" },
+            { name: "fornecedor", label: "Fornecedor", placeholder: "Nome do fornecedor" },
+            { name: "usuario", label: "Usuário responsável", placeholder: "Nome do usuário" },
+            { name: "prazo", label: "Prazo", type: "date" },
             { name: "status", label: "Status", options: [
               { value: "Pendente", label: "Pendente" },
-              { value: "Finalizado", label: "Finalizado" },
-              { value: "Cancelado", label: "Cancelado" },
+              { value: "A caminho", label: "A caminho" },
+              { value: "Confirmado", label: "Confirmado" },
             ]},
-            { name: "id", label: "ID do Pedido", placeholder: "Digite o ID" },
           ]}
           onSearch={handleSearch}
         />

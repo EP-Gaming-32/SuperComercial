@@ -17,39 +17,13 @@ export default function Dashboard() {
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardGrid}>
-        <div className={styles.card}>
-          <ProductVisual />
-        </div>
-        <div className={styles.card}>
-          <EstoqueTreemap/>
-        </div>
-        <div className={styles.card}>
-          <FornecedorByFilial/>
-        </div>
-        <div className={styles.card}>
-          <PagamentoByFilial/>
-        </div>
-        <div className={styles.card}>
-          <PedidosByFilial/>
-        </div>
-        <div className={styles.card}>
-          <PrevisaoPedidos/>
-        </div>
-        <div className={styles.card}>
-          <ProdutosVencidos/>
-        </div>
-        <div className={styles.card}>
-          <FeedbackPedido />
-        </div>
-        <div className={styles.card}>
-          <EstoqueVisual />
-        </div>
-        <div className={styles.card}>
-          <ComprasVisual />
-        </div>
-        <div className={styles.card}>
-          <FilialVisual />
-        </div>
+        {[ProductVisual, EstoqueTreemap, FornecedorByFilial, PagamentoByFilial, 
+          PedidosByFilial, PrevisaoPedidos, ProdutosVencidos, FeedbackPedido, 
+          EstoqueVisual, ComprasVisual, FilialVisual].map((Component, index) => (
+          <div key={index} className={styles.card}>
+            <Component />
+          </div>
+        ))}
       </div>
     </div>
   );

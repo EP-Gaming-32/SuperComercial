@@ -1,17 +1,18 @@
 "use client";
 import { useState } from "react";
-import FormPageProdutos from "@/components/form/FormPageProdutos"; // Form component
-import BoxComponent from "@/components/BoxComponent"; // Box wrapper component
-import styles from "./detalhes.module.css"; // Importing the same CSS module as detalhes.module.css
+import { useRouter } from "next/navigation";
+import styles from "./detalhes.module.css"; // Reaproveitando os estilos da página de detalhes
+import BoxComponent from "@/components/BoxComponent";
+import FormPageProdutos from "@/components/form/FormPageProdutos";
 
 export default function RegistrarProdutosPage() {
-  // Initial state for the new product with 12 fields
-  const [newProduct, setNewProduct] = useState({
+  const router = useRouter();
+  // Dados iniciais para cadastro – todos os campos começam vazios
+  const initialData = {
     name: "",
     fornecedor: "",
     lote: "",
     filial: "",
-    id: "",
     grupo: "",
     descricao: "",
     categoria: "",
@@ -19,22 +20,24 @@ export default function RegistrarProdutosPage() {
     quantidade: "",
     peso: "",
     dataValidade: "",
-    marca: "",
-    modelo: "",
-  });
+  };
 
-  // Callback to handle registration submission
-  const handleRegister = (values) => {
-    console.log("Registering product:", values);
-    // Make an API call to register the product here
+  const [productData, setProductData] = useState(initialData);
+
+  const handleSubmit = (updatedData) => {
+    console.log("Cadastrando produto:", updatedData);
+    // Chamada para a API para cadastrar o produto
   };
 
   return (
-    <div className={styles.container}> {/* Applying the same container styles from detalhes.module.css */}
-      <h1>Registrar Produto</h1>
-      {/* Wrap the form in the BoxComponent to manage the form's container */}
-      <BoxComponent>
-        <FormPageProdutos data={newProduct} mode="register" onSubmit={handleRegister} />
+    <div className={styles.container} style={{ overflow: 'hidden' }}>
+      <h1>Cadastrar Produto</h1>
+      <BoxComponent className={styles.formWrapper}>
+        <FormPageProdutos
+          data={productData}
+          mode="add"
+          onSubmit={handleSubmit}
+        />
       </BoxComponent>
     </div>
   );
