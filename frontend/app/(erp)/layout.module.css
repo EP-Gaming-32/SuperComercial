@@ -1,39 +1,69 @@
-/* Layout container */
+/* layout.module.css */
 .container {
-    box-sizing: border-box;
-    display: flex;
-    height: 100vh; /* Full viewport height */
-    width: 100vw;
-  }
-  
-  /* Sidebar with Vertical Navbar */
-  .sidebar {
-    width: 240px; /* Fixed width for the vertical navbar */
-    height: 100vh;
-    background-color: var(--primary-color);
-  }
-  
-  /* Main content area (right side) */
-  .mainContent {
-    flex-grow: 1; /* This takes up the remaining space on the right */
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  /* Top horizontal navbar */
-  .topNav {
-    background-color: var(--secondary-color);
-    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    height: 11vh; /* Adjust the height of the horizontal navbar */
-    display: flex;
-    align-items: center; /* Center the content vertically within the navbar */
-  } 
-  
-  /* Main content (children) */
-  .pageContent {
-    flex-grow: 1; /* Take all remaining space */
-    padding: 1rem 0 0 0; /* Space around the content */
-    background-color: var(--background-light);
-  }
-  
+  box-sizing: border-box;
+  display: flex;
+  height: 100vh; /* Altura total da viewport */
+  width: 100vw;
+}
+
+.sidebar {
+  width: 240px; /* Largura fixa para a navbar vertical */
+  height: 100vh; /* Altura total */
+  background-color: var(--primary-color);
+}
+
+.mainContent {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.topNav {
+  background-color: var(--secondary-color);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  height: 11vh; /* Altura da navbar horizontal */
+  display: flex;
+  align-items: center;
+}
+
+.pageContent {
+  flex-grow: 1; /* Ocupa o restante do espaço abaixo da topNav */
+  padding: 1rem 0 0 0;
+  background-color: var(--background-light);
+  overflow-y: auto;
+}/* layout.module.css */
+.container {
+  box-sizing: border-box;
+  display: flex;
+  height: 100vh; /* Altura total da viewport */
+  width: 100vw;
+}
+
+.sidebar {
+  width: 240px; /* Largura fixa para a navbar vertical */
+  height: 100vh; /* Altura total */
+  background-color: var(--primary-color);
+}
+
+.mainContent {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.topNav {
+  background-color: var(--secondary-color);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  height: 11vh; /* Altura da navbar horizontal */
+  display: flex;
+  align-items: center;
+}
+
+.pageContent {
+  flex-grow: 1; /* Ocupa o restante do espaço abaixo da topNav */
+  padding: 1rem 0 0 0;
+  background-color: var(--background-light);
+  overflow-y: auto;
+}

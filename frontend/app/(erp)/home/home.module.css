@@ -1,0 +1,37 @@
+.container {
+  min-height: 100%;
+  background-color: #f5f5f5;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: #007b9e;
+}
+
+/* Grid container for cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  gap: 24px;
+}
+
+/* Card styling for DeliveryList and ProductList */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+/* Chart styling: spans both columns */
+.chart {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  grid-column: span 2;
+}
