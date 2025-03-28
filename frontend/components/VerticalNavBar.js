@@ -5,7 +5,7 @@ export default function VerticalNavBar() {
   return (
     <nav className={styles.verticalNavbar}>
       <ul className={styles.navList}>
-        <button>nomePagina</button>
+        <button>SuperComercial</button>
         <li className={styles.navItem}>
           <Link href="/home" className={styles.navLink}>
             Home
