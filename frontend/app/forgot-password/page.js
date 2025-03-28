@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Head from "next/head";
+import styles from "./password.module.css"; // Import the CSS module
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -28,22 +29,29 @@ export default function ForgotPasswordPage() {
         <meta charSet="UTF-8" />
         <title>Esqueci a Senha</title>
       </Head>
-      <div style={{ padding: "1rem", maxWidth: "400px", margin: "0 auto" }}>
-        <h1>Esqueci Minha Senha</h1>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Digite seu e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
-          />
-          <button type="submit" style={{ width: "100%", padding: "0.5rem" }}>
-            Enviar Link
-          </button>
-        </form>
-        {message && <p style={{ marginTop: "1rem" }}>{message}</p>}
+      <div className={styles.wrapper}>
+        <div className={styles.title}>
+          <h1>Esqueci Minha Senha</h1>
+        </div>
+        <div className={styles.container}>
+          <div className={styles.box}>
+            <h2 className={styles.header}>Redefinir Senha</h2>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="email"
+                placeholder="Digite seu e-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className={styles.input}
+              />
+              <button type="submit" className={styles.button}>
+                Enviar Link
+              </button>
+            </form>
+            {message && <p className={styles.message}>{message}</p>}
+          </div>
+        </div>
       </div>
     </>
   );

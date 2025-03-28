@@ -66,66 +66,77 @@ export default function AuthPage() {
             </div>
             
             <form className={styles.form} onSubmit={handleSubmit}>
-              {slug === "cadastro" && (
-                <InputField
-                  id="nome"
-                  placeholder="Nome Completo"
-                  value={formData.nome}
-                  onChange={handleChange}
-                  label="Nome"
-                />
-              )}
-              
-              <InputField
-                id="email"
-                type="email"
-                placeholder="Seu email"
-                value={formData.email}
-                onChange={handleChange}
-                label="Email"
-              />
+  {slug === "cadastro" && (
+    <InputField
+      id="nome"
+      placeholder="Nome Completo"
+      value={formData.nome}
+      onChange={handleChange}
+      label="Nome"
+    />
+  )}
 
-              <InputField
-                id="senha"
-                type="password"
-                placeholder="Senha"
-                value={formData.senha}
-                onChange={handleChange}
-                label="Senha"
-              />
+  <InputField
+    id="email"
+    type="email"
+    placeholder="Seu email"
+    value={formData.email}
+    onChange={handleChange}
+    label="Email"
+  />
 
-              {slug === "cadastro" && (
-                <>
-                  <InputField
-                    id="telefone"
-                    placeholder="+ 99 9999-9999"
-                    value={formData.telefone}
-                    onChange={handleChange}
-                    label="Telefone"
-                  />
-                  
-                  <InputField
-                    id="celular"
-                    placeholder="+ 99 99999-9999"
-                    value={formData.celular}
-                    onChange={handleChange}
-                    label="Celular"
-                  />
-                </>
-              )}
+  <InputField
+    id="senha"
+    type="password"
+    placeholder="Senha"
+    value={formData.senha}
+    onChange={handleChange}
+    label="Senha"
+  />
 
-              <button type="submit" className={styles.button}>
-                {slug === "login" ? "Login" : "Cadastrar"}
-              </button>
+  {slug === "cadastro" && (
+    <>
+      <InputField
+        id="telefone"
+        placeholder="+ 99 9999-9999"
+        value={formData.telefone}
+        onChange={handleChange}
+        label="Telefone"
+      />
+      
+      <InputField
+        id="celular"
+        placeholder="+ 99 99999-9999"
+        value={formData.celular}
+        onChange={handleChange}
+        label="Celular"
+      />
+    </>
+  )}
 
-              <button
-                type="button"
-                className={styles.buttonSecondary}
-                onClick={() => router.push(slug === "login" ? "/auth/cadastro" : "/auth/login")}
-              >
-                {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
-              </button>
-            </form>
+  <button type="submit" className={styles.button}>
+    {slug === "login" ? "Login" : "Cadastrar"}
+  </button>
+
+  {slug === "login" && (
+    <button
+      type="button"
+      className={styles.linkButton}
+      onClick={() => router.push("/forgot-password")}
+    >
+      Esqueci a senha
+    </button>
+  )}
+
+  <button
+    type="button"
+    className={styles.buttonSecondary}
+    onClick={() => router.push(slug === "login" ? "/auth/cadastro" : "/auth/login")}
+  >
+    {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
+  </button>
+</form>
+
 
             {message && <p className={styles.message}>{message}</p>}
           </div>

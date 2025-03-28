@@ -129,3 +129,16 @@ html, body {
     padding: 10px;
   }
 }
+
+.linkButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 5px;
+}
+
+.linkButton:hover {
+  color: #0056b3;
+}
