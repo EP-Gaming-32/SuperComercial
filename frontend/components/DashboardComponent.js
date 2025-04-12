@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './DashboardComponent.module.css';
 import StockMovementsList from './MovimentoEstoque';
 import AlertaEstoque from './AlertaEstoque';
+import PedidosByFilial from './relatorios/PedidosByFilial';
 
 export default function DashboardSection() {
 
@@ -20,8 +21,7 @@ export default function DashboardSection() {
         <AlertaEstoque alerts={mockAlerts}></AlertaEstoque>
       </div>
       <div className={styles.squareBottom}>
-        {/* Render your bottom square component */}
-        <p>Bottom Square Component</p>
+        <PedidosByFilial></PedidosByFilial>
       </div>
       <div className={styles.rectangle}>
         <StockMovementsList></StockMovementsList>

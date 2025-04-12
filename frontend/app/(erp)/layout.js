@@ -8,7 +8,6 @@ import styles from "./layout.module.css";
 export default function ErpLayout({ children }) {
   const pathname = usePathname();
 
-  // Define navbar options based on the current section
   const getNavOptions = () => {
     if (pathname.startsWith("/produtos")) {
       return [
@@ -41,9 +40,6 @@ export default function ErpLayout({ children }) {
         <VerticalNavbar />
       </div>
       <div className={styles.mainContent}>
-        <div className={styles.topNav}>
-          <HorizontalNavbar options={getNavOptions()} />
-        </div>
         <div className={styles.pageContent}>{children}</div>
       </div>
     </div>

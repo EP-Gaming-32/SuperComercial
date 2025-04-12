@@ -17,17 +17,17 @@ export default function VerticalNavBar() {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/produtos/dashboard" className={styles.navLink}>
+          <Link href="/produtos/visualizar" className={styles.navLink}>
             Produtos
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/estoque/dashboard" className={styles.navLink}>
+          <Link href="/estoque/visualizar" className={styles.navLink}>
             Estoque
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/pedidos/dashboard" className={styles.navLink}>
+          <Link href="/pedidos/visualizar" className={styles.navLink}>
             Ordens de Compras
           </Link>
         </li>
