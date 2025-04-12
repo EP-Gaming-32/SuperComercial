@@ -1,4 +1,4 @@
-import SearchPageProdutos from "@/components/searchPage/searchPageProdutos";
+import SearchPageProdutos from "@/components/searchPage/SearchPageProdutos";
 import BoxComponent from "@/components/BoxComponent";
 import styles from "./visualizar.module.css";
 

@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./pedidos.module.css";
-import SearchPage from "@/components/searchPage/searchPageProdutos"; // Podemos criar SearchPagePedidos.js se necessário
+import SearchPage from "@/components/searchPage/SearchPageProdutos"; // Podemos criar SearchPagePedidos.js se necessário
 import PaginationComponent from "@/components/PaginationComponent";
 import InputField from "@/components/InputField";
 

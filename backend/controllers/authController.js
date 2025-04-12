@@ -3,17 +3,17 @@ import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
 import { sendResetPasswordEmail } from '../utils/emailService.js';
 
-// Function to create JWT token
+// Token de Sessão
 const createToken = (id, email, expiresIn = '1h') => {
   return jwt.sign({ id, email }, process.env.JWT_SECRET || 'your_secret_key', { expiresIn });
 };
 
-// Hashing function using SHA-256
+// SHA-256
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-// USER REGISTRATION
+// Cadastro de usuario
 export const cadastroUser = async (req, res) => {
   const { nome, email, senha } = req.body;
 
@@ -22,8 +22,8 @@ export const cadastroUser = async (req, res) => {
   }
 
   try {
-    const hashedPasswordHex = hashPassword(senha); // Hash as hexadecimal
-    const hashedPasswordBuffer = Buffer.from(hashedPasswordHex, 'hex'); // Convert to Buffer
+    const hashedPasswordHex = hashPassword(senha); 
+    const hashedPasswordBuffer = Buffer.from(hashedPasswordHex, 'hex');
 
     await pool.query(
       'INSERT INTO Usuarios (Nome, Email, Senha) VALUES (?, ?, ?)',
@@ -37,7 +37,7 @@ export const cadastroUser = async (req, res) => {
   }
 };
 
-// USER LOGIN
+// Login
 export const loginUser = async (req, res) => {
   const { email, senha } = req.body;
 
@@ -72,7 +72,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// FORGOT PASSWORD (Sends Reset Email)
+// Email Redefinir Senha
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -85,19 +85,17 @@ export const forgotPassword = async (req, res) => {
 
     const usuarioID = users[0].UsuarioID;
 
-    // Generate a token (32 bytes in hex)
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 3600000); // Token expires in 1 hour
+    const expiresAt = new Date(Date.now() + 3600000); // Validade do Token
 
     await pool.query(
       'INSERT INTO PasswordResetTokens (UsuarioID, token, expires_at) VALUES (?, ?, ?)',
       [usuarioID, token, expiresAt]
     );
 
-    // Create reset link
+    // tela de resetar senha
     const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
 
-    // Send email
     await sendResetPasswordEmail(email, resetLink);
 
     res.json({ message: 'E-mail de redefinição enviado!' });
@@ -107,7 +105,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// RESET PASSWORD
+// Resetar Senha
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
