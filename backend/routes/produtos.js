@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listarProdutos, criarProduto, atualizarProduto } from '../controllers/produtos.js';
+import { listarProdutos, criarProduto, atualizarProduto, removerProduto } from '../controllers/produtos.js';
 
 const router = Router();
 
@@ -9,5 +9,8 @@ router.get('/', listarProdutos);
 router.post('/', criarProduto);
 //endpoint PUT /produtos/:id
 router.put('/:id', atualizarProduto);
+//endpoint DELETE /produtos/:id
+router.delete('/:id', removerProduto);
+
 
 export default router;

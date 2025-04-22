@@ -131,3 +131,35 @@ export const atualizarProduto = async(req, res) =>{
         res.status(500).json({ message: 'Erro interno ao atualizar produto' });
     }
 };
+
+//funçao para remover produto
+export const removerProduto = async(req, res) =>{
+    
+    //pega o id do produto
+    const {id} = req.params;
+
+    try {
+
+        //checa se o id é válido
+        if (isNaN(id)){
+            return res.status(400).json({message: "ID inválido"})
+        }
+        //query para remover o produto do banco
+        const [result] = await pool.query(
+            'DELETE FROM Produtos WHERE id_produto = ?',
+            [id]
+        );
+
+        //checa se ouve mudança
+        if (result.affectedRows === 0 ){
+            return res.status(404).json({message: "produto não encontrado!"});
+        }
+
+        //resposta.json
+        res.json({message: "Produto Removido Com Sucesso!"})
+    } catch(error){
+        console.error("Erro ao remover Produto", error);
+        res.status(500).json({message: "erro interno remover produto"});
+    }
+
+}
