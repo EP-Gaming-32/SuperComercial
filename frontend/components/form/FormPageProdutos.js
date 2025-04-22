@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Import the useRouter hook for navigation
-import styles from "./FormPageProdutos.module.css"; // Make sure the styling is in the right file
+import styles from "./FormPageProdutos.module.css";
 
-const FormPageProdutos = ({ data, mode, onSubmit }) => {
-  const router = useRouter(); // To handle back navigation
+const FormPageProdutos = ({ data, mode, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState(data);
 
   useEffect(() => {
@@ -12,50 +10,42 @@ const FormPageProdutos = ({ data, mode, onSubmit }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit(formData); // dispara o submit para o componente pai
   };
 
-  // Navigate back
-  const handleBack = () => {
-    router.back(); // Goes back to the previous page
-  };
-
-  // Dynamically render fields
-  const renderFields = () => {
-    return Object.keys(formData).map((key) => (
+  const renderFields = () =>
+    Object.keys(formData).map((key) => (
       <div key={key} className={styles.field}>
-        <label className={styles.label} htmlFor={key}>
+        <label htmlFor={key} className={styles.label}>
           {key.charAt(0).toUpperCase() + key.slice(1)}
         </label>
         <input
-          className={styles.input}
-          type="text"
+          id={key}
           name={key}
-          value={formData[key] || ""}
+          type="text"
+          value={formData[key] ?? ""}
           onChange={handleChange}
-          placeholder={`Enter ${key}`}
+          className={styles.input}
         />
       </div>
     ));
-  };
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       {renderFields()}
       <div className={styles.buttonGroup}>
-        <button type="button" className={styles.backButton} onClick={handleBack}>
-          Back
-        </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel} className={styles.backButton}>
+            Voltar
+          </button>
+        )}
         <button type="submit" className={styles.submitButton}>
-          {mode === "edit" ? "Update" : "Add"} Product
+          {mode === "edit" ? "Atualizar" : "Cadastrar"} Produto
         </button>
       </div>
     </form>

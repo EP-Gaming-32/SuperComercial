@@ -74,6 +74,27 @@ export const criarProduto = async(req, res) =>{
     }
 };
 
+export const visualizarProduto = async(req, res) =>{
+
+    const {id} = req.params;
+
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM Produtos WHERE id_produto = ?',
+            [id]
+        );
+
+        if (rows.length === 0){
+            return res.status(404).json({message: "produto nao encontrado!"});
+        }
+
+        res.json(rows[0]);
+    } catch(error){
+        console.error("erro em visualizar produto", error);
+        res.status(500).json({message: "erro interno em visualizar produto"})
+    }
+}
+
 //funcao para atualizar produto
 export const atualizarProduto = async(req, res) =>{
 
@@ -150,7 +171,7 @@ export const removerProduto = async(req, res) =>{
             [id]
         );
 
-        //checa se ouve mudança
+        //checa se houve mudança
         if (result.affectedRows === 0 ){
             return res.status(404).json({message: "produto não encontrado!"});
         }
