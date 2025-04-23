@@ -33,7 +33,7 @@ export default function SearchPageProdutos() {
   return (
     <div className={styles.searchPageContainer}>
       <SearchComponent
-        keywordPlaceholder="Buscar produtos..."
+        keywordPlaceholder="Buscar produto..."
         filters={[
           { name: "categoria", label: "Categoria", type: "select", options: [
             { value: "Eletrônicos", label: "Eletrônicos" },
@@ -51,6 +51,9 @@ export default function SearchPageProdutos() {
           { name: "data_cadastro", label: "Data de Cadastro", type: "date" }
         ]}
         onSearch={handleSearch}
+        addButton={true}
+        addButtonLabel="+"
+        addButtonUrl="/produtos/registrar"
       />
 
       {loading && <p>Carregando...</p>}

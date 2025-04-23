@@ -1,24 +1,27 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./search.module.css";
 
 export default function SearchComponent({
   keywordPlaceholder = "Enter keywords...",
   filters = [],
   onSearch,
+  addButton = false,
+  addButtonLabel = "Cadastrar",
+  addButtonUrl = "/",
 }) {
+  const router = useRouter();
   const [keyword, setKeyword] = useState("");
-  
-  // Initialize filter values with empty strings or initial values provided by props
+
   const initialFilterValues = filters.reduce((acc, filter) => {
-    acc[filter.name] = filter.initialValue || ""; // Set initial value to an empty string or the one passed
+    acc[filter.name] = filter.initialValue || "";
     return acc;
   }, {});
   const [filterValues, setFilterValues] = useState(initialFilterValues);
 
   useEffect(() => {
-    // Sync filter values if filters change (optional)
     const updatedFilterValues = filters.reduce((acc, filter) => {
       acc[filter.name] = filter.initialValue || "";
       return acc;
@@ -30,16 +33,16 @@ export default function SearchComponent({
 
   const handleFilterChange = (e, name) => {
     const { value } = e.target;
-    setFilterValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
+    setFilterValues((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Send the combined keyword and filter values to the parent component
     onSearch({ keyword, ...filterValues });
+  };
+
+  const handleAddClick = () => {
+    router.push(addButtonUrl);
   };
 
   return (
@@ -61,10 +64,9 @@ export default function SearchComponent({
         {filters.map((filter, index) => (
           <div key={index} className={styles.fieldContainer}>
             <label className={styles.filterLabel}>{filter.label}</label>
-
             {filter.type === "select" ? (
               <select
-                value={filterValues[filter.name]} // Controlled value
+                value={filterValues[filter.name]}
                 onChange={(e) => handleFilterChange(e, filter.name)}
                 className={styles.filterInput}
               >
@@ -79,7 +81,7 @@ export default function SearchComponent({
               <input
                 type="text"
                 placeholder={filter.placeholder || ""}
-                value={filterValues[filter.name]} // Controlled value
+                value={filterValues[filter.name]}
                 onChange={(e) => handleFilterChange(e, filter.name)}
                 className={styles.filterInput}
               />
@@ -94,6 +96,20 @@ export default function SearchComponent({
             Search
           </button>
         </div>
+
+        {/* Add new item button */}
+        {addButton && (
+          <div className={styles.fieldContainer}>
+            <div className={styles.labelPlaceholder}></div>
+            <button
+              type="button"
+              onClick={handleAddClick}
+              className={styles.addButton}
+            >
+              {addButtonLabel}
+            </button>
+          </div>
+        )}
       </div>
     </form>
   );

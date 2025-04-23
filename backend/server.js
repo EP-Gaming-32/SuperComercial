@@ -2,7 +2,9 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import gruposRoutes from './routes/grupos.js';
 import produtosRoutes from './routes/produtos.js';
+import fornecedoresRoutes from './routes/fornecedores.js';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
 
 dotenv.config(); // Carregar variáveis de ambiente
@@ -23,6 +25,10 @@ app.post('/reset-password/:token', resetPassword);
 
 //endpoints para produtos
 app.use('/produtos', produtosRoutes);
+//endpont para grupos
+app.use('/grupos', gruposRoutes);
+//endpoint para fornecedores
+app.use('/fornecedores', fornecedoresRoutes);
 
 const PORT = process.env.PORT || 5000;
 
