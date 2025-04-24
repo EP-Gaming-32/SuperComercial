@@ -4,8 +4,12 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-color);
 }
 
+/* Central wrapper */
 .wrapper {
   height: 100vh;
   width: 100vw;
@@ -13,25 +17,27 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  background-color: var(--background-light);
+  padding: 1.5rem;
   box-sizing: border-box;
-  overflow: auto;
+  overflow-y: auto;
 }
 
+/* Título com sombra e destaque */
 .title {
   text-align: center;
   width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 0 auto 1rem;
   padding: 1rem;
-  border-radius: 20px;
-  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   background-color: var(--primary-color);
-  position: relative;
-  z-index: 1;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
+/* Container padrão */
 .container {
   width: 100%;
   max-width: 400px;
@@ -40,76 +46,98 @@ html, body {
   box-sizing: border-box;
 }
 
+/* Caixa de login */
 .loginBox {
-  text-align: center;
   background: var(--secondary-color);
-  width: 100%;
-  border-radius: 15px;
-  padding: 20px;
-  box-sizing: border-box;
-  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.1);
   margin: 1rem 0;
+  text-align: center;
 }
 
-/* Restored Header Styles */
+/* Cabeçalho dentro da box */
 .header {
   background: var(--primary-color);
   color: white;
-  padding: 15px;
-  font-size: 18px;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
-  margin: -20px -20px 20px -20px; /* Negative margins to span full width */
+  padding: 1rem;
+  font-size: 1.125rem;
+  border-radius: 12px 12px 0 0;
+  margin: -1.5rem -1.5rem 1rem -1.5rem;
 }
 
-/* Existing button and input styles... */
+/* Botões primários */
 .button {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem;
   border: none;
   border-radius: 8px;
-  background-color: var(--background-light);
+  background-color: var(--accent-color);
   color: white;
   font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
+.button:hover {
+  background-color: #16a34a;
+}
+
+/* Botões secundários */
 .buttonSecondary {
   width: 100%;
-  padding: 12px;
-  border: 2px solid var(--background-light);
-  border-radius: 8px;
+  padding: 0.75rem;
+  border: 2px solid var(--accent-color);
   background-color: transparent;
-  color: var(--background-light);
+  color: var(--accent-color);
+  font-weight: bold;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
+.buttonSecondary:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Botão de link */
+.linkButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.linkButton:hover {
+  color: #d1ecff;
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
   .wrapper {
-    padding: 1rem;
+    padding: 1.5rem 1rem;
     justify-content: flex-start;
-    padding-top: 2rem;
   }
 
   .title {
-    max-width: 90%;
-    margin-bottom: 1rem;
-    padding: 1rem;
+    font-size: 1.25rem;
+    padding: 0.75rem;
   }
 
   .loginBox {
-    max-width: 100%;
     margin: 0;
   }
 
   .header {
-    padding: 12px;
-    font-size: 16px;
-    margin: -15px -15px 15px -15px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    margin: -1rem -1rem 1rem -1rem;
   }
 }
 
@@ -117,28 +145,15 @@ html, body {
   html, body {
     overflow: auto;
   }
-  
+
   .wrapper {
     height: auto;
     min-height: 100vh;
-    padding: 1rem 0.5rem;
+    padding: 1rem 0.75rem;
   }
 
   .header {
-    font-size: 14px;
-    padding: 10px;
+    font-size: 0.9rem;
+    padding: 0.75rem;
   }
-}
-
-.linkButton {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  text-decoration: underline;
-  padding: 5px;
-}
-
-.linkButton:hover {
-  color: #0056b3;
 }

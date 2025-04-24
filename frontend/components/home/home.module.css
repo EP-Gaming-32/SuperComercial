@@ -1,50 +1,93 @@
-/* Card container for individual components */
+/* ===== Home Dashboard Cards ===== */
+
 .card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  margin-bottom: 24px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  margin-bottom: 32px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Title styling for cards */
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Card title styling */
 .card-title {
-  font-size: 18px;
-  font-weight: bold;
-  background: #b2ebf2;
-  padding: 12px;
-  border-radius: 12px 12px 0 0;
-}
-
-/* Content area inside cards */
-.card-content {
+  font-size: 1.25rem;
+  font-weight: 600;
+  background-color: #b2ebf2;
   padding: 16px;
+  margin: -24px -24px 20px -24px;
+  border-radius: 16px 16px 0 0;
+  color: #004d40;
+  font-family: 'Inter', 'Roboto', sans-serif;
 }
 
-/* Table styles for ProductList */
+/* Content inside each card */
+.card-content {
+  padding: 0;
+  color: #333;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  font-size: 0.95rem;
+}
+
+/* ===== Product List Table ===== */
 .table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 12px;
+  font-family: 'Inter', 'Roboto', sans-serif;
 }
 
 .table th,
 .table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #ddd;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
   text-align: left;
+  font-size: 0.95rem;
+  color: #444;
 }
 
 .table th {
-  background: #e0f7fa;
+  background-color: #e0f7fa;
+  color: #00695c;
+  font-weight: 600;
 }
 
-.table-row {
-  border-top: 1px solid #ddd;
+.table-row:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
 }
 
-/* Utility class for flex alignment */
+/* ===== Utility: Flex Layout ===== */
 .flex {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+/* ===== Responsive Improvements ===== */
+@media (max-width: 768px) {
+  .flex {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    padding: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+  }
 }
