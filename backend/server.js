@@ -5,6 +5,7 @@ import cors from 'cors';
 import gruposRoutes from './routes/grupos.js';
 import produtosRoutes from './routes/produtos.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
+import filialRoutes from './routes/filial.js';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
 
 dotenv.config(); // Carregar variáveis de ambiente
@@ -29,6 +30,8 @@ app.use('/produtos', produtosRoutes);
 app.use('/grupos', gruposRoutes);
 //endpoint para fornecedores
 app.use('/fornecedores', fornecedoresRoutes);
+//endpoint filial
+app.use('/filial', filialRoutes);
 
 const PORT = process.env.PORT || 5000;
 
