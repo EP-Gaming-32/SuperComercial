@@ -27,10 +27,15 @@ export default function RegistrarProdutosPage() {
   const [fornecedorData, setFornecedorData] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/grupos").then(res => res.json()).then(setGrupoData);
-
-    fetch("http://localhost:5000/fornecedores").then(res => res.json()).then(setFornecedorData);
-    
+    fetch("http://localhost:5000/grupos")
+      .then(r => r.json())
+      .then(json => setGrupoData(json.data)) // 👈 extrai apenas o array
+      .catch(console.error);
+  
+    fetch("http://localhost:5000/fornecedores")
+      .then(r => r.json())
+      .then(json => setFornecedorData(json.data)) // 👈 extrai apenas o array
+      .catch(console.error);
   }, []);
 
   const handleSubmit = async (updatedData) => {

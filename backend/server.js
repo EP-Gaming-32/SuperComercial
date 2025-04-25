@@ -6,6 +6,7 @@ import gruposRoutes from './routes/grupos.js';
 import produtosRoutes from './routes/produtos.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
 import formaPagamentoRoutes from './routes/formaPagamento.js';
+import pedidoRoutes from './routes/pedido.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
@@ -36,6 +37,8 @@ app.use('/fornecedores', fornecedoresRoutes);
 app.use('/filial', filialRoutes);
 //endpoint formas de pagamentos
 app.use('/formaPagamento', formaPagamentoRoutes);
+//endpoint Pedidos
+app.use('/pedido', pedidoRoutes);
 //endpoint status do pedido
 app.use('/statusPedido', statusPedidoRoutes);
 
