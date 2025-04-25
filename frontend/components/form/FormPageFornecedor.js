@@ -27,11 +27,14 @@ export default function FormPageFornecedor({
 
   // Configuração dinâmica dos campos
   const campoConfig = [
-    { name: 'id_fornecedor', label: 'ID', type: 'text' },
+    { name: 'id_fornecedor', label: 'ID', type: 'number' },
     { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' },
-    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' },
-    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' },
-    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' }
+    { name: 'endereco_fornecedor', label: 'Endereço', type: 'text' },
+    { name: 'telefone_fornecedor', label: 'Telefone', type: 'text' },
+    { name: 'email_fornecedor', label: 'Email', type: 'email' },
+    { name: 'tipo_pessoa', label: 'Tipo de Pessoa', type: 'select', options: ['juridica', 'fisica'] },
+    { name: 'cnpj_cpf', label: 'CNPJ/CPF', type: 'text' },
+    { name: 'observacao', label: 'Observação', type: 'textarea' },
   ];
 
   return (
@@ -48,11 +51,11 @@ export default function FormPageFornecedor({
               className={styles.input}
             >
               <option value="">Selecione...</option>
-              {options.map(opt => (
+              {(options || []).map(opt => (
                 <option key={opt[optionKey]} value={opt[optionKey]}>
-                  {opt[optionLabel]}
+                    {opt[optionLabel]}
                 </option>
-              ))}
+                ))}
             </select>
           ) : (
             <input

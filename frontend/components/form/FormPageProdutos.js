@@ -56,7 +56,7 @@ export default function FormPageProdutos({
               className={styles.input}
             >
               <option value="">Selecione...</option>
-              {options.map(opt => (
+              {(options || []).map(opt => (
                 <option key={opt[optionKey]} value={opt[optionKey]}>
                   {opt[optionLabel]}
                 </option>

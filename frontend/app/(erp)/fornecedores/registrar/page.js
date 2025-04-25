@@ -10,7 +10,13 @@ export default function RegistrarFornecedorPage() {
   // Dados iniciais para cadastro – todos os campos começam vazios
   const initialData = {
     id_fornecedor: "",
-    nome_fornecedor: ""
+    nome_fornecedor: "",
+    endereco_fornecedor: "",
+    telefone_fornecedor: "",
+    email_fornecedor: "",
+    tipo_pessoa: "", // "juridica" ou "fisica"
+    cnpj_cpf: "",
+    observacao: "",
   };
 
   const [fornecedorData, setFornecedorData] = useState(initialData);
