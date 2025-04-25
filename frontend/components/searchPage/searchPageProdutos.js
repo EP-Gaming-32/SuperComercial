@@ -64,7 +64,7 @@ export default function SearchPageProdutos() {
           {results.length > 0 ? (
             <ShowComponent
               data={results}
-              fields={["nome_produto","categoria","sku","valor_produto","fornecedor","ativo"]}
+              fields={["nome_produto","nome_grupo","valor_produto","nome_fornecedor","prazo_validade"]}
               onItemClick={handleItemClick}
             />
           ) : (

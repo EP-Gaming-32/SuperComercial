@@ -96,6 +96,7 @@ export const visualizarProduto = async (req, res) => {
       `SELECT
          p.*,
          g.nome_grupo,
+         pf.id_fornecedor,               -- <-- ADICIONAR AQUI
          f.nome_fornecedor,
          pf.preco      AS preco_compra,
          pf.prazo_entrega,
@@ -108,6 +109,7 @@ export const visualizarProduto = async (req, res) => {
       [id]
     );
     if (!rows.length) return res.status(404).json({ message: 'Produto não encontrado' });
+    // agora rows[0].id_fornecedor estará definido (ou null, se não houver relação)
     res.json(rows[0]);
   } catch (error) {
     console.error('Erro em visualizar produto', error);
@@ -119,6 +121,7 @@ export const visualizarProduto = async (req, res) => {
 export const atualizarProduto = async (req, res) => {
   const { id } = req.params;
   const dados = req.body;
+  const { id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento } = req.body;
 
   // Validar FKs como em criarProduto...
 
@@ -131,7 +134,7 @@ export const atualizarProduto = async (req, res) => {
       values.push(dados[c]);
     }
   }
-  if (!fields.length) return res.json({ message: 'Nenhuma alteração feita' });
+  //if (!fields.length) return res.json({ message: 'Nenhuma alteração feita' });
 
   try {
     const [result] = await pool.query(
@@ -141,11 +144,18 @@ export const atualizarProduto = async (req, res) => {
     if (!result.affectedRows) return res.status(404).json({ message: 'Produto não encontrado' });
 
     // Atualizar relacionamento ProdutoFornecedor
-    const { id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento } = dados;
-    if (id_fornecedor) {
+    const [updateResult] = await pool.query(
+      `UPDATE ProdutoFornecedor
+         SET id_fornecedor = ?, preco = ?, prazo_entrega = ?, condicoes_pagamento = ?
+       WHERE id_produto = ?`,
+      [id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento, id]
+    );
+    
+    // 2) Se não havia nenhuma linha para esse produto, insere
+    if (updateResult.affectedRows === 0) {
       await pool.query(
-        `REPLACE INTO ProdutoFornecedor
-           (id_produto,id_fornecedor,preco,prazo_entrega,condicoes_pagamento)
+        `INSERT INTO ProdutoFornecedor
+           (id_produto, id_fornecedor, preco, prazo_entrega, condicoes_pagamento)
          VALUES (?, ?, ?, ?, ?)`,
         [id, id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento]
       );

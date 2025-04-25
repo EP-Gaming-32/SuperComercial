@@ -8,21 +8,31 @@ import styles from "./detalhes.module.css";
 export default function DetalhesProdutosPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [productData, setProductData] = useState(null);
 
+  const [productData, setProductData] = useState(null);
+  const [grupoData, setGrupoData] = useState([]);
+  const [fornecedorData, setFornecedorData] = useState([]);
+
+  // 1️⃣ Busca o produto
   useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const res = await fetch(`http://localhost:5000/produtos/detalhes/${id}`);
-        if (!res.ok) throw new Error("Erro ao visualizar produto");
-        const json = await res.json();
-        setProductData(json);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    if (id) fetchProduct();
+    fetch(`http://localhost:5000/produtos/detalhes/${id}`)
+      .then((res) => res.json())
+      .then(setProductData)
+      .catch(console.error);
   }, [id]);
+
+  // 2️⃣ Busca grupos e fornecedores para preencher os selects
+  useEffect(() => {
+    fetch("http://localhost:5000/grupos")
+      .then((res) => res.json())
+      .then(setGrupoData)
+      .catch(console.error);
+
+    fetch("http://localhost:5000/fornecedores")
+      .then((res) => res.json())
+      .then(setFornecedorData)
+      .catch(console.error);
+  }, []);
 
   const handleUpdate = async (updatedData) => {
     try {
@@ -51,6 +61,8 @@ export default function DetalhesProdutosPage() {
       <BoxComponent className={styles.formWrapper}>
         <FormPageProdutos
           data={productData}
+          grupos={grupoData}
+          fornecedores={fornecedorData}
           mode="edit"
           onSubmit={handleUpdate}
           onCancel={() => router.back()}
