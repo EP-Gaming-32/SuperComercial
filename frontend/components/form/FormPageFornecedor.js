@@ -2,10 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
 
-export default function FormPageProdutos({
+export default function FormPageFornecedor({
   data,
-  grupos = [],
-  fornecedores = [],
   mode,
   onSubmit,
   onCancel
@@ -29,17 +27,11 @@ export default function FormPageProdutos({
 
   // Configuração dinâmica dos campos
   const campoConfig = [
-    { name: 'sku', label: 'SKU', type: 'text' },
-    { name: 'nome_produto', label: 'Nome', type: 'text' },
-    { name: 'id_grupo', label: 'Grupo', type: 'select', options: grupos || [], optionKey: 'id_grupo', optionLabel: 'nome_grupo' },
-    { name: 'valor_produto', label: 'Preço', type: 'number' },
-    { name: 'prazo_validade', label: 'Validade (dias)', type: 'number' },
-    { name: 'unidade_medida', label: 'Unidade', type: 'text' },
-    { name: 'codigo_barras', label: 'Código de Barras', type: 'text' },
-    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores || [], optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
-    { name: 'preco_compra', label: 'Preço de Compra', type: 'number' },
-    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'number' },
-    { name: 'condicoes_pagamento', label: 'Condições', type: 'text' }
+    { name: 'id_fornecedor', label: 'ID', type: 'text' },
+    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' },
+    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' },
+    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' },
+    { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text' }
   ];
 
   return (
@@ -82,7 +74,7 @@ export default function FormPageProdutos({
           </button>
         )}
         <button type="submit" className={styles.submitButton}>
-          {mode === 'edit' ? 'Atualizar' : 'Cadastrar'} Produto
+          {mode === 'edit' ? 'Atualizar' : 'Cadastrar'} Fornecedor
         </button>
       </div>
     </form>

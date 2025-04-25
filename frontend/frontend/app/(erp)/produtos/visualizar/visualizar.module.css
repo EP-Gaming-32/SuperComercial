@@ -1,8 +1,0 @@
-/* Container for the page layout */
-.container {
-  display: flex;
-  flex-direction: column;
-  padding: 2rem;
-  box-sizing: border-box;
-}
-

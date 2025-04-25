@@ -46,7 +46,7 @@ export default function RegistrarProdutosPage() {
       });
       if (!res.ok) throw new Error((await res.json()).message);
       alert('Produto Cadastrado');
-      router.push('/produtos');
+      router.push('/produtos/visualizar');
     } catch (err){
       alert("Erro: " + err.message);
     }
