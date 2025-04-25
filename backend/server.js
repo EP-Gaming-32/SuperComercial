@@ -5,6 +5,7 @@ import cors from 'cors';
 import gruposRoutes from './routes/grupos.js';
 import produtosRoutes from './routes/produtos.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
+import formaPagamentoRoutes from './routes/formaPagamento.js';
 import filialRoutes from './routes/filial.js';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
 
@@ -32,6 +33,8 @@ app.use('/grupos', gruposRoutes);
 app.use('/fornecedores', fornecedoresRoutes);
 //endpoint filial
 app.use('/filial', filialRoutes);
+//endpoint formas de pagamentos
+app.use('/formaPagamento', formaPagamentoRoutes);
 
 const PORT = process.env.PORT || 5000;
 
