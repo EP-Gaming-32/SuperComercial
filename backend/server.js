@@ -9,6 +9,7 @@ import formaPagamentoRoutes from './routes/formaPagamento.js';
 import pedidoRoutes from './routes/pedido.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js';
+import historicoPedidoRoutes  from './routes/historicoPedido.js';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
 
 dotenv.config(); // Carregar variáveis de ambiente
@@ -41,6 +42,8 @@ app.use('/formaPagamento', formaPagamentoRoutes);
 app.use('/pedido', pedidoRoutes);
 //endpoint status do pedido
 app.use('/statusPedido', statusPedidoRoutes);
+//endpoint historico de status do pedido
+app.use('/historicoPedido', historicoPedidoRoutes);
 
 const PORT = process.env.PORT || 5000;
 

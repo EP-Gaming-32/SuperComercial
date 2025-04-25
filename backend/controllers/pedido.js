@@ -50,25 +50,40 @@ export const visualizarPedido = async (req, res) => {
   };
 
   export const criarPedido = async (req, res) => {
-    const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao } = req.body;
+    const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao, id_status } = req.body;
   
-    // Validação dos dados
-    if (!id_filial || !id_fornecedor || !tipo_pedido || !valor_total) {
+    if (!id_filial || !id_fornecedor || !tipo_pedido || !valor_total || !id_status) {
       return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
     }
   
+    const conn = await pool.getConnection();
+  
     try {
-      const [result] = await pool.query(
+      await conn.beginTransaction();
+  
+      const [pedidoResult] = await conn.query(
         'INSERT INTO Pedidos (id_filial, id_fornecedor, tipo_pedido, valor_total, observacao) VALUES (?, ?, ?, ?, ?)',
         [id_filial, id_fornecedor, tipo_pedido, valor_total, observacao]
       );
   
-      res.status(201).json({ id_pedido: result.insertId, id_filial, id_fornecedor, tipo_pedido, valor_total, observacao });
+      const id_pedido = pedidoResult.insertId;
+  
+      await conn.query(
+        'INSERT INTO HistoricoStatusPedido (id_pedido, id_status) VALUES (?, ?)',
+        [id_pedido, id_status]
+      );
+  
+      await conn.commit();
+      res.status(201).json({ id_pedido, message: 'Pedido criado com histórico' });
     } catch (error) {
+      await conn.rollback();
       console.error('Erro ao criar pedido', error);
       res.status(500).json({ message: 'Erro ao criar pedido' });
+    } finally {
+      conn.release();
     }
   };
+  
 
   export const atualizarPedido = async (req, res) => {
     const { id } = req.params;

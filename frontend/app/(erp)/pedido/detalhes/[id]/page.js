@@ -4,7 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
-import FormPagePedidos from "@/components/form/FormPagePedidos";
+import FormPagePedido from "@/components/form/FormPagePedido";
+import HistoricoSection  from '@/components/searchPage/HistoricoSection';
 
 export default function DetalhesPedidosPage() {
   const { id } = useParams();
@@ -26,12 +27,12 @@ export default function DetalhesPedidosPage() {
   useEffect(() => {
     fetch("http://localhost:5000/filial")
       .then(r => r.json())
-      .then(setfilial)
+      .then(json => setfilial(json.data)) 
       .catch(console.error);
 
     fetch("http://localhost:5000/fornecedores")
       .then(r => r.json())
-      .then(setFornecedores)
+      .then(json => setFornecedores(json.data))
       .catch(console.error);
   }, []);
 
@@ -45,7 +46,7 @@ export default function DetalhesPedidosPage() {
       });
       if (!res.ok) throw new Error((await res.json()).message);
       alert("Pedido atualizado com sucesso!");
-      router.push("/pedidos/visualizar");
+      router.push("/pedido/visualizar");
     } catch (err) {
       alert("Erro: " + err.message);
     }
@@ -57,7 +58,7 @@ export default function DetalhesPedidosPage() {
     <div className={styles.container}>
       <h1>Editar Pedido</h1>
       <BoxComponent className={styles.formWrapper}>
-        <FormPagePedidos
+        <FormPagePedido
           data={pedidoData}
           filial={filial}
           fornecedores={fornecedores}
@@ -65,6 +66,9 @@ export default function DetalhesPedidosPage() {
           onSubmit={handleUpdate}
           onCancel={() => router.back()}
         />
+      </BoxComponent>
+      <BoxComponent className={styles.historyWrapper}>
+          <HistoricoSection id_pedido={id} />
       </BoxComponent>
     </div>
   );
