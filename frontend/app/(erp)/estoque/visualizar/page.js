@@ -1,13 +1,7 @@
-import SearchPageEstoque from "@/components/searchPage/SearchPageEstoque";
-import BoxComponent from "@/components/BoxComponent";
-import styles from "./visualizar.module.css";
+// app/estoque/visualizar/page.js
+import BoxComponent         from '@/components/BoxComponent';
+import SearchPageEstoque    from '@/components/searchPage/SearchPageEstoque';
 
 export default function EstoqueVisualizarPage() {
-  return (
-    <div className={styles.container}>
-      <BoxComponent>
-        <SearchPageEstoque/>
-      </BoxComponent>
-    </div>
-  );
+  return <BoxComponent><SearchPageEstoque/></BoxComponent>;
 }

@@ -1,51 +1,82 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import styles from "./detalhes.module.css"; // Page-specific styles for details
-import BoxComponent from "@/components/BoxComponent"; // A box component wrapping the form
-import FormPageEstoque from "@/components/form/FormPageEstoque"; // The inventory form component
+import styles from "./detalhes.module.css";
+import BoxComponent from "@/components/BoxComponent";
+import FormPageEstoque from "@/components/form/FormPageEstoque";
 
 export default function DetalhesEstoquePage() {
   const { id } = useParams();
-  const [estoqueData, setEstoqueData] = useState(null);
+  const router = useRouter();
 
+  const [formData, setFormData] = useState(null);
+  const [produtos, setProdutos]       = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
+  const [filiais, setFiliais]         = useState([]);
+  const [lotes, setLotes]             = useState([]);
+
+  // ① buscar o próprio registro de Estoque
   useEffect(() => {
-    // Mock data for the Estoque table (adjust as necessary)
-    const mockData = {
-      id_estoque: id,
-      id_produto: 101,
-      id_fornecedor: 5,
-      id_filial: 2,
-      id_lote: 10,
-      local_armazenamento: "Depósito Central",
-      quantidade: 50,
-      estoque_minimo: 20,
-      estoque_maximo: 100,
-      status_estoque: "normal", // Calculado: 'normal', 'baixo' ou 'critico'
-      data_registro: "2024-01-15 10:00:00"
-    };
-    setEstoqueData(mockData);
+    fetch(`http://localhost:5000/estoque/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Falha ao carregar o estoque");
+        return res.json();
+      })
+      .then(json => {
+        // adapte conforme seu retorno:
+        setFormData(json.data ?? json);
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Erro ao carregar estoque: " + err.message);
+      });
   }, [id]);
 
-  const handleUpdate = (updatedData) => {
-    console.log("Atualizando item do estoque:", updatedData);
-    // API call to update inventory data would go here.
+  // ② buscar listas auxiliares
+  useEffect(() => {
+    Promise.all([
+      fetch("http://localhost:5000/produtos?limit=100")
+        .then(r => r.json()).then(j => setProdutos(j.data ?? [])),
+      fetch("http://localhost:5000/fornecedores")
+        .then(r => r.json()).then(j => setFornecedores(j.data ?? [])),
+      fetch("http://localhost:5000/filial?limit=100")
+        .then(r => r.json()).then(j => setFiliais(j.data ?? [])),
+      fetch("http://localhost:5000/lotes?limit=100")
+        .then(r => r.json()).then(j => setLotes(j.data ?? [])),
+    ]).catch(console.error);
+  }, []);
+
+  const handleUpdate = async (data) => {
+    const res = await fetch(`http://localhost:5000/estoque/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return alert("Erro: " + err.message);
+    }
+    alert("Estoque atualizado com sucesso!");
+    router.push("/estoque/visualizar");
   };
+
+  if (!formData) return <p>Carregando...</p>;
 
   return (
     <div className={styles.container}>
-      <h1>Editar Item do Estoque</h1>
-      {estoqueData ? (
-        <BoxComponent className={styles.formWrapper}>
-          <FormPageEstoque
-            data={estoqueData}
-            mode="edit"
-            onSubmit={handleUpdate}
-          />
-        </BoxComponent>
-      ) : (
-        <p>Carregando...</p>
-      )}
+      <h1>Editar Estoque</h1>
+      <BoxComponent className={styles.formWrapper}>
+        <FormPageEstoque
+          data={formData}
+          produtos={produtos}
+          fornecedores={fornecedores}
+          filiais={filiais}
+          lotes={lotes}
+          mode="edit"
+          onSubmit={handleUpdate}
+          onCancel={() => router.back()}
+        />
+      </BoxComponent>
     </div>
   );
 }

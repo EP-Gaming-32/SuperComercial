@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageEstoque from "@/components/form/FormPageEstoque";
-import styles from "./detalhes.module.css"; // Reusing the same CSS module for consistency
 
 export default function RegistrarEstoquePage() {
-  // Initial data with the same fields as in the details page
-  const initialData = {
+  const router = useRouter();
+  const initial = {
     id_produto: "",
     id_fornecedor: "",
     id_filial: "",
@@ -15,22 +16,59 @@ export default function RegistrarEstoquePage() {
     quantidade: "",
     estoque_minimo: "",
     estoque_maximo: "",
-    status_estoque: "",    // Although this field is calculated, we include it for consistency
-    data_registro: "",     // Generally auto-generated, but here left empty
   };
 
-  const [estoqueData, setEstoqueData] = useState(initialData);
+  const [formData, setFormData] = useState(initial);
+  const [produtos, setProdutos]       = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
+  const [filiais, setFiliais]         = useState([]);
+  const [lotes, setLotes]             = useState([]);
 
-  const handleCreate = (newData) => {
-    console.log("Criando novo item no estoque:", newData);
-    // Aqui você fará a chamada para a API para criar o novo item no estoque
+  useEffect(() => {
+    Promise.all([
+      fetch("http://localhost:5000/produtos?limit=100")
+        .then(r => r.json()).then(j => setProdutos(j.data ?? [])),
+  
+      fetch("http://localhost:5000/fornecedores")
+        .then(r => r.json()).then(j => setFornecedores(j.data ?? [])),
+  
+      fetch("http://localhost:5000/filial?limit=100")
+        .then(r => r.json()).then(j => setFiliais(j.data ?? [])),
+  
+      fetch("http://localhost:5000/lotes?limit=100")
+        .then(r => r.json()).then(j => setLotes(j.data ?? [])),
+    ]).catch(console.error);
+  }, []);
+  
+
+  const handleSubmit = async (data) => {
+    const res = await fetch("http://localhost:5000/estoque", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return alert("Erro: " + err.message);
+    }
+    alert("Estoque cadastrado com sucesso!");
+    router.push("/estoque/visualizar");
   };
 
   return (
-    <div className={styles.container} style={{ overflow: "hidden" }}>
-      <h1>Registrar Novo Item no Estoque</h1>
+    <div className={styles.container}>
+      <h1>Cadastrar Estoque</h1>
       <BoxComponent className={styles.formWrapper}>
-        <FormPageEstoque data={estoqueData} mode="create" onSubmit={handleCreate} />
+        <FormPageEstoque
+          data={formData}
+          produtos={produtos}
+          fornecedores={fornecedores}
+          filiais={filiais}
+          lotes={lotes}
+          mode="add"
+          onSubmit={handleSubmit}
+          onCancel={() => router.back()}
+        />
       </BoxComponent>
     </div>
   );

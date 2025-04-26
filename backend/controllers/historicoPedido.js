@@ -34,7 +34,7 @@ export const visualizarHistoricoPedido = async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      `SELECT h.id_historico, h.id_pedido, s.nome_status, h.data_atualizacao
+      `SELECT h.id_historico, h.id_pedido, s.descricao, h.data_atualizacao
        FROM HistoricoStatusPedido h
        JOIN StatusPedido s ON h.id_status = s.id_status
        WHERE h.id_pedido = ?

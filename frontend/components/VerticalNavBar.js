@@ -12,8 +12,23 @@ export default function VerticalNavBar() {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/cadastros/fornecedores" className={styles.navLink}>
-            Cadastros
+          <Link href="/fornecedores/visualizar" className={styles.navLink}>
+            Fornecedores
+          </Link>
+        </li>
+        <li className={styles.navItem}>
+          <Link href="/filial/visualizar" className={styles.navLink}>
+            Filial
+          </Link>
+        </li>
+        <li className={styles.navItem}>
+          <Link href="/lotes/visualizar" className={styles.navLink}>
+            Lotes
+          </Link>
+        </li>
+        <li className={styles.navItem}>
+          <Link href="/statusPedido/visualizar" className={styles.navLink}>
+            Status de Pedidos
           </Link>
         </li>
         <li className={styles.navItem}>
@@ -27,7 +42,7 @@ export default function VerticalNavBar() {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link href="/pedidos/visualizar" className={styles.navLink}>
+          <Link href="/pedido/visualizar" className={styles.navLink}>
             Ordens de Compras
           </Link>
         </li>

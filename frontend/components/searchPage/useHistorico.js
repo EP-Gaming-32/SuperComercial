@@ -1,19 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
 export function useHistorico(id_pedido) {
-  const [data, setData]       = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [data, setData] = useState([]); // <- começa com array vazio
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id_pedido) return;
     setLoading(true);
     fetch(`http://localhost:5000/historicoPedido/${id_pedido}`)
-      .then(r => r.json())
-      .then(setData)
-      .catch(e => setError(e.message))
+      .then(res => res.json())
+      .then(res => setData(res.data || [])) // <- extrai o array da resposta
+      .catch((err) => {
+        console.error("Erro ao carregar histórico:", err);
+        setData([]);
+      })
       .finally(() => setLoading(false));
   }, [id_pedido]);
 
-  return { data, loading, error };
+  return { data, loading };
 }

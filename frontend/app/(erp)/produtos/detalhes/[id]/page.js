@@ -13,26 +13,25 @@ export default function DetalhesProdutosPage() {
   const [grupoData, setGrupoData] = useState([]);
   const [fornecedorData, setFornecedorData] = useState([]);
 
-  // 1️⃣ Busca o produto
   useEffect(() => {
     fetch(`http://localhost:5000/produtos/detalhes/${id}`)
       .then((res) => res.json())
-      .then(setProductData)
+      .then((data) => setProductData(data))
       .catch(console.error);
   }, [id]);
-
-  // 2️⃣ Busca grupos e fornecedores para preencher os selects
+  
   useEffect(() => {
     fetch("http://localhost:5000/grupos")
       .then((res) => res.json())
-      .then(setGrupoData)
+      .then((data) => setGrupoData(data.data || []))
       .catch(console.error);
-
+  
     fetch("http://localhost:5000/fornecedores")
       .then((res) => res.json())
-      .then(setFornecedorData)
+      .then((data) => setFornecedorData(data.data || []))
       .catch(console.error);
   }, []);
+  
 
   const handleUpdate = async (updatedData) => {
     try {

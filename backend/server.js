@@ -10,6 +10,9 @@ import pedidoRoutes from './routes/pedido.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js';
 import historicoPedidoRoutes  from './routes/historicoPedido.js';
+import lotesRoutes from './routes/lotes.js';
+import estoqueRoutes from './routes/estoque.js';
+import movimentacaoEstoqueRoutes from './routes/movimentacaoEstoque.js';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
 
 dotenv.config(); // Carregar variáveis de ambiente
@@ -44,6 +47,10 @@ app.use('/pedido', pedidoRoutes);
 app.use('/statusPedido', statusPedidoRoutes);
 //endpoint historico de status do pedido
 app.use('/historicoPedido', historicoPedidoRoutes);
+//endpoints estoque
+app.use('/lotes', lotesRoutes);
+app.use('/estoque', estoqueRoutes);
+app.use('/movimentacaoEstoque', movimentacaoEstoqueRoutes);
 
 const PORT = process.env.PORT || 5000;
 
