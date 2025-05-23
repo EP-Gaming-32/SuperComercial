@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
 
-export default function FormPageFornecedor({
+export default function FormPageFilial({
   data,
   mode,
   onSubmit,
@@ -11,13 +11,28 @@ export default function FormPageFornecedor({
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    // Inicializa ou reseta o formulário com os dados recebidos
     setFormData(data);
   }, [data]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === 'telefone_filial') {
+      let onlyNumbers = value.replace(/\D/g, '').slice(0, 10);
+      let formatted = onlyNumbers;
+
+      if (onlyNumbers.length > 6) {
+        formatted = `(${onlyNumbers.slice(0, 2)})${onlyNumbers.slice(2, 6)}-${onlyNumbers.slice(6)}`;
+      } else if (onlyNumbers.length > 2) {
+        formatted = `(${onlyNumbers.slice(0, 2)})${onlyNumbers.slice(2)}`;
+      } else if (onlyNumbers.length > 0) {
+        formatted = `(${onlyNumbers}`;
+      }
+
+      setFormData(prev => ({ ...prev, [name]: formatted }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -25,47 +40,31 @@ export default function FormPageFornecedor({
     onSubmit(formData);
   };
 
-  // Configuração dinâmica dos campos
   const campoConfig = [
-    { name: "id_filial",       label: "ID da Filial",     type: "text" },
-    { name: "nome_filial",     label: "Nome da Filial",    type: "text" },
-    { name: "endereco_filial", label: "Endereço",          type: "text" },
-    { name: "telefone_filial", label: "Telefone",          type: "text" },
-    { name: "email_filial",    label: "E-mail",            type: "email" },
-    { name: "gestor_filial",   label: "Gestor da Filial",  type: "text" },
-    { name: "observacao",      label: "Observação",        type: "text" }
+    { name: "id_filial",       label: "ID da Filial",     type: "text",   maxLength: 255 },
+    { name: "nome_filial",     label: "Nome da Filial",   type: "text",   maxLength: 255 },
+    { name: "endereco_filial", label: "Endereço",         type: "text",   maxLength: 255 },
+    { name: "telefone_filial", label: "Telefone",         type: "text",   maxLength: 14 },
+    { name: "email_filial",    label: "E-mail",           type: "email",  maxLength: 255 },
+    { name: "gestor_filial",   label: "Gestor da Filial", type: "text",   maxLength: 255 },
+    { name: "observacao",      label: "Observação",       type: "text",   maxLength: 1000 }
   ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel }) => (
+      {campoConfig.map(({ name, label, type, maxLength }) => (
         <div key={name} className={styles.field}>
           <label htmlFor={name} className={styles.label}>{label}</label>
-          {type === 'select' ? (
-            <select
-              id={name}
-              name={name}
-              value={formData[name] || ''}
-              onChange={handleChange}
-              className={styles.input}
-            >
-              <option value="">Selecione...</option>
-              {(options || []).map(opt => (
-                <option key={opt[optionKey]} value={opt[optionKey]}>
-                    {opt[optionLabel]}
-                </option>
-                ))}
-            </select>
-          ) : (
-            <input
-              id={name}
-              name={name}
-              type={type}
-              value={formData[name] ?? ''}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          )}
+          <input
+            id={name}
+            name={name}
+            type={type}
+            value={formData[name] ?? ''}
+            onChange={handleChange}
+            className={styles.input}
+            maxLength={maxLength}
+            inputMode={name === 'telefone_filial' ? 'numeric' : undefined}
+          />
         </div>
       ))}
 

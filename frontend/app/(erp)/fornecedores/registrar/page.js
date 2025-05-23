@@ -11,7 +11,7 @@ export default function RegistrarFornecedorPage() {
   const initialData = {
     id_fornecedor: "",
     nome_fornecedor: "",
-    endereco_fornecedor: "a",
+    endereco_fornecedor: "",
     telefone_fornecedor: "",
     email_fornecedor: "",
     tipo_pessoa: "", // "juridica" ou "fisica"

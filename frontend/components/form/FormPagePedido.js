@@ -6,6 +6,7 @@ export default function FormPagePedido({
   data,
   filial = [],
   fornecedores = [],
+  statusPedido = [],
   mode,
   onSubmit,
   onCancel
@@ -31,7 +32,7 @@ export default function FormPagePedido({
       name: 'id_filial',
       label: 'Filial',
       type: 'select',
-      options: filial || [],
+      options: filial,
       optionKey: 'id_filial',
       optionLabel: 'nome_filial'
     },
@@ -55,13 +56,21 @@ export default function FormPagePedido({
       optionLabel: 'label'
     },
     { name: 'valor_total', label: 'Valor Total', type: 'number' },
-    { name: 'observacao', label: 'Observação', type: 'text' },
+    { name: 'observacao', label: 'Observação', type: 'text', maxLength: 255 },
     { name: 'data_pedido', label: 'Data do Pedido', type: 'date' },
+    {
+      name: 'id_status',
+      label: 'Status do Pedido',
+      type: 'select',
+      options: statusPedido,
+      optionKey: 'id_status',
+      optionLabel: 'descricao'
+    }
   ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel }) => (
+      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength }) => (
         <div key={name} className={styles.field}>
           <label htmlFor={name} className={styles.label}>{label}</label>
           {type === 'select' ? (
@@ -87,6 +96,7 @@ export default function FormPagePedido({
               value={formData[name] ?? ''}
               onChange={handleChange}
               className={styles.input}
+              {...(type === 'text' && maxLength ? { maxLength } : {})}
             />
           )}
         </div>

@@ -49,7 +49,7 @@ export const visualizarPedido = async (req, res) => {
     }
   };
 
-  export const criarPedido = async (req, res) => {
+export const criarPedido = async (req, res) => {
     const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao, id_status } = req.body;
   
     if (!id_filial || !id_fornecedor || !tipo_pedido || !valor_total || !id_status) {

@@ -13,7 +13,6 @@ export default function FormPageProdutos({
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    // Inicializa ou reseta o formulário com os dados recebidos
     setFormData(data);
   }, [data]);
 
@@ -27,24 +26,23 @@ export default function FormPageProdutos({
     onSubmit(formData);
   };
 
-  // Configuração dinâmica dos campos
   const campoConfig = [
-    { name: 'sku', label: 'SKU', type: 'text' },
-    { name: 'nome_produto', label: 'Nome', type: 'text' },
+    { name: 'sku', label: 'SKU', type: 'text', maxLength: 20 },
+    { name: 'nome_produto', label: 'Nome', type: 'text', maxLength: 100 },
     { name: 'id_grupo', label: 'Grupo', type: 'select', options: grupos || [], optionKey: 'id_grupo', optionLabel: 'nome_grupo' },
     { name: 'valor_produto', label: 'Preço', type: 'number' },
-    { name: 'prazo_validade', label: 'Validade (dias)', type: 'number' },
-    { name: 'unidade_medida', label: 'Unidade', type: 'text' },
-    { name: 'codigo_barras', label: 'Código de Barras', type: 'text' },
+    { name: 'prazo_validade', label: 'Validade (dias)', type: 'date' },
+    { name: 'unidade_medida', label: 'Unidade', type: 'text', maxLength: 10 },
+    { name: 'codigo_barras', label: 'Código de Barras', type: 'text', maxLength: 20 },
     { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores || [], optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
     { name: 'preco_compra', label: 'Preço de Compra', type: 'number' },
-    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'number' },
-    { name: 'condicoes_pagamento', label: 'Condições', type: 'text' }
+    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'date' },
+    { name: 'condicoes_pagamento', label: 'Condições', type: 'text', maxLength: 100 }
   ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel }) => (
+      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength }) => (
         <div key={name} className={styles.field}>
           <label htmlFor={name} className={styles.label}>{label}</label>
           {type === 'select' ? (
@@ -70,6 +68,7 @@ export default function FormPageProdutos({
               value={formData[name] ?? ''}
               onChange={handleChange}
               className={styles.input}
+              {...(type === 'text' && maxLength ? { maxLength } : {})}
             />
           )}
         </div>

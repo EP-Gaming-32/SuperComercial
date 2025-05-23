@@ -29,12 +29,12 @@ export default function RegistrarProdutosPage() {
   useEffect(() => {
     fetch("http://localhost:5000/grupos")
       .then(r => r.json())
-      .then(json => setGrupoData(json.data)) // 👈 extrai apenas o array
+      .then(json => setGrupoData(json.data))
       .catch(console.error);
   
     fetch("http://localhost:5000/fornecedores")
       .then(r => r.json())
-      .then(json => setFornecedorData(json.data)) // 👈 extrai apenas o array
+      .then(json => setFornecedorData(json.data))
       .catch(console.error);
   }, []);
 

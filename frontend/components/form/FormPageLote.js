@@ -14,7 +14,7 @@ export default function FormPageLote({ data, produtos=[], mode, onSubmit, onCanc
 
   const campos = [
     { name:'id_produto',      label:'Produto',     type:'select', options:produtos, optionKey:'id_produto', optionLabel:'nome_produto' },
-    { name:'codigo_lote',      label:'Código Lote', type:'text'   },
+    { name:'codigo_lote',      label:'Código Lote', type:'text', maxLength: 20   },
     { name:'data_expedicao',   label:'Expedição',   type:'date'   },
     { name:'data_validade',    label:'Validade',     type:'date'   },
     { name:'quantidade',       label:'Quantidade',   type:'number' }
@@ -22,7 +22,7 @@ export default function FormPageLote({ data, produtos=[], mode, onSubmit, onCanc
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campos.map(({name,label,type,options,optionKey,optionLabel})=>(
+      {campos.map(({name,label,type,options,optionKey,optionLabel, maxLength})=>(
         <div key={name} className={styles.field}>
           <label>{label}</label>
           {type==='select'
@@ -32,8 +32,11 @@ export default function FormPageLote({ data, produtos=[], mode, onSubmit, onCanc
                   <option key={o[optionKey]} value={o[optionKey]}>{o[optionLabel]}</option>
                 ))}
               </select>
-            : <input type={type} name={name} value={form[name]||''} onChange={handleChange} />
+            : <input type={type} name={name} value={form[name]||''} onChange={handleChange}
+            {...(type === 'text' && maxLength ? { maxLength } : {})}
+            />
           }
+          
         </div>
       ))}
       <div className={styles.buttonGroup}>

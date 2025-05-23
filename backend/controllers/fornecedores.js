@@ -47,14 +47,59 @@ export const visualizarFornecedor = async (req, res) => {
 };
 
 export const criarFornecedor = async (req, res) => {
-  const { nome_fornecedor } = req.body;
-  if (!nome_fornecedor) return res.status(400).json({ message: 'Nome obrigatório' });
-  const [result] = await pool.query(
-    'INSERT INTO Fornecedor (nome_fornecedor) VALUES (?)',
-    [nome_fornecedor]
-  );
-  res.status(201).json({ id_fornecedor: result.insertId, nome_fornecedor });
+  const {
+    nome_fornecedor,
+    endereco_fornecedor,
+    telefone_fornecedor,
+    email_fornecedor,
+    tipo_pessoa,
+    cnpj_cpf,
+    observacao
+  } = req.body;
+
+  // Validação básica dos campos obrigatórios
+  if (!nome_fornecedor || !endereco_fornecedor || !tipo_pessoa || !cnpj_cpf) {
+    return res.status(400).json({ message: 'Campos obrigatórios não preenchidos.' });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `INSERT INTO Fornecedor (
+        nome_fornecedor,
+        endereco_fornecedor,
+        telefone_fornecedor,
+        email_fornecedor,
+        tipo_pessoa,
+        cnpj_cpf,
+        observacao
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        nome_fornecedor,
+        endereco_fornecedor,
+        telefone_fornecedor,
+        email_fornecedor,
+        tipo_pessoa,
+        cnpj_cpf,
+        observacao
+      ]
+    );
+
+    res.status(201).json({
+      id_fornecedor: result.insertId,
+      nome_fornecedor,
+      endereco_fornecedor,
+      telefone_fornecedor,
+      email_fornecedor,
+      tipo_pessoa,
+      cnpj_cpf,
+      observacao
+    });
+  } catch (error) {
+    console.error('Erro ao criar fornecedor:', error);
+    res.status(500).json({ message: 'Erro ao criar fornecedor.', error });
+  }
 };
+
 
 export const atualizarFornecedor = async (req, res) => {
   const { id } = req.params;

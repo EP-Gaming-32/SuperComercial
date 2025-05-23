@@ -10,31 +10,37 @@ export default function RegistrarPedidosPage() {
   const router = useRouter();
 
   const initialData = {
-    id_filial: "",
-    id_fornecedor: "",
-    tipo_pedido: "",
-    valor_total: "",
-    observacao: ""
+  id_filial: "",
+  id_fornecedor: "",
+  tipo_pedido: "",
+  valor_total: "",
+  observacao: "",
+  id_status: ""
   };
 
   const [pedidoData, setPedidoData] = useState(initialData);
   const [filial, setfilial] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
+  const [statusPedido, setStatusPedido] = useState([]);
 
-  // 1️⃣ Fetch de filial e fornecedores
+  //Fetch de filial e fornecedores
   useEffect(() => {
     fetch("http://localhost:5000/filial")
       .then(r => r.json())
-      .then(json => setfilial(json.data)) // 👈 extrai apenas o array
+      .then(json => setfilial(json.data))
       .catch(console.error);
   
     fetch("http://localhost:5000/fornecedores")
       .then(r => r.json())
-      .then(json => setFornecedores(json.data)) // 👈 extrai apenas o array
+      .then(json => setFornecedores(json.data))
+      .catch(console.error);
+
+    fetch("http://localhost:5000/statuspedido")
+      .then(r => r.json())
+      .then(json => setStatusPedido(json.data))
       .catch(console.error);
   }, []);
 
-  // 2️⃣ Submit do formulário
   const handleSubmit = async (updatedData) => {
     try {
       const res = await fetch("http://localhost:5000/pedido", {
@@ -58,6 +64,7 @@ export default function RegistrarPedidosPage() {
           data={pedidoData}
           filial={filial}
           fornecedores={fornecedores}
+          statusPedido={statusPedido}
           mode="add"
           onSubmit={handleSubmit}
           onCancel={() => router.back()}
