@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { cadastroUser, loginUser, forgotPassword, resetPassword } from './controllers/authController.js';
+import { supplierRegister } from './controllers/supplierController.js';
 
 dotenv.config(); // Carregar variáveis de ambiente
 
@@ -18,6 +19,7 @@ app.post('/auth/cadastro', cadastroUser);
 app.post('/auth/login', loginUser);
 app.post('/forgot-password', forgotPassword);
 app.post('/reset-password/:token', resetPassword);
+app.post('/cadastro/fornecedor', supplierRegister)
 
 const PORT = process.env.PORT || 5000;
 
