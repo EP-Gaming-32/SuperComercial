@@ -1,16 +1,28 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import styles from "./Visuals.module.css";
 
 export default function EstoqueVisual() {
-  const data = [
-    { name: "Normal", value: 60 },
-    { name: "Baixo", value: 25 },
-    { name: "Crítico", value: 15 },
-  ];
+  const [data, setData] = useState([]);
 
   const COLORS = ["#29b6f6", "#ffcc00", "#ff4d4d"];
+
+  useEffect(() => {
+    fetch("http://localhost:5000/relatorios/estoque-status")
+      .then((res) => res.json())
+      .then((data) => {
+        // O backend retorna status em minúsculo, pode querer capitalizar nomes
+        const formatted = data.map((item) => ({
+          name: item.name.charAt(0).toUpperCase() + item.name.slice(1),
+          value: item.value,
+        }));
+        setData(formatted);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar dados de estoque:", error);
+      });
+  }, []);
 
   return (
     <div className={styles.visualContainer}>

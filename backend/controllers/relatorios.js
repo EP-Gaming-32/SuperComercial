@@ -21,23 +21,37 @@ export const relatorioPedidosPorFilial = async (req, res) => {
 
 // RELATÓRIO: Estoque por filial
 export const relatorioEstoquePorFilial = async (req, res) => {
+  const { id_filial } = req.query;
+
   try {
-    const [rows] = await pool.query(
-      `SELECT
-         f.nome_filial,
-         p.nome_produto,
-         e.quantidade
-       FROM Estoque e
-       LEFT JOIN Filial f ON e.id_filial = f.id_filial
-       LEFT JOIN Produtos p ON e.id_produto = p.id_produto
-       ORDER BY f.nome_filial, p.nome_produto`
-    );
+    let query = `
+      SELECT
+        f.nome_filial,
+        p.nome_produto,
+        e.quantidade
+      FROM Estoque e
+      LEFT JOIN Filial f ON e.id_filial = f.id_filial
+      LEFT JOIN Produtos p ON e.id_produto = p.id_produto
+    `;
+
+    const params = [];
+
+    if (id_filial) {
+      query += ` WHERE e.id_filial = ?`;
+      params.push(id_filial);
+    }
+
+    query += ` ORDER BY f.nome_filial, p.nome_produto`;
+
+    const [rows] = await pool.query(query, params);
+
     res.json(rows);
   } catch (error) {
     console.error('Erro em relatorioEstoquePorFilial:', error);
     res.status(500).json({ error: 'Erro interno ao gerar relatório de estoque por filial' });
   }
 };
+
 
 // RELATÓRIO: Fornecedores por filial
 export const relatorioFornecedoresPorFilial = async (req, res) => {
@@ -128,5 +142,75 @@ export const relatorioPrevisaoPedido = async (req, res) => {
   } catch (error) {
     console.error('Erro em relatorioPrevisaoPedido:', error);
     res.status(500).json({ error: 'Erro interno ao gerar relatório de previsão de pedidos' });
+  }
+};
+
+// RELATÓRIO: Status por Estoque
+export const relatorioStatusPorEstoque = async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT status_estoque AS name, COUNT(*) AS value
+      FROM Estoque
+      GROUP BY status_estoque;
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error('Erro ao buscar status de estoque:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+};
+
+// RELATÓRIO: Estoque Por Produto
+export const relatorioEstoquePorProduto = async (req, res) => {
+  try {
+    const { id_filial } = req.query;
+
+    if (!id_filial) {
+      return res.status(400).json({ error: 'Parâmetro id_filial é obrigatório' });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT Produtos.nome_produto AS name, Estoque.quantidade_estoque AS estoque
+      FROM Estoque
+      JOIN Produtos ON Produtos.id_produto = Estoque.id_produto
+      WHERE Estoque.id_filial = ?;
+      `,
+      [id_filial]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Erro ao buscar estoque por produto:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+};
+
+export const relatorioComprasPorMes = async (req, res) => {
+  try {
+    const { id_filial } = req.query;
+
+    if (!id_filial) {
+      return res.status(400).json({ error: "Parâmetro id_filial é obrigatório" });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        MONTH(data_compra) AS mes,
+        DATE_FORMAT(data_compra, '%b') AS month,
+        SUM(valor_total) AS valor_total
+      FROM Compras
+      WHERE id_filial = ?
+      GROUP BY mes, month
+      ORDER BY mes;
+      `,
+      [id_filial]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Erro ao buscar compras por mês:", error);
+    res.status(500).json({ error: "Erro no servidor" });
   }
 };
