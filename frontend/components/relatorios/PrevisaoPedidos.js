@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -11,26 +11,53 @@ import {
 } from "recharts";
 
 export default function PrevisaoPedidos() {
-  // Mock data: Forecast of orders per month for a store (you can also split by loja)
-  const data = [
-    { month: 'Jan', forecast: 100 },
-    { month: 'Feb', forecast: 150 },
-    { month: 'Mar', forecast: 130 },
-    { month: 'Abr', forecast: 170 },
-    { month: 'Mai', forecast: 160 },
-    { month: 'Jun', forecast: 180 },
-  ];
+  const [dados, setDados] = useState([]);
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/relatorios/previsao-pedidos");
+        const data = await res.json();
+
+        const filialSelecionada = data.find(filial => filial.id_filial === 1);
+        if (filialSelecionada) {
+          const formatado = filialSelecionada.dados.map(item => ({
+            mes: item.mes,
+            pedidos: item.total_pedidos,
+            previsao: item.previsao,
+          }));
+          setDados(formatado);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados de previsão:", error);
+      }
+    };
+
+    carregarDados();
+  }, []);
 
   return (
-    <div>
-      <h3>Previsão de Pedidos</h3>
+    <div className="p-4">
+      <h3 className="text-xl font-semibold mb-4">Previsão de Pedidos - Filial 1</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={data}>
+        <AreaChart data={dados}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
+          <XAxis dataKey="mes" />
           <YAxis />
-          <Tooltip />
-          <Area type="monotone" dataKey="forecast" stroke="#8884d8" fill="#8884d8" />
+          <Tooltip
+            formatter={(value, name, props) => [
+              `${value} pedidos`,
+              props.payload.previsao ? "Previsão" : "Histórico",
+            ]}
+          />
+          <Area
+            type="monotone"
+            dataKey="pedidos"
+            stroke="#8884d8"
+            fill="#8884d8"
+            strokeDasharray="3 3"
+            isAnimationActive={false}
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

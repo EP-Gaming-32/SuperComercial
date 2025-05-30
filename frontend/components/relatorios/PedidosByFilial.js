@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -11,13 +11,29 @@ import {
 } from "recharts";
 
 export default function PedidosByFilial() {
-  // Mock data: number of orders per store (from Pedidos table)
-  const data = [
-    { store: "Loja A", orders: 120 },
-    { store: "Loja B", orders: 85 },
-    { store: "Loja C", orders: 150 },
-    { store: "Loja D", orders: 60 },
-  ];
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchPedidos = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/relatorios/pedidos-filial");
+        if (!response.ok) throw new Error("Erro ao buscar dados");
+        const json = await response.json();
+
+        // Transformando os dados para o formato esperado pelo gráfico
+        const formatado = json.map((item) => ({
+          store: item.nome_filial,
+          orders: item.total_pedidos,
+        }));
+
+        setData(formatado);
+      } catch (error) {
+        console.error("Erro ao carregar dados de pedidos por filial:", error);
+      }
+    };
+
+    fetchPedidos();
+  }, []);
 
   return (
     <div>

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -11,13 +11,29 @@ import {
 } from "recharts";
 
 export default function PagamentoByFilial() {
-  // Mock data: Total payments per store (from Pagamentos table)
-  const data = [
-    { store: "Loja A", totalPayments: 5000 },
-    { store: "Loja B", totalPayments: 3500 },
-    { store: "Loja C", totalPayments: 4200 },
-    { store: "Loja D", totalPayments: 2800 },
-  ];
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchPagamentos = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/relatorios/pagamentos-filial");
+        if (!response.ok) throw new Error("Erro ao buscar dados");
+        const json = await response.json();
+
+        // Transformando os dados para o formato esperado pelo gráfico
+        const formatado = json.map((item) => ({
+          store: item.nome_filial,
+          totalPayments: item.total_pago,
+        }));
+
+        setData(formatado);
+      } catch (error) {
+        console.error("Erro ao carregar dados de pagamentos por filial:", error);
+      }
+    };
+
+    fetchPagamentos();
+  }, []);
 
   return (
     <div>

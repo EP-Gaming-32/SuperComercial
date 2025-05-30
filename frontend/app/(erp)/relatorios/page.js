@@ -6,7 +6,6 @@ import FornecedorByFilial from "@/components/relatorios/FornecedorByFilial";
 import PagamentoByFilial from "@/components/relatorios/PagamentoByFilial";
 import ProdutosVencidos from "@/components/relatorios/ProdutosVencidos";
 import PrevisaoPedidos from "@/components/relatorios/PrevisaoPedidos";
-import FeedbackPedido from "@/components/relatorios/FeedbackPedido";
 import ProductVisual from "@/components/relatorios/ProductVisual";
 import EstoqueVisual from "@/components/relatorios/EstoqueVisual";
 import ComprasVisual from "@/components/relatorios/ComprasVisual";
@@ -18,7 +17,7 @@ export default function Dashboard() {
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardGrid}>
         {[ProductVisual, EstoqueTreemap, FornecedorByFilial, PagamentoByFilial, 
-          PedidosByFilial, PrevisaoPedidos, ProdutosVencidos, FeedbackPedido, 
+          PedidosByFilial, PrevisaoPedidos, ProdutosVencidos, 
           EstoqueVisual, ComprasVisual, FilialVisual].map((Component, index) => (
           <div key={index} className={styles.card}>
             <Component />
