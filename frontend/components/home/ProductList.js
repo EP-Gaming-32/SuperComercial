@@ -1,38 +1,51 @@
-import React from "react";
-import { ShoppingCart } from "lucide-react";
+"use client";
+import React, { useEffect, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import styles from "./home.module.css";
 
-export default function ProductList() {
-  const products = [
-    { nome: "Produto A", filial: "Filial 1", estoque: 200, vendas: 15, pvr: 50.0 },
-    { nome: "Produto B", filial: "Filial 2", estoque: 120, vendas: 8, pvr: 30.5 },
-    { nome: "Produto C", filial: "Filial 1", estoque: 300, vendas: 20, pvr: 70.0 },
-  ];
+export default function CriticalStockAlert() {
+  const [alerts, setAlerts] = useState([]);
+
+  useEffect(() => {
+    // Este endpoint deve retornar apenas os itens cujo status_estoque = 'critico'
+    fetch("http://localhost:5000/relatorios/estoque-detalhado?status=critico")
+      .then((res) => res.json())
+      .then((data) => {
+        // data esperado: [{ nome_produto, nome_filial, quantidade }, ...]
+        setAlerts(data);
+      })
+      .catch((err) => console.error("Erro ao carregar alertas de estoque crítico:", err));
+  }, []);
+
+  if (alerts.length === 0) {
+    return (
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>Alertas de Estoque Crítico</h2>
+        <p className={styles.cardContent}>Nenhum produto em estado crítico.</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.card}>
-      <h2 className={styles.cardTitle}>Produtos (PVR)</h2>
+      <h2 className={styles.cardTitle}>⚠️ Estoque Crítico</h2>
       <div className={styles.cardContent}>
         <table className={styles.table}>
           <thead>
             <tr>
               <th>Produto</th>
               <th>Filial</th>
-              <th>Estoque</th>
-              <th>Vendas</th>
-              <th>PVR</th>
+              <th>Quantidade</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index) => (
-              <tr key={index} className={styles.tableRow}>
+            {alerts.map((item, idx) => (
+              <tr key={idx} className={styles.tableRow}>
                 <td className={styles.flex}>
-                  <ShoppingCart size={20} color="#888" /> {product.nome}
+                  <AlertTriangle size={20} color="#f44336" /> {item.nome_produto}
                 </td>
-                <td>{product.filial}</td>
-                <td>{product.estoque}</td>
-                <td>{product.vendas}</td>
-                <td>R$ {product.pvr.toFixed(2)}</td>
+                <td>{item.nome_filial}</td>
+                <td>{item.quantidade}</td>
               </tr>
             ))}
           </tbody>

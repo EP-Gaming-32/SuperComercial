@@ -1,23 +1,32 @@
 import pool from '../config/db.js';
 
-// RELATÓRIO: Pedidos por filial
+// RELATÓRIO: Pedidos por filial (histórico por mês)
 export const relatorioPedidosPorFilial = async (req, res) => {
+  const { id_filial } = req.query;
+
   try {
     const [rows] = await pool.query(
       `SELECT
+         DATE_FORMAT(p.data_pedido, '%Y-%m') AS mes,
          f.nome_filial,
          COUNT(p.id_pedido) AS total_pedidos,
          SUM(p.valor_total) AS valor_total_pedidos
        FROM Pedidos p
        LEFT JOIN Filial f ON p.id_filial = f.id_filial
-       GROUP BY p.id_filial`
+       ${id_filial ? 'WHERE p.id_filial = ?' : ''}
+       GROUP BY mes, f.nome_filial
+       ORDER BY mes`,
+      id_filial ? [id_filial] : []
     );
+
     res.json(rows);
   } catch (error) {
     console.error('Erro em relatorioPedidosPorFilial:', error);
     res.status(500).json({ error: 'Erro interno ao gerar relatório de pedidos por filial' });
   }
 };
+
+
 
 // RELATÓRIO: Estoque por filial
 export const relatorioEstoquePorFilial = async (req, res) => {
@@ -148,17 +157,29 @@ export const relatorioPrevisaoPedido = async (req, res) => {
 // RELATÓRIO: Status por Estoque
 export const relatorioStatusPorEstoque = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
+    const { id_filial } = req.query;
+
+    let query = `
       SELECT status_estoque AS name, COUNT(*) AS value
       FROM Estoque
-      GROUP BY status_estoque;
-    `);
+    `;
+    const params = [];
+
+    if (id_filial) {
+      query += ` WHERE id_filial = ?`;
+      params.push(id_filial);
+    }
+
+    query += ` GROUP BY status_estoque`;
+
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
     console.error('Erro ao buscar status de estoque:', error);
     res.status(500).json({ error: 'Erro no servidor' });
   }
 };
+
 
 // RELATÓRIO: Estoque Por Produto
 export const relatorioEstoquePorProduto = async (req, res) => {
@@ -213,4 +234,18 @@ export const relatorioComprasPorMes = async (req, res) => {
     console.error("Erro ao buscar compras por mês:", error);
     res.status(500).json({ error: "Erro no servidor" });
   }
+};
+
+// Exemplo de controller em Node.js
+export const relatorioEstoqueCritico = async (req, res) => {
+  const { status } = req.query; // espera 'critico'
+  const [rows] = await pool.query(
+    `SELECT p.nome_produto, f.nome_filial, e.quantidade
+     FROM Estoque e
+     JOIN Produtos p ON e.id_produto = p.id_produto
+     JOIN Filial f   ON e.id_filial   = f.id_filial
+     WHERE e.status_estoque = ?`,
+    [status]
+  );
+  res.json(rows);
 };

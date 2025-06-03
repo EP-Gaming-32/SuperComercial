@@ -3,7 +3,7 @@ import pool from '../config/db.js';
 
 export const listarEstoque = async (req, res) => {
   const page  = parseInt(req.query.page,10)||1;
-  const limit = parseInt(req.query.limit,10)||10;
+  const limit = parseInt(req.query.limit,8)||8;
   const offset= (page-1)*limit;
   try {
     const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Estoque`);

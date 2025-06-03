@@ -7,7 +7,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 import styles from "./Visuals.module.css";
 
@@ -23,11 +24,11 @@ export default function ComprasVisual() {
       .then((resposta) => {
         const lista = resposta.data.map((f) => ({
           id: f.id_filial.toString(),
-          nome: f.nome_filial
+          nome: f.nome_filial,
         }));
         setFiliais(lista);
         if (lista.length > 0) {
-          setFilialSelecionada(lista[0].id); // seleciona a primeira por padrão
+          setFilialSelecionada(lista[0].id);
         }
       })
       .catch((err) => console.error("Erro ao buscar filiais:", err));
@@ -36,6 +37,7 @@ export default function ComprasVisual() {
   // Carrega os dados do gráfico quando a filial muda
   useEffect(() => {
     if (!filialSelecionada) return;
+
     fetch(`http://localhost:5000/relatorios/pedidos-filial?id_filial=${filialSelecionada}`)
       .then((res) => res.json())
       .then((dados) => {
@@ -45,9 +47,10 @@ export default function ComprasVisual() {
           return {
             month: date.toLocaleDateString("pt-BR", {
               month: "short",
-              year: "2-digit"
+              year: "2-digit",
             }),
-            valor_total: item.valor_total
+            valor_total: parseFloat(item.valor_total_pedidos),
+            total_pedidos: parseInt(item.total_pedidos),
           };
         });
         setData(formatado);
@@ -57,7 +60,7 @@ export default function ComprasVisual() {
 
   return (
     <div className={styles.visualContainer}>
-      <h2 className={styles.visualTitle}>Pedidos - Valor Total por Mês</h2>
+      <h2 className={styles.visualTitle}>Pedidos - Valor e Quantidade por Mês</h2>
 
       <div className={styles.visualControl}>
         <label htmlFor="filialSelect">Filial:</label>
@@ -75,25 +78,53 @@ export default function ComprasVisual() {
       </div>
 
       <div className={styles.visualContent}>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" tick={{ fontSize: 10 }} />
             <YAxis
+              yAxisId="left"
               tick={{ fontSize: 10 }}
               label={{
                 value: "Valor Total (R$)",
                 angle: -90,
                 position: "insideLeft",
-                fontSize: 10
+                fontSize: 10,
               }}
             />
-            <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fontSize: 10 }}
+              label={{
+                value: "Total de Pedidos",
+                angle: 90,
+                position: "insideRight",
+                fontSize: 10,
+              }}
+            />
+            <Tooltip
+              formatter={(value, name) => {
+                if (name === "valor_total") return [`R$ ${value.toFixed(2)}`, "Valor Total"];
+                return [value, "Total de Pedidos"];
+              }}
+            />
+            <Legend />
             <Line
+              yAxisId="left"
               type="monotone"
               dataKey="valor_total"
               stroke="#29b6f6"
               strokeWidth={2}
+              name="Valor Total"
+            />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="total_pedidos"
+              stroke="#66bb6a"
+              strokeWidth={2}
+              name="Total de Pedidos"
             />
           </LineChart>
         </ResponsiveContainer>

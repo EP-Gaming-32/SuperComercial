@@ -18,7 +18,7 @@ export default function Dashboard() {
       <div className={styles.dashboardGrid}>
         {[ProductVisual, EstoqueTreemap, FornecedorByFilial, PagamentoByFilial, 
           PedidosByFilial, PrevisaoPedidos, ProdutosVencidos, 
-          EstoqueVisual, ComprasVisual, FilialVisual].map((Component, index) => (
+          EstoqueVisual, ComprasVisual].map((Component, index) => (
           <div key={index} className={styles.card}>
             <Component />
           </div>

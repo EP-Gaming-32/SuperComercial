@@ -53,3 +53,47 @@
 .searchButton:hover {
   background-color: var(--secondary-color, #0288d1);
 }
+
+
+
+/* ======= Pagination Component Styles ======= */
+.paginationContainer {
+  display: flex;
+  justify-content: center; /* Center the buttons horizontally */
+  align-items: center;
+  gap: 0.5rem; /* Space between buttons */
+  margin-top: 1rem; /* Add some space above the pagination */
+}
+
+.paginationContainer button {
+  width: 32px; /* Fixed width for square shape */
+  height: 32px; /* Fixed height for square shape */
+  padding: 0; /* Remove default padding */
+  border: 1px solid #ccc;
+  border-radius: 4px; /* Slightly rounded corners, set to 0 for sharp squares */
+  background-color: #fff;
+  color: var(--primary-color, #29b6f6);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex; /* Use flex to center content */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  font-size: 0.9rem;
+}
+
+.paginationContainer button:hover {
+  background-color: #eee;
+}
+
+.paginationContainer .activePage {
+  background-color: var(--primary-color, #29b6f6);
+  color: #fff;
+  border-color: var(--primary-color, #29b6f6);
+  font-weight: bold;
+}
+
+.paginationContainer .activePage:hover {
+  background-color: var(--secondary-color, #0288d1);
+  border-color: var(--secondary-color, #0288d1);
+}
+
