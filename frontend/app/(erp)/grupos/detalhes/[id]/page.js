@@ -11,7 +11,7 @@ export default function DetalhesGruposPage() {
 
   const [grupoData, setGrupoData] = useState(null);
 
-  // Busca o Grupo
+
   useEffect(() => {
     fetch(`http://localhost:5000/grupos/detalhes/${id}`)
       .then((res) => res.json())

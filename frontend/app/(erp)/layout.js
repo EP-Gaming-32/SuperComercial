@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import VerticalNavbar from "@/components/VerticalNavBar";
-import HorizontalNavbar from "@/components/HorizontalNavBar";
 import styles from "./layout.module.css";
 
 export default function ErpLayout({ children }) {

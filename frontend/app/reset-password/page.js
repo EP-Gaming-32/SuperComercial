@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Head from "next/head";
-import styles from "./reset.module.css"; // Import the CSS module
+import styles from "./reset.module.css";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();

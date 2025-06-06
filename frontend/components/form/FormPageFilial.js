@@ -41,7 +41,6 @@ export default function FormPageFilial({
   };
 
   const campoConfig = [
-    { name: "id_filial",       label: "ID da Filial",     type: "text",   maxLength: 255 },
     { name: "nome_filial",     label: "Nome da Filial",   type: "text",   maxLength: 255 },
     { name: "endereco_filial", label: "Endereço",         type: "text",   maxLength: 255 },
     { name: "telefone_filial", label: "Telefone",         type: "text",   maxLength: 14 },

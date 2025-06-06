@@ -28,7 +28,7 @@ export const listarHistoricoPedido = async (req, res) => {
   }
 };
 
-// READ (single)
+
 export const visualizarHistoricoPedido = async (req, res) => {
   const { id } = req.params;
 

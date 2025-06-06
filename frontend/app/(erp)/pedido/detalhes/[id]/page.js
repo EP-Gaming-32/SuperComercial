@@ -1,4 +1,3 @@
-// app/pedidos/detalhes/[id]/page.js
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,7 +14,7 @@ export default function DetalhesPedidosPage() {
   const [filial, setfilial] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
 
-  // 1️⃣ Fetch do pedido
+
   useEffect(() => {
     fetch(`http://localhost:5000/pedido/detalhes/${id}`)
       .then(r => r.json())
@@ -23,7 +22,7 @@ export default function DetalhesPedidosPage() {
       .catch(console.error);
   }, [id]);
 
-  // 2️⃣ Fetch de filial e fornecedores
+
   useEffect(() => {
     fetch("http://localhost:5000/filial")
       .then(r => r.json())
@@ -36,7 +35,7 @@ export default function DetalhesPedidosPage() {
       .catch(console.error);
   }, []);
 
-  // 3️⃣ Submit de atualização
+
   const handleUpdate = async (updatedData) => {
     try {
       const res = await fetch(`http://localhost:5000/pedido/${id}`, {

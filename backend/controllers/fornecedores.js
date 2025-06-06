@@ -25,7 +25,6 @@ export const listarFornecedores = async (req, res) => {
   }
 };
 
-// READ (single)
 export const visualizarFornecedor = async (req, res) => {
   const { id } = req.params;
 
@@ -57,7 +56,7 @@ export const criarFornecedor = async (req, res) => {
     observacao
   } = req.body;
 
-  // Validação básica dos campos obrigatórios
+
   if (!nome_fornecedor || !endereco_fornecedor || !tipo_pessoa || !cnpj_cpf) {
     return res.status(400).json({ message: 'Campos obrigatórios não preenchidos.' });
   }

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Head from "next/head";
-import styles from "./password.module.css"; // Import the CSS module
+import styles from "./password.module.css";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

@@ -1,4 +1,3 @@
-// app/Movimentacao/visualizar/page.js
 import BoxComponent         from '@/components/BoxComponent';
 import SearchPageMovimentacao    from '@/components/searchPage/SearchPageMovimentacao';
 

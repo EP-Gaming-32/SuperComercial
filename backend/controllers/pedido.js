@@ -27,7 +27,6 @@ export const listarPedido = async (req, res) => {
   };
   
 
-// READ (single)
 export const visualizarPedido = async (req, res) => {
     const { id } = req.params;
   
@@ -89,7 +88,7 @@ export const criarPedido = async (req, res) => {
     const { id } = req.params;
     const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao } = req.body;
   
-    // Validação dos dados
+
     if (!id_filial || !id_fornecedor || !tipo_pedido || !valor_total) {
       return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
     }

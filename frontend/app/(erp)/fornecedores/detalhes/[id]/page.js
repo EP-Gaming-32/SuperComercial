@@ -11,7 +11,7 @@ export default function DetalhesFornecedorPage() {
 
   const [fornecedoreData, setFornecedorData] = useState(null);
 
-  // Busca o Fornecedor
+
   useEffect(() => {
     fetch(`http://localhost:5000/fornecedores/detalhes/${id}`)
       .then((res) => res.json())

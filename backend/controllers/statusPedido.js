@@ -25,7 +25,7 @@ export const listarStatusPedido = async (req, res) => {
   }
 };
 
-// READ (single)
+
 export const visualizarStatusPedido = async (req, res) => {
   const { id } = req.params;
 

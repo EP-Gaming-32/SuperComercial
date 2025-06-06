@@ -11,7 +11,7 @@ export default function DetalhesFormaPagamentoPage() {
 
   const [FormaPagamentoData, setFormaPagamentoData] = useState(null);
 
-  // Busca o FormaPagamento
+
   useEffect(() => {
     fetch(`http://localhost:5000/formaPagamento/detalhes/${id}`)
       .then((res) => res.json())

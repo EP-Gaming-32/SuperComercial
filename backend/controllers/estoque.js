@@ -1,4 +1,3 @@
-// controllers/estoque.js
 import pool from '../config/db.js';
 
 export const listarEstoque = async (req, res) => {

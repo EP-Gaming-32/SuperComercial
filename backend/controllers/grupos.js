@@ -25,7 +25,7 @@ export const listarGrupos = async (req, res) => {
   }
 };
 
-// READ (single)
+
 export const visualizarGrupo = async (req, res) => {
   const { id } = req.params;
 

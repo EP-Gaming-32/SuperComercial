@@ -1,4 +1,3 @@
-// controllers/movimentacaoEstoque.js
 import pool from '../config/db.js';
 
 export const listarMovimentacoes = async (req, res) => {

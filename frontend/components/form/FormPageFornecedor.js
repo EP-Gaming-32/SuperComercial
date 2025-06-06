@@ -20,7 +20,6 @@ export default function FormPageFornecedor({
   };
 
   const campoConfig = [
-    { name: 'id_fornecedor', label: 'ID', type: 'number' },
     { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text', maxLength: 255 },
     { name: 'endereco_fornecedor', label: 'Endereço', type: 'text', maxLength: 255 },
     { name: 'telefone_fornecedor', label: 'Telefone', type: 'text', maxLength: 15 },

@@ -1,25 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./detalhes.module.css"; // Reaproveitando os estilos da página de detalhes
+import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageProdutos from "@/components/form/FormPageProdutos";
 
 export default function RegistrarProdutosPage() {
   const router = useRouter();
-  // Dados iniciais para cadastro – todos os campos começam vazios
+
   const initialData = {
     sku: "",
     nome_produto: "",
-    id_grupo: "",         // vai virar select
-    valor_produto: "",    // number
-    prazo_validade: "",   // number
-    unidade_medida: "",   // text/select
+    id_grupo: "",         
+    valor_produto: "",    
+    prazo_validade: "",   
+    unidade_medida: "",  
     codigo_barras: "",
-    id_fornecedor: "",    // select
-    preco_compra: "",     // number
-    prazo_entrega: "",    // number
-    condicoes_pagamento: ""
+    id_fornecedor: "",    
+    preco_compra: "",     
+    prazo_entrega: "",    
+    condicoes_pagamento: "",
   };
 
   const [productData, setProductData] = useState(initialData);
@@ -40,7 +40,7 @@ export default function RegistrarProdutosPage() {
 
   const handleSubmit = async (updatedData) => {
     console.log("Cadastrando produto:", updatedData);
-    // Chamada para a API para cadastrar o produto
+
     try{
       const res = await fetch('http://localhost:5000/produtos', {
         method: 'POST',

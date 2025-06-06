@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./detalhes.module.css"; // Reaproveitando os estilos da página de detalhes
+import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageFormaPagamento from "@/components/form/FormFormaPagamento";
 
 export default function RegistrarFormaPagamentoPage() {
   const router = useRouter();
-  // Dados iniciais para cadastro – todos os campos começam vazios
+
   const initialData = {
     id_forma_pagamento: "",
     descricao: "",
@@ -17,7 +17,7 @@ export default function RegistrarFormaPagamentoPage() {
 
   const handleSubmit = async (updatedData) => {
     console.log("Cadastrando FormaPagamento:", updatedData);
-    // Chamada para a API para cadastrar o produto
+
     try{
       const res = await fetch('http://localhost:5000/formaPagamento', {
         method: 'POST',

@@ -1,6 +1,5 @@
 import pool from '../config/db.js';
 
-// READ (paginated, with group & supplier)
 export const listarProdutos = async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 10;
@@ -33,7 +32,7 @@ export const listarProdutos = async (req, res) => {
   }
 };
 
-// CREATE (with ProdutoFornecedor)
+
 export const criarProduto = async (req, res) => {
   const { sku, nome_produto, id_grupo, valor_produto, prazo_validade,
           unidade_medida, codigo_barras, id_fornecedor,
@@ -43,14 +42,14 @@ export const criarProduto = async (req, res) => {
     return res.status(400).json({ message: 'Campos obrigatórios faltando' });
   }
 
-  // Validar FK Grupo
+
   if (id_grupo) {
     const [g] = await pool.query(
       'SELECT 1 FROM Grupos WHERE id_grupo = ?', [id_grupo]
     );
     if (!g.length) return res.status(400).json({ message: 'Grupo inválido' });
   }
-  // Validar FK Fornecedor
+
   if (id_fornecedor) {
     const [f] = await pool.query(
       'SELECT 1 FROM Fornecedor WHERE id_fornecedor = ?', [id_fornecedor]
@@ -68,7 +67,7 @@ export const criarProduto = async (req, res) => {
     );
 
     const productId = result.insertId;
-    // Inserir em ProdutoFornecedor
+
     if (id_fornecedor) {
         await pool.query(
           `INSERT INTO ProdutoFornecedor
@@ -88,7 +87,7 @@ export const criarProduto = async (req, res) => {
   }
 };
 
-// READ (single)
+
 export const visualizarProduto = async (req, res) => {
   const { id } = req.params;
   try {
@@ -109,7 +108,7 @@ export const visualizarProduto = async (req, res) => {
       [id]
     );
     if (!rows.length) return res.status(404).json({ message: 'Produto não encontrado' });
-    // agora rows[0].id_fornecedor estará definido (ou null, se não houver relação)
+
     res.json(rows[0]);
   } catch (error) {
     console.error('Erro em visualizar produto', error);
@@ -117,24 +116,28 @@ export const visualizarProduto = async (req, res) => {
   }
 };
 
-// UPDATE
+
 export const atualizarProduto = async (req, res) => {
   const { id } = req.params;
   const dados = req.body;
   const { id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento } = req.body;
 
-  // Validar FKs como em criarProduto...
 
-  const camposPermitidos = ['sku','nome_produto','id_grupo','valor_produto',
-                            'prazo_validade','unidade_medida','codigo_barras'];
+  const camposPermitidos = [
+    'sku','nome_produto',
+    'id_grupo','valor_produto',
+    'prazo_validade','unidade_medida',
+    'codigo_barras'];
+
   const fields = [], values = [];
+
   for (const c of camposPermitidos) {
     if (dados[c] !== undefined) {
       fields.push(`${c} = ?`);
       values.push(dados[c]);
     }
   }
-  //if (!fields.length) return res.json({ message: 'Nenhuma alteração feita' });
+  if (!fields.length) return res.json({ message: 'Nenhuma alteração feita' });
 
   try {
     const [result] = await pool.query(
@@ -143,7 +146,7 @@ export const atualizarProduto = async (req, res) => {
     );
     if (!result.affectedRows) return res.status(404).json({ message: 'Produto não encontrado' });
 
-    // Atualizar relacionamento ProdutoFornecedor
+
     const [updateResult] = await pool.query(
       `UPDATE ProdutoFornecedor
          SET id_fornecedor = ?, preco = ?, prazo_entrega = ?, condicoes_pagamento = ?
@@ -151,7 +154,7 @@ export const atualizarProduto = async (req, res) => {
       [id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento, id]
     );
     
-    // 2) Se não havia nenhuma linha para esse produto, insere
+
     if (updateResult.affectedRows === 0) {
       await pool.query(
         `INSERT INTO ProdutoFornecedor
@@ -168,7 +171,7 @@ export const atualizarProduto = async (req, res) => {
   }
 };
 
-// DELETE
+
 export const removerProduto = async (req, res) => {
   const { id } = req.params;
   if (isNaN(id)) return res.status(400).json({ message: 'ID inválido' });

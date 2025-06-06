@@ -21,7 +21,7 @@ dotenv.config(); // Carregar variáveis de ambiente
 const app = express();
 
 app.use(cors({
-  origin: '*',  // ou '*' para permitir de qualquer origem
+  origin: '*',
 }));
 
 app.use(bodyParser.json());

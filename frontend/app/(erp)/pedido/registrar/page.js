@@ -1,4 +1,3 @@
-// app/pedidos/registrar/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -23,7 +22,7 @@ export default function RegistrarPedidosPage() {
   const [fornecedores, setFornecedores] = useState([]);
   const [statusPedido, setStatusPedido] = useState([]);
 
-  //Fetch de filial e fornecedores
+
   useEffect(() => {
     fetch("http://localhost:5000/filial")
       .then(r => r.json())

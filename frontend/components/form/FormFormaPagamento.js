@@ -11,7 +11,6 @@ export default function FormPageFormaPagamento({
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    // Inicializa ou reseta o formulário com os dados recebidos
     setFormData(data);
   }, [data]);
 
@@ -25,7 +24,6 @@ export default function FormPageFormaPagamento({
     onSubmit(formData);
   };
 
-  // Configuração dinâmica dos campos
   const campoConfig = [
     { name: 'id_forma_pagamento', label: 'ID', type: 'text' },
     { name: 'descricao', label: 'Pagamento', type: 'text' }

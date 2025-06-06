@@ -25,7 +25,7 @@ export const listarFilial = async (req, res) => {
   }
 };
 
-// READ (single)
+
 export const visualizarFilial = async (req, res) => {
   const { id } = req.params;
 
@@ -68,7 +68,6 @@ export const atualizarFilial = async (req, res) => {
   const { id } = req.params;
   const dados = req.body;
 
-  // Defina aqui os campos que podem ser atualizados
   const camposPermitidos = [
     'nome_filial',
     'endereco_filial',
@@ -78,7 +77,6 @@ export const atualizarFilial = async (req, res) => {
     'observacao'
   ];
 
-  // Monta dinamicamente o SET do UPDATE
   const fields = [];
   const values = [];
   for (const campo of camposPermitidos) {

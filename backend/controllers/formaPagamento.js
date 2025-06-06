@@ -25,7 +25,6 @@ export const listarFormaPagamento = async (req, res) => {
   }
 };
 
-// READ (single)
 export const visualizarFormaPagamento = async (req, res) => {
   const { id } = req.params;
 

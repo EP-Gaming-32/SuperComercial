@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./detalhes.module.css"; // Reaproveitando os estilos da página de detalhes
+import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageFilial from "@/components/form/FormPageFilial";
 
 export default function RegistrarFilialPage() {
   const router = useRouter();
-  // Dados iniciais para cadastro – todos os campos começam vazios
+
   const initialData = {
     id_filial: "",
     nome_filial: "",
@@ -23,7 +23,7 @@ export default function RegistrarFilialPage() {
 
   const handleSubmit = async (updatedData) => {
     console.log("Cadastrando filial:", updatedData);
-    // Chamada para a API para cadastrar o produto
+    
     try{
       const res = await fetch('http://localhost:5000/filial', {
         method: 'POST',

@@ -15,7 +15,6 @@ export default function DetalhesEstoquePage() {
   const [filiais, setFiliais]         = useState([]);
   const [lotes, setLotes]             = useState([]);
 
-  // ① buscar o próprio registro de Estoque
   useEffect(() => {
     fetch(`http://localhost:5000/estoque/${id}`)
       .then(res => {
@@ -23,7 +22,6 @@ export default function DetalhesEstoquePage() {
         return res.json();
       })
       .then(json => {
-        // adapte conforme seu retorno:
         setFormData(json.data ?? json);
       })
       .catch(err => {
@@ -32,7 +30,6 @@ export default function DetalhesEstoquePage() {
       });
   }, [id]);
 
-  // ② buscar listas auxiliares
   useEffect(() => {
     Promise.all([
       fetch("http://localhost:5000/produtos?limit=100")

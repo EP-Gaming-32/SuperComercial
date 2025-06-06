@@ -11,7 +11,7 @@ export default function DetalhesFilialPage() {
 
   const [filialData, setFilialData] = useState(null);
 
-  // Busca o Filial
+
   useEffect(() => {
     fetch(`http://localhost:5000/filial/detalhes/${id}`)
       .then((res) => res.json())

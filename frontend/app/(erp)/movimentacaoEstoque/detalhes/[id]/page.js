@@ -12,7 +12,7 @@ export default function DetalhesMovimentacaoPage() {
   const [produtos, setProdutos] = useState([]);
   const [filiais, setFiliais]   = useState([]);
 
-  // 1️⃣ Buscar dados da movimentação
+
   useEffect(() => {
     fetch(`http://localhost:5000/movimentacoes/${id}`)
       .then(r => r.json())
@@ -20,7 +20,7 @@ export default function DetalhesMovimentacaoPage() {
       .catch(console.error);
   }, [id]);
 
-  // 2️⃣ Buscar selects auxiliares
+
   useEffect(() => {
     Promise.all([
       fetch('http://localhost:5000/produtos?limit=100').then(r => r.json()),
