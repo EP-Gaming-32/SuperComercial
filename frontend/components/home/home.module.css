@@ -1,11 +1,13 @@
 /* ===== Home Dashboard Cards ===== */
 
 .card {
+  display: flex;
+  flex-direction: column;
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   padding: 24px;
-  margin-bottom: 32px;
+  box-sizing: border-box;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -16,6 +18,7 @@
 
 /* Card title styling */
 .card-title {
+  flex: 0 0 auto;
   font-size: 1.25rem;
   font-weight: 600;
   background-color: #b2ebf2;
@@ -28,10 +31,12 @@
 
 /* Content inside each card */
 .card-content {
+  flex: 1 1 auto;
   padding: 0;
   color: #333;
   font-family: 'Inter', 'Roboto', sans-serif;
   font-size: 0.95rem;
+  overflow-y: auto;
 }
 
 /* ===== Product List Table ===== */
@@ -52,9 +57,12 @@
 }
 
 .table th {
+  position: sticky;
+  top: 0;
   background-color: #e0f7fa;
   color: #00695c;
   font-weight: 600;
+  z-index: 2;
 }
 
 .table-row:hover {
@@ -68,26 +76,4 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-/* ===== Responsive Improvements ===== */
-@media (max-width: 768px) {
-  .flex {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .card {
-    padding: 20px;
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-    padding: 14px;
-  }
-
-  .table th,
-  .table td {
-    padding: 10px 12px;
-  }
 }

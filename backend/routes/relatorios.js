@@ -6,7 +6,7 @@ import {
   relatorioPagamentosPorFilial,
   relatorioPrevisaoPedido,
   relatorioStatusPorEstoque,
-  relatorioEstoqueCritico
+  relatorioEstoqueAlertas
 } from '../controllers/relatorios.js';
 
 const router = express.Router();
@@ -27,6 +27,6 @@ router.get('/previsao-pedidos', relatorioPrevisaoPedido);
 
 router.get('/estoque-status', relatorioStatusPorEstoque);
 
-router.get('estoque-critico', relatorioEstoqueCritico)
+router.get('/estoque-alerta', relatorioEstoqueAlertas);
 
 export default router;

@@ -236,16 +236,85 @@ export const relatorioComprasPorMes = async (req, res) => {
   }
 };
 
-// Exemplo de controller em Node.js
-export const relatorioEstoqueCritico = async (req, res) => {
-  const { status } = req.query; // espera 'critico'
-  const [rows] = await pool.query(
-    `SELECT p.nome_produto, f.nome_filial, e.quantidade
-     FROM Estoque e
-     JOIN Produtos p ON e.id_produto = p.id_produto
-     JOIN Filial f   ON e.id_filial   = f.id_filial
-     WHERE e.status_estoque = ?`,
-    [status]
-  );
-  res.json(rows);
+// RELATORIO DE ESTOQUE CRITICO
+
+export const relatorioEstoqueAlertas = async (req, res) => {
+  const page     = parseInt(req.query.page, 10) || 1;
+  const limit    = parseInt(req.query.limit, 10) || 10;
+  const offset   = (page - 1) * limit;
+
+  // filtros opcionais
+  const { 
+    nome_produto,            // busca por parte do nome
+    id_produto,              // busca por ID exato
+    id_fornecedor,           // busca por fornecedor
+    id_filial                // busca por filial
+  } = req.query;
+
+  const conditions = [`e.status_estoque IN ('critico','baixo')`];
+  const values     = [];
+
+  if (nome_produto) {
+    conditions.push(`p.nome_produto LIKE ?`);
+    values.push(`%${nome_produto}%`);
+  }
+  if (id_produto) {
+    conditions.push(`e.id_produto = ?`);
+    values.push(id_produto);
+  }
+  if (id_fornecedor) {
+    conditions.push(`e.id_fornecedor = ?`);
+    values.push(id_fornecedor);
+  }
+  if (id_filial) {
+    conditions.push(`e.id_filial = ?`);
+    values.push(id_filial);
+  }
+
+  const whereClause = `WHERE ` + conditions.join(" AND ");
+
+  try {
+    // total de registros
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM Estoque e
+       JOIN Produtos p ON e.id_produto = p.id_produto
+       JOIN Fornecedor f ON e.id_fornecedor = f.id_fornecedor
+       JOIN Filial fi ON e.id_filial = fi.id_filial
+       ${whereClause}`,
+      values
+    );
+    const totalRecords = countResult[0].total;
+    const totalPages   = Math.ceil(totalRecords / limit);
+
+    // consulta paginada
+    const [rows] = await pool.query(
+      `SELECT
+         p.nome_produto,
+         f.nome_fornecedor,
+         fi.nome_filial,
+         e.quantidade,
+         e.status_estoque
+       FROM Estoque e
+       JOIN Produtos p ON e.id_produto = p.id_produto
+       JOIN Fornecedor f ON e.id_fornecedor = f.id_fornecedor
+       JOIN Filial fi ON e.id_filial = fi.id_filial
+       ${whereClause}
+       LIMIT ? OFFSET ?`,
+      [...values, limit, offset]
+    );
+
+    return res.json({
+      data: rows,
+      page,
+      limit,
+      totalRecords,
+      totalPages
+    });
+  } catch (error) {
+    console.error("Erro em relatorioEstoqueAlertas:", error);
+    return res
+      .status(500)
+      .json({ error: "Erro interno ao listar alertas de estoque" });
+  }
 };
