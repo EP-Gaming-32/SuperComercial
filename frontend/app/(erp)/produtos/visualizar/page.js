@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import SearchPage from "@/components/searchPage/SearchPage";
+import BoxComponent from "@/components/BoxComponent";
 
 export default function ProdutosPage() {
   const [groups, setGroups] = useState([]);
@@ -39,53 +40,55 @@ export default function ProdutosPage() {
   if (loading) return <p>Carregando filtros...</p>;
 
   return (
-    <SearchPage
-      title="Gerenciar Produtos"
-      endpoint="produtos"
-      hookParams={{ limit: 10 }}
-      filters={[
-        {
-          name: "id_grupo",
-          label: "Categoria",
-          type: "select",
-          options: groups.map((g) => ({
-            value: g.id_grupo,
-            label: g.nome_grupo,
-          })),
-        },
-        {
-          name: "id_fornecedor",
-          label: "Fornecedor",
-          type: "select",
-          options: suppliers.map((f) => ({
-            value: f.id_fornecedor,
-            label: f.nome_fornecedor,
-          })),
-        },
-        {
-          name: "nome_produto",
-          label: "Produto",
-          placeholder: "Digite nome do produto",
-        },
-        {
-          name: "unidade_medida",
-          label: "Unidade de Medida",
-          placeholder: "Ex: kg, un, pct",
-        },
-      ]}
-      keywordName={null}
-      keywordPlaceholder="Buscar produto..."
-      detailRoute="/produtos/detalhes"
-      idField="id_produto"
-      showFields={[
-        "nome_produto",
-        "nome_grupo",
-        "valor_produto",
-        "nome_fornecedor",
-        "prazo_validade",
-      ]}
-      addButtonUrl="/produtos/registrar"
-      addButtonLabel="+"
-    />
+    <BoxComponent>
+      <SearchPage
+        title=""
+        endpoint="produtos"
+        hookParams={{ limit: 8 }}
+        filters={[
+          {
+            name: "id_grupo",
+            label: "Categoria",
+            type: "select",
+            options: groups.map((g) => ({
+              value: g.id_grupo,
+              label: g.nome_grupo,
+            })),
+          },
+          {
+            name: "id_fornecedor",
+            label: "Fornecedor",
+            type: "select",
+            options: suppliers.map((f) => ({
+              value: f.id_fornecedor,
+              label: f.nome_fornecedor,
+            })),
+          },
+          {
+            name: "nome_produto",
+            label: "Produto",
+            placeholder: "Digite nome do produto",
+          },
+          {
+            name: "unidade_medida",
+            label: "Unidade de Medida",
+            placeholder: "Ex: kg, un, pct",
+          },
+        ]}
+        keywordName={null}
+        keywordPlaceholder="Buscar produto..."
+        detailRoute="/produtos/detalhes"
+        idField="id_produto"
+        showFields={[
+          "nome_produto",
+          "nome_grupo",
+          "valor_produto",
+          "nome_fornecedor",
+          "prazo_validade",
+        ]}
+        addButtonUrl="/produtos/registrar"
+        addButtonLabel="Registrar Produto"
+      />
+    </BoxComponent>
   );
 }

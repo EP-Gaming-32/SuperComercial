@@ -14,7 +14,6 @@ export default function SearchComponent({
   addButtonUrl = "/",
 }) {
   const router = useRouter();
-  // Initialize filter values once with defaults
   const initialFilters = React.useMemo(
     () => Object.fromEntries(filters.map(f => [f.name, f.initialValue ?? ""])),
     [filters]
@@ -29,8 +28,6 @@ export default function SearchComponent({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("[SearchComponent] handleSubmit disparado", filterValues);
-    onSearch(filterValues);
     const query = { ...filterValues };
     if (keywordName) query[keywordName] = keyword;
     console.debug('[SearchComponent] Submit with query:', query);
@@ -44,51 +41,60 @@ export default function SearchComponent({
 
   return (
     <form className={styles.searchSection} onSubmit={handleSubmit}>
-      <div className={styles.searchFields}>
-        {keywordName && (
+  {/* --- primeira linha: filtros --- */}
+  <div className={styles.searchFields}>
+    {keywordName && (
+      <input
+        type="text"
+        placeholder={keywordPlaceholder}
+        value={keyword}
+        onChange={e => setKeyword(e.target.value)}
+        className={styles.keywordInput}
+      />
+    )}
+    {filters.map(f => (
+      <div key={f.name} className={styles.fieldContainer}>
+        <label className={styles.filterLabel}>{f.label}</label>
+        {f.type === 'select' ? (
+          <select
+            value={filterValues[f.name] || ""}
+            onChange={e => handleChange(f.name, e.target.value)}
+            className={styles.filterInput}
+          >
+            <option value="">{f.placeholder || 'Todos'}</option>
+            {f.options.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        ) : (
           <input
-            type="text"
-            placeholder={keywordPlaceholder}
-            value={keyword}
-            onChange={e => setKeyword(e.target.value)}
-            className={styles.keywordInput}
+            type={f.type || 'text'}
+            placeholder={f.placeholder || ''}
+            value={filterValues[f.name] || ""}
+            onChange={e => handleChange(f.name, e.target.value)}
+            className={styles.filterInput}
           />
         )}
-
-        {filters.map(f => (
-          <div key={f.name} className={styles.fieldContainer}>
-            <label className={styles.filterLabel}>{f.label}</label>
-            {f.type === 'select' ? (
-              <select
-                value={filterValues[f.name] || ""}
-                onChange={e => handleChange(f.name, e.target.value)}
-                className={styles.filterInput}
-              >
-                <option value="">{f.placeholder || 'Todos'}</option>
-                {f.options.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type={f.type || 'text'}
-                placeholder={f.placeholder || ''}
-                value={filterValues[f.name] || ""}
-                onChange={e => handleChange(f.name, e.target.value)}
-                className={styles.filterInput}
-              />
-            )}
-          </div>
-        ))}
-
-        <button type="submit" className={styles.searchButton}>Buscar</button>
-
-        {addButton && (
-          <button type="button" onClick={handleAddClick} className={styles.addButton}>
-            {addButtonLabel}
-          </button>
-        )}
       </div>
-    </form>
+    ))}
+  </div>
+
+  {/* --- segunda linha: botões --- */}
+  <div className={styles.buttonRow}>
+    {addButton && (
+      <button
+        type="button"
+        onClick={handleAddClick}
+        className={styles.addButton}
+      >
+        {addButtonLabel}
+      </button>
+    )}
+    <button type="submit" className={styles.searchButton}>
+      Buscar
+    </button>
+  </div>
+</form>
+
   );
 }

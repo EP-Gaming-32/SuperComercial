@@ -5,6 +5,7 @@ export default function BoxComponent({ children, className, style }) {
         className={`box-container ${className || ''}`}
         style={{
           padding: '1rem',
+          minHeight: '90vh',
           maxHeight: '100%',
           backgroundColor: 'white',
           borderRadius: '8px',

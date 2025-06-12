@@ -31,12 +31,12 @@ export default function FormPageProdutos({
     { name: 'nome_produto', label: 'Nome', type: 'text', maxLength: 100 },
     { name: 'id_grupo', label: 'Grupo', type: 'select', options: grupos || [], optionKey: 'id_grupo', optionLabel: 'nome_grupo' },
     { name: 'valor_produto', label: 'Preço', type: 'number' },
-    { name: 'prazo_validade', label: 'Validade (dias)', type: 'date' },
+    { name: 'prazo_validade', label: 'Validade (dias)', type: 'number' },
     { name: 'unidade_medida', label: 'Unidade', type: 'text', maxLength: 10 },
     { name: 'codigo_barras', label: 'Código de Barras', type: 'text', maxLength: 20 },
     { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores || [], optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
     { name: 'preco_compra', label: 'Preço de Compra', type: 'number' },
-    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'date' },
+    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'number' },
     { name: 'condicoes_pagamento', label: 'Condições', type: 'text', maxLength: 100 }
   ];
 
