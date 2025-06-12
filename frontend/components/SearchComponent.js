@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./search.module.css";
 
 export default function SearchComponent({
-  keywordPlaceholder = "Enter keywords...",
+  keywordName = null,
+  keywordPlaceholder = "Digite palavras-chave...",
   filters = [],
   onSearch,
   addButton = false,
@@ -13,102 +14,79 @@ export default function SearchComponent({
   addButtonUrl = "/",
 }) {
   const router = useRouter();
+  // Initialize filter values once with defaults
+  const initialFilters = React.useMemo(
+    () => Object.fromEntries(filters.map(f => [f.name, f.initialValue ?? ""])),
+    [filters]
+  );
+
   const [keyword, setKeyword] = useState("");
+  const [filterValues, setFilterValues] = useState(initialFilters);
 
-  const initialFilterValues = filters.reduce((acc, filter) => {
-    acc[filter.name] = filter.initialValue || "";
-    return acc;
-  }, {});
-  const [filterValues, setFilterValues] = useState(initialFilterValues);
-
-  useEffect(() => {
-    const updatedFilterValues = filters.reduce((acc, filter) => {
-      acc[filter.name] = filter.initialValue || "";
-      return acc;
-    }, {});
-    setFilterValues(updatedFilterValues);
-  }, [filters]);
-
-  const handleKeywordChange = (e) => setKeyword(e.target.value);
-
-  const handleFilterChange = (e, name) => {
-    const { value } = e.target;
-    setFilterValues((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (name, value) => {
+    setFilterValues(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSearch({ keyword, ...filterValues });
+    console.log("[SearchComponent] handleSubmit disparado", filterValues);
+    onSearch(filterValues);
+    const query = { ...filterValues };
+    if (keywordName) query[keywordName] = keyword;
+    console.debug('[SearchComponent] Submit with query:', query);
+    onSearch(query);
   };
 
   const handleAddClick = () => {
+    console.debug('[SearchComponent] Navigating to:', addButtonUrl);
     router.push(addButtonUrl);
   };
 
   return (
     <form className={styles.searchSection} onSubmit={handleSubmit}>
       <div className={styles.searchFields}>
-        {/* Keyword input */}
-        <div className={styles.fieldContainer}>
-          <div className={styles.labelPlaceholder}></div>
+        {keywordName && (
           <input
             type="text"
             placeholder={keywordPlaceholder}
             value={keyword}
-            onChange={handleKeywordChange}
+            onChange={e => setKeyword(e.target.value)}
             className={styles.keywordInput}
           />
-        </div>
+        )}
 
-        {/* Filters */}
-        {filters.map((filter, index) => (
-          <div key={index} className={styles.fieldContainer}>
-            <label className={styles.filterLabel}>{filter.label}</label>
-            {filter.type === "select" ? (
+        {filters.map(f => (
+          <div key={f.name} className={styles.fieldContainer}>
+            <label className={styles.filterLabel}>{f.label}</label>
+            {f.type === 'select' ? (
               <select
-                value={filterValues[filter.name]}
-                onChange={(e) => handleFilterChange(e, filter.name)}
+                value={filterValues[f.name] || ""}
+                onChange={e => handleChange(f.name, e.target.value)}
                 className={styles.filterInput}
               >
-                <option value="">{filter.placeholder || "All"}</option>
-                {filter.options.map((option, idx) => (
-                  <option key={idx} value={option.value}>
-                    {option.label}
-                  </option>
+                <option value="">{f.placeholder || 'Todos'}</option>
+                {f.options.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
             ) : (
               <input
-                type="text"
-                placeholder={filter.placeholder || ""}
-                value={filterValues[filter.name]}
-                onChange={(e) => handleFilterChange(e, filter.name)}
+                type={f.type || 'text'}
+                placeholder={f.placeholder || ''}
+                value={filterValues[f.name] || ""}
+                onChange={e => handleChange(f.name, e.target.value)}
                 className={styles.filterInput}
               />
             )}
           </div>
         ))}
 
-        {/* Submit button */}
-        <div className={styles.fieldContainer}>
-          <div className={styles.labelPlaceholder}></div>
-          <button type="submit" className={styles.searchButton}>
-            Search
-          </button>
-        </div>
+        <button type="submit" className={styles.searchButton}>Buscar</button>
 
-        {/* Add new item button */}
         {addButton && (
-          <div className={styles.fieldContainer}>
-            <div className={styles.labelPlaceholder}></div>
-            <button
-              type="button"
-              onClick={handleAddClick}
-              className={styles.addButton}
-            >
-              {addButtonLabel}
-            </button>
-          </div>
+          <button type="button" onClick={handleAddClick} className={styles.addButton}>
+            {addButtonLabel}
+          </button>
         )}
       </div>
     </form>

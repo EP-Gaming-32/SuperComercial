@@ -1,6 +1,4 @@
-// components/PaginationComponent.js
 "use client";
-
 import React from "react";
 import styles from "./search.module.css";
 
@@ -9,14 +7,12 @@ export default function PaginationComponent({ currentPage, totalPages, onPageCha
 
   return (
     <div className={styles.paginationContainer}>
-      {pages.map((page) => (
+      {pages.map(num => (
         <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={page === currentPage ? styles.activePage : ""}
-        >
-          {page}
-        </button>
+          key={num}
+          onClick={() => onPageChange(num)}
+          className={num === currentPage ? styles.activePage : ''}
+        >{num}</button>
       ))}
     </div>
   );

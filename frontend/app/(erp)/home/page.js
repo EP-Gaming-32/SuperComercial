@@ -8,15 +8,9 @@ import styles from "./home.module.css";
 export default function Home() {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Dashboard SuperComercial</h1>
-      <div className={styles.grid}>
-        
-        <div className={styles.card}>
-          <ProductList />
-        </div>
-        <div className={styles.chart}>
-          <Chart />
-        </div>
+      <h1 className={styles.title}>Dashboard SuperComercial</h1>  
+      <div className={styles.card}>
+        <ProductList />
       </div>
     </div>
   );
