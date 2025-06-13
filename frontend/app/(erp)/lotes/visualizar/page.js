@@ -15,7 +15,7 @@ export default function LotesPage(){
       try{
         console.log("[LotesPage] buscando produtos");
         const [produtosResposta] = await Promise.all([
-          fetch("http://localhost:5000/produtos"),
+          fetch("http://localhost:5000/produtos/Unicos"),
         ]);
 
         const produtosData = await produtosResposta.json();
@@ -49,7 +49,7 @@ export default function LotesPage(){
         filters={[
           {
             name: "id_produto",
-            Label: "Produto",
+            label: "Produto",
             type: "select",
             options: produtos.map((p) => ({
               value: p.id_produto,

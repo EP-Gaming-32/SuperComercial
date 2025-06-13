@@ -40,21 +40,23 @@ export default function ItemComponent({ item, fields, onClick }) {
 
   return (
     <div className={styles.itemBlock} onClick={() => onClick(item)}>
-      {fields.map((fieldObj) => {
+      {fields.map((fieldObj, index) => {
         const key = typeof fieldObj === "string" ? fieldObj : fieldObj.value;
         const label = typeof fieldObj === "string" ? fieldObj : fieldObj.label;
 
         return (
-          <div key={key} className={styles.fieldBlock}>
+          <div key={`field-${key}-${index}`} className={styles.fieldBlock}>
             <span className={styles.fieldLabel}>{label}:</span>
             <span className={styles.fieldValue}>{item[key]}</span>
           </div>
         );
       })}
 
-      <button className={styles.deleteButton} onClick={handleDelete}>
-        Excluir
-      </button>
+      <div key="delete-button" className={styles.fieldBlock}>
+        <button className={styles.deleteButton} onClick={handleDelete}>
+          Excluir
+        </button>
+      </div>
     </div>
   );
 }

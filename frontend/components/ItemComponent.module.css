@@ -20,10 +20,12 @@
 /* Cada campo */
 .fieldBlock {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;       /* agora lado a lado */
+  align-items: center;
+  justify-content: flex-start;
   padding: 0.5rem;
   border-right: 1px solid #ccc;
+  gap: 0.3rem;               /* espaço entre label e valor */
 }
 
 /* Último campo (botão delete ou outro) não tem borda */
@@ -31,15 +33,14 @@
   border-right: none;
 }
 
-/* Label */
+
 .fieldLabel {
   font-weight: bold;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #333;
-  margin-bottom: 0.2rem;
+  margin: 0;                /* remove margem inferior */
 }
 
-/* Valor */
 .fieldValue {
   font-size: 0.9rem;
   color: #555;
@@ -59,8 +60,7 @@
   justify-content: center;
   padding: 5%;
   margin: auto;
-  min-width: 190px;
-  max-width: 190px;
+  max-width: 150px;
 }
 
 .deleteButton:hover {

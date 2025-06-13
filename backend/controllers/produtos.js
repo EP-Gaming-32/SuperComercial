@@ -66,6 +66,62 @@ export const listarProdutos = async (req, res) => {
   }
 };
 
+export const listarProdutosUnicos = async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const offset = (page - 1) * limit;
+
+  const { nome_produto, id_grupo, unidade_medida } = req.query;
+
+  const conditions = [];
+  const values = [];
+
+  if (nome_produto) {
+    conditions.push('p.nome_produto LIKE ?');
+    values.push(`%${nome_produto}%`);
+  }
+
+  if (id_grupo) {
+    conditions.push('p.id_grupo = ?');
+    values.push(id_grupo);
+  }
+
+  if (unidade_medida) {
+    conditions.push('p.unidade_medida = ?');
+    values.push(unidade_medida);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  try {
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM Produtos p
+       ${whereClause}`,
+      values
+    );
+
+    const totalRecords = countResult[0].total;
+
+    const [rows] = await pool.query(
+      `SELECT 
+         p.*,
+         g.nome_grupo
+       FROM Produtos p
+       LEFT JOIN Grupos g ON p.id_grupo = g.id_grupo
+       ${whereClause}
+       ORDER BY p.id_produto
+       LIMIT ? OFFSET ?`,
+      [...values, limit, offset]
+    );
+
+    const totalPages = Math.ceil(totalRecords / limit);
+    res.json({ data: rows, page, limit, totalRecords, totalPages });
+  } catch (error) {
+    console.error('Erro ao listar produtos únicos', error);
+    res.status(500).json({ error: 'Erro interno ao listar produtos' });
+  }
+};
 
 export const criarProduto = async (req, res) => {
   const { sku, nome_produto, id_grupo, valor_produto, prazo_validade,
