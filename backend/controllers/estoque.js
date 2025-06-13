@@ -2,24 +2,68 @@ import pool from '../config/db.js';
 
 export const listarEstoque = async (req, res) => {
   const page  = parseInt(req.query.page,10)||1;
-  const limit = parseInt(req.query.limit,8)||8;
+  const limit = parseInt(req.query.limit,10)||10;
   const offset= (page-1)*limit;
+
+  //filtros
+  const {id_produto, id_filial, id_lote, id_fornecedor, status_estoque} = req.query;
+
+  const conditions = [];
+  const values = [];
+
+  if (id_produto) {
+    conditions.push("e.id_produto = ?");
+    values.push(id_produto);
+  }
+  if (id_filial) {
+    conditions.push("e.id_filial = ?");
+    values.push(id_filial);
+  }
+  if (id_lote) {
+    conditions.push("e.id_lote = ?");
+    values.push(id_lote);
+  }
+  if (id_fornecedor) {
+    conditions.push("e.id_fornecedor = ?");
+    values.push(id_fornecedor);
+  }
+  if (status_estoque) {
+    conditions.push("e.status_estoque = ?");
+    values.push(status_estoque);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
   try {
-    const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Estoque`);
-    const [rows] = await pool.query(
-      `SELECT e.*,
-              p.nome_produto,
-              f.nome_fornecedor,
-              fi.nome_filial,
-              l.codigo_lote
-         FROM Estoque e
-         JOIN Produtos p    ON e.id_produto    = p.id_produto
-         JOIN Fornecedor f  ON e.id_fornecedor = f.id_fornecedor
-         JOIN Filial fi     ON e.id_filial     = fi.id_filial
-    LEFT JOIN Lote l     ON e.id_lote       = l.id_lote
-       LIMIT ? OFFSET ?`, [limit, offset]
+
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) AS total
+      FROM Estoque e
+      ${whereClause}`,
+      values
     );
-    res.json({ data: rows, page, limit, totalRecords: total, totalPages: Math.ceil(total/limit) });
+
+    const totalRecords = countResult[0].total;
+
+    const [rows] = await pool.query(
+      `SELECT
+         e.*,
+         p.nome_produto,
+         f.nome_fornecedor,
+         fi.nome_filial,
+         l.codigo_lote
+        FROM Estoque e
+        JOIN Produtos p    ON e.id_produto = p.id_produto
+        JOIN Fornecedor f  ON e.id_fornecedor = f.id_fornecedor
+        JOIN Filial fi     ON e.id_filial = fi.id_filial
+        LEFT JOIN Lote l       ON e.id_lote = l.id_lote
+       ${whereClause}
+       LIMIT ? OFFSET ?`,
+      [...values, limit, offset]
+    );
+
+    const totalPages = Math.ceil(totalRecords / limit);
+    res.json({ data: rows, page, limit, totalRecords, totalPages });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro interno ao listar estoque' });
