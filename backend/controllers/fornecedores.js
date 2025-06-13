@@ -5,51 +5,48 @@ export const listarFornecedores = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  //filtro
+  // filtros e exclusão lógica
+  const { id_fornecedor, nome_fornecedor, tipo_pessoa, cnpj_cpf } = req.query;
 
-  const { id_fornecedor, nome_fornecedor, tipo_pessoa, cnpj_cpf} = req.query;
-
-  const conditions = [];
+  const conditions = ['ativo = TRUE'];
   const values = [];
 
   if (id_fornecedor) {
-    conditions.push("id_fornecedor = ?");
+    conditions.push('id_fornecedor = ?');
     values.push(id_fornecedor);
   }
   if (nome_fornecedor) {
-    conditions.push("nome_fornecedor LIKE ?");
+    conditions.push('nome_fornecedor LIKE ?');
     values.push(`%${nome_fornecedor}%`);
   }
   if (tipo_pessoa) {
-    conditions.push("tipo_pessoa = ?");
+    conditions.push('tipo_pessoa = ?');
     values.push(tipo_pessoa);
   }
   if (cnpj_cpf) {
-    conditions.push("cnpj_cpf LIKE ?");
+    conditions.push('cnpj_cpf LIKE ?');
     values.push(`%${cnpj_cpf}%`);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
   try {
-    const [countResult] = await pool.query(
+    const [[{ total }]] = await pool.query(
       `SELECT COUNT(*) AS total FROM Fornecedor ${whereClause}`,
       values
     );
-    const totalRecords = countResult[0].total;
-
     const [rows] = await pool.query(
       `SELECT * FROM Fornecedor
-       ${whereClause}
-       LIMIT ? OFFSET ?`,
+         ${whereClause}
+         LIMIT ? OFFSET ?`,
       [...values, limit, offset]
     );
 
-    const totalPages = Math.ceil(totalRecords / limit);
-    res.json({ data: rows, page, limit, totalRecords, totalPages });
+    const totalPages = Math.ceil(total / limit);
+    res.json({ data: rows, page, limit, totalRecords: total, totalPages });
   } catch (error) {
-    console.error('Erro em listar fornecedor', error);
-    res.status(500).json({ error: 'Erro interno listar fornecedor' });
+    console.error('Erro em listar fornecedores', error);
+    res.status(500).json({ error: 'Erro interno ao listar fornecedores' });
   }
 };
 
@@ -58,7 +55,7 @@ export const visualizarFornecedor = async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM Fornecedor WHERE id_fornecedor = ?`,
+      `SELECT * FROM Fornecedor WHERE id_fornecedor = ? AND ativo = TRUE`,
       [id]
     );
 
@@ -83,7 +80,6 @@ export const criarFornecedor = async (req, res) => {
     cnpj_cpf,
     observacao
   } = req.body;
-
 
   if (!nome_fornecedor || !endereco_fornecedor || !tipo_pessoa || !cnpj_cpf) {
     return res.status(400).json({ message: 'Campos obrigatórios não preenchidos.' });
@@ -127,24 +123,46 @@ export const criarFornecedor = async (req, res) => {
   }
 };
 
-
 export const atualizarFornecedor = async (req, res) => {
   const { id } = req.params;
   const { nome_fornecedor } = req.body;
-  const [result] = await pool.query(
-    'UPDATE Fornecedor SET nome_fornecedor = ? WHERE id_fornecedor = ?',
-    [nome_fornecedor, id]
-  );
-  if (!result.affectedRows) return res.status(404).json({ message: 'Não encontrado' });
-  res.json({ message: 'Atualizado' });
+
+  try {
+    const [result] = await pool.query(
+      'UPDATE Fornecedor SET nome_fornecedor = ?, data_atualizacao = CURRENT_TIMESTAMP WHERE id_fornecedor = ?',
+      [nome_fornecedor, id]
+    );
+
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Fornecedor não encontrado' });
+    }
+
+    res.json({ message: 'Fornecedor atualizado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar fornecedor:', error);
+    res.status(500).json({ message: 'Erro interno ao atualizar fornecedor' });
+  }
 };
 
 export const removerFornecedor = async (req, res) => {
   const { id } = req.params;
-  const [result] = await pool.query(
-    'DELETE FROM Fornecedor WHERE id_fornecedor = ?',
-    [id]
-  );
-  if (!result.affectedRows) return res.status(404).json({ message: 'Não encontrado' });
-  res.json({ message: 'Removido' });
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE Fornecedor
+         SET ativo = FALSE,
+             data_atualizacao = CURRENT_TIMESTAMP
+       WHERE id_fornecedor = ? AND ativo = TRUE`,
+      [id]
+    );
+
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Fornecedor não encontrado ou já inativo' });
+    }
+
+    res.json({ message: 'Fornecedor inativado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao remover fornecedor:', error);
+    res.status(500).json({ message: 'Erro interno ao remover fornecedor' });
+  }
 };

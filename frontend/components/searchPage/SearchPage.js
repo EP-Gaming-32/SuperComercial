@@ -32,18 +32,15 @@ export default function SearchPage({
   });
 
   const handleSearch = (params) => {
-    console.log("[SearchPage] handleSearch recebeu params:", params);
     setSearchParams(params);
     setPage(1);
   };
 
   const handleDetail = (item) => {
-    console.debug('[SearchPage] Navigating to detail for:', item[idField]);
     router.push(`${detailRoute}/${item[idField]}`);
   };
 
   const handlePageChange = (newPage) => {
-    console.debug('[SearchPage] Changing to page:', newPage);
     setPage(newPage);
   };
 
@@ -71,6 +68,7 @@ export default function SearchPage({
               data={results}
               fields={showFields}
               onItemClick={handleDetail}
+              endpoint={endpoint} // repassa endpoint para ShowComponent
             />
           ) : (
             <p>Nenhum item encontrado.</p>
