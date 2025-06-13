@@ -4,15 +4,61 @@ export const listarLotes = async (req, res) => {
   const page  = parseInt(req.query.page,10)||1;
   const limit = parseInt(req.query.limit,10)||10;
   const offset= (page-1)*limit;
+
+  //filtros
+
+  const { id_produto, id_lote, codigo_lote, data_expedicao, data_validade, quantidade} = req.query;
+
+  const conditions = [];
+  const values = [];
+
+  if (id_produto) {
+    conditions.push("p.id_produto = ?");
+    values.push(id_produto);
+  }
+  if (id_lote) {
+    conditions.push("l.id_lote = ?");
+    values.push(id_lote);
+  }
+  if (codigo_lote) {
+    conditions.push("l.codigo_lote LIKE ?");
+    values.push(`%${codigo_lote}%`);
+  }
+  if (data_expedicao) {
+    conditions.push("l.data_expedicao LIKE ?");
+    values.push(`%${data_expedicao}%`);
+  }
+  if (data_validade) {
+    conditions.push("l.data_validade LIKE ?");
+    values.push(`%${data_validade}%`);
+  }
+  if (quantidade) {
+    conditions.push("l.quantidade LIKE ?");
+    values.push(`%${quantidade}%`);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
   try {
-    const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM Lote`);
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) AS total
+      FROM Lote l
+      JOIN Produtos p ON l.id_produto = p.id_produto
+      ${whereClause}`,
+      values
+    )
+    
+    const totalRecords = countResult[0].total;
+
     const [rows] = await pool.query(
       `SELECT l.*, p.nome_produto 
          FROM Lote l
          JOIN Produtos p ON l.id_produto = p.id_produto
-       LIMIT ? OFFSET ?`, [limit, offset]
+         ${whereClause} 
+         LIMIT ? OFFSET ?`, [...values, limit, offset]
     );
-    res.json({ data: rows, page, limit, totalRecords: total, totalPages: Math.ceil(total/limit) });
+    const totalPages = Math.ceil(totalRecords / limit);
+    res.json({ data: rows, page, limit, totalRecords, totalPages });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro interno ao listar lotes' });
