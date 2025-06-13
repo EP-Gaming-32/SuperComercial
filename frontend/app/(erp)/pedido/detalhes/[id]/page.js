@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPagePedido from "@/components/form/FormPagePedido";
-import HistoricoSection  from '@/components/searchPage/HistoricoSection';
 
 export default function DetalhesPedidosPage() {
   const { id } = useParams();
@@ -13,7 +12,7 @@ export default function DetalhesPedidosPage() {
   const [pedidoData, setPedidoData] = useState(null);
   const [filial, setfilial] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
-
+  const [statusPedido, setStatusPedido] = useState([]);
 
   useEffect(() => {
     fetch(`http://localhost:5000/pedido/detalhes/${id}`)
@@ -21,7 +20,6 @@ export default function DetalhesPedidosPage() {
       .then(setPedidoData)
       .catch(console.error);
   }, [id]);
-
 
   useEffect(() => {
     fetch("http://localhost:5000/filial")
@@ -33,8 +31,12 @@ export default function DetalhesPedidosPage() {
       .then(r => r.json())
       .then(json => setFornecedores(json.data))
       .catch(console.error);
-  }, []);
 
+    fetch("http://localhost:5000/statuspedido")
+      .then(r => r.json())
+      .then(json => setStatusPedido(json.data))
+      .catch(console.error);
+  }, []);
 
   const handleUpdate = async (updatedData) => {
     try {
@@ -61,13 +63,11 @@ export default function DetalhesPedidosPage() {
           data={pedidoData}
           filial={filial}
           fornecedores={fornecedores}
+          statusPedido={statusPedido}
           mode="edit"
           onSubmit={handleUpdate}
           onCancel={() => router.back()}
         />
-      </BoxComponent>
-      <BoxComponent className={styles.historyWrapper}>
-          <HistoricoSection id_pedido={id} />
       </BoxComponent>
     </div>
   );

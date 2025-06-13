@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
+import HistoricoSection from '@/components/searchPage/HistoricoSection';
 
 export default function FormPagePedido({
   data,
@@ -28,44 +29,13 @@ export default function FormPagePedido({
   };
 
   const campoConfig = [
-    {
-      name: 'id_filial',
-      label: 'Filial',
-      type: 'select',
-      options: filial,
-      optionKey: 'id_filial',
-      optionLabel: 'nome_filial'
-    },
-    {
-      name: 'id_fornecedor',
-      label: 'Fornecedor',
-      type: 'select',
-      options: fornecedores,
-      optionKey: 'id_fornecedor',
-      optionLabel: 'nome_fornecedor'
-    },
-    {
-      name: 'tipo_pedido',
-      label: 'Tipo de Pedido',
-      type: 'select',
-      options: [
-        { value: 'compra', label: 'Compra' },
-        { value: 'reposição', label: 'Reposição' }
-      ],
-      optionKey: 'value',
-      optionLabel: 'label'
-    },
+    { name: 'id_filial', label: 'Filial', type: 'select', options: filial, optionKey: 'id_filial', optionLabel: 'nome_filial' },
+    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores, optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
+    { name: 'tipo_pedido', label: 'Tipo de Pedido', type: 'select', options: [ { value: 'compra', label: 'Compra' }, { value: 'reposição', label: 'Reposição' } ], optionKey: 'value', optionLabel: 'label' },
     { name: 'valor_total', label: 'Valor Total', type: 'number' },
     { name: 'observacao', label: 'Observação', type: 'text', maxLength: 255 },
     { name: 'data_pedido', label: 'Data do Pedido', type: 'date' },
-    {
-      name: 'id_status',
-      label: 'Status do Pedido',
-      type: 'select',
-      options: statusPedido,
-      optionKey: 'id_status',
-      optionLabel: 'descricao'
-    }
+    { name: 'id_status', label: 'Status do Pedido', type: 'select', options: statusPedido, optionKey: 'id_status', optionLabel: 'descricao' }
   ];
 
   return (
@@ -83,9 +53,7 @@ export default function FormPagePedido({
             >
               <option value="">Selecione...</option>
               {options.map(opt => (
-                <option key={opt[optionKey]} value={opt[optionKey]}>
-                  {opt[optionLabel]}
-                </option>
+                <option key={opt[optionKey]} value={opt[optionKey]}> {opt[optionLabel]} </option>
               ))}
             </select>
           ) : (
@@ -102,15 +70,18 @@ export default function FormPagePedido({
         </div>
       ))}
 
+      {/* Histórico entre inputs e botões */}
+      {mode === 'edit' && data?.id_pedido && (
+        <div className={styles.historicoWrapper}>
+          <HistoricoSection id_pedido={data.id_pedido} />
+        </div>
+      )}
+
       <div className={styles.buttonGroup}>
         {onCancel && (
-          <button type="button" onClick={onCancel} className={styles.backButton}>
-            Voltar
-          </button>
+          <button type="button" onClick={onCancel} className={styles.backButton}>Voltar</button>
         )}
-        <button type="submit" className={styles.submitButton}>
-          {mode === 'edit' ? 'Atualizar' : 'Cadastrar'} Pedido
-        </button>
+        <button type="submit" className={styles.submitButton}>{mode === 'edit' ? 'Atualizar' : 'Cadastrar'} Pedido</button>
       </div>
     </form>
   );

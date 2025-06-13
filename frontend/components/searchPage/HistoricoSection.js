@@ -1,56 +1,40 @@
 'use client';
-import { useState } from 'react';
-import { useStatus } from './useStatus';
-import { useHistorico } from './useHistorico';
-import styles from './SearchPageProdutos.module.css';
+import { useSearch } from './hooks/useSearch';
+import styles from './detalhes.module.css';
 
 export default function HistoricoSection({ id_pedido }) {
-  const { data: statusList, loading: stLoading } = useStatus();
-  const { data: history, loading: hiLoading }   = useHistorico(id_pedido);
-  const [novoStatus, setNovoStatus]              = useState('');
-  
-  const trocar = async () => {
-    await fetch('http://localhost:5000/historicoPedido', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_pedido, id_status: novoStatus })
-    });
-    setNovoStatus('');
-    // ideal: revalidar o hook useHistorico aqui
-  };
+  // Busca histórico de status do pedido
+  const { data: history = [], loading, error } = useSearch({
+    endpoint: 'historicoPedido',
+    page: 1,
+    limit: 100,
+    filters: { id_pedido }
+  });
+
+  if (loading) return <p>Carregando histórico...</p>;
+  if (error)   return <p className={styles.error}>Erro: {error}</p>;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.histContainer}>
       <h2>Histórico de Status</h2>
-      {hiLoading ? <p>Carregando histórico...</p> : (
-        <ul className={styles.list}>
-          {history.map(h => (
-            <li key={h.id_historico}>
-              [{new Date(h.data_atualizacao).toLocaleString()}] → {h.nome_status}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <h3>Alterar status</h3>
-      {stLoading ? <p>Carregando status...</p> : (
-        <div className={styles.form}>
-          <select
-            value={novoStatus}
-            onChange={e => setNovoStatus(e.target.value)}
-          >
-            <option value="">Selecione...</option>
-            {statusList.map(s => (
-              <option key={s.id_status} value={s.id_status}>
-                {s.descricao}
-              </option>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Data Atualização</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.map(h => (
+              <tr key={h.id_historico}>
+                <td>{new Date(h.data_atualizacao).toLocaleString()}</td>
+                <td>{h.nome_status}</td>
+              </tr>
             ))}
-          </select>
-          <button onClick={trocar} disabled={!novoStatus}>
-            Trocar Status
-          </button>
-        </div>
-      )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

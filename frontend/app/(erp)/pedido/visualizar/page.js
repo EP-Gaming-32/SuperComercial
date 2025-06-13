@@ -9,22 +9,26 @@ import styles from "./visualizar.module.css";
 export default function PedidoPage() {
   const [filial, setFilial] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
+  const [statusPedido, setStatusPedido] = useState([]);
   const [carregando, setCarregando] = useState([]);
 
   useEffect(() => {
     async function fetchFilters() {
       try{
         console.log("[PedidoPage] buscando fornecedores, filiais");
-        const [filialResposta, fornecedorResposta] = await Promise.all([
+        const [filialResposta, fornecedorResposta, statusPedidoResposta] = await Promise.all([
           fetch("http://localhost:5000/filial"),
           fetch("http://localhost:5000/fornecedores"),
+          fetch("http://localhost:5000/statusPedido"),
       ]);
 
       const filialData = await filialResposta.json();
       const fornecedorData = await fornecedorResposta.json();
+      const StatusPedidoData = await statusPedidoResposta.json();
 
       setFilial(filialData.data || filialData);
       setFornecedores(fornecedorData.data || fornecedorData);
+      setStatusPedido(StatusPedidoData.data || StatusPedidoData);
 
       console.log(
         "[EstoquePage] buscou: ",
@@ -32,6 +36,8 @@ export default function PedidoPage() {
         fornecedorData,
          "filial: ",
         filialData,
+         "Status Pedido: ",
+         StatusPedidoData,
       );
     } catch (err) {
       console.error("[PedidoPage] Erro ao carregar filtros", err);
@@ -54,11 +60,6 @@ export default function PedidoPage() {
           endpoint="pedido"
           hookParams={{ limit: 10}}
           filters={[
-            {
-              name: "id_pedido",
-              label: "ID",
-              type: "text",
-            },
             {
               name: "id_fornecedor",
               label: "Fornecedor",
@@ -95,7 +96,16 @@ export default function PedidoPage() {
               name: "data_pedido",
               label: "Data do Pedido",
               type: "text",
-            }
+            },
+            {
+              name: "status_pedido",
+              label: "Status",
+              type: "select",
+              options: statusPedido.map((status) => ({
+                value: status.descricao,
+                label: status.descricao,
+              })),
+            },
           ]}
           keywordName={null}
           keywordPlaceholder="buscar pedido"
@@ -106,6 +116,7 @@ export default function PedidoPage() {
             { value: "nome_fornecedor", label: "Fornecedor"},
             { value: "tipo_pedido", label: "Tipo"},
             { value: "valor_total", label: "Valor"},
+            { value: "status_atual", label: "Status Atual" },
             { value: "data_pedido", label: "Data"},
           ]}
           addButtonUrl="/pedido/registrar"

@@ -1,0 +1,25 @@
+.histContainer {
+  margin-top: 1.5rem;
+}
+
+.tableWrapper {
+  max-height: 300px;      /* altura fixa com scroll */
+  overflow-y: auto;
+  border: 1px solid #ccc; /* opcional, delineia a área */
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.error {
+  color: red;
+}
