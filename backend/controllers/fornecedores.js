@@ -5,16 +5,44 @@ export const listarFornecedores = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
+  //filtro
+
+  const { id_fornecedor, nome_fornecedor, tipo_pessoa, cnpj_cpf} = req.query;
+
+  const conditions = [];
+  const values = [];
+
+  if (id_fornecedor) {
+    conditions.push("id_fornecedor = ?");
+    values.push(id_fornecedor);
+  }
+  if (nome_fornecedor) {
+    conditions.push("nome_fornecedor LIKE ?");
+    values.push(`%${nome_fornecedor}%`);
+  }
+  if (tipo_pessoa) {
+    conditions.push("tipo_pessoa = ?");
+    values.push(tipo_pessoa);
+  }
+  if (cnpj_cpf) {
+    conditions.push("cnpj_cpf LIKE ?");
+    values.push(`%${cnpj_cpf}%`);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
   try {
     const [countResult] = await pool.query(
-      'SELECT COUNT(*) AS total FROM Fornecedor'
+      `SELECT COUNT(*) AS total FROM Fornecedor ${whereClause}`,
+      values
     );
     const totalRecords = countResult[0].total;
 
     const [rows] = await pool.query(
       `SELECT * FROM Fornecedor
+       ${whereClause}
        LIMIT ? OFFSET ?`,
-      [limit, offset]
+      [...values, limit, offset]
     );
 
     const totalPages = Math.ceil(totalRecords / limit);
