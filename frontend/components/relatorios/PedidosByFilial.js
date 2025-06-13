@@ -44,7 +44,6 @@ export default function PedidosByFilial() {
         if (!response.ok) throw new Error("Erro ao buscar dados");
         const json = await response.json();
 
-        // Transformar em array (mesmo com só uma filial)
         const formatado = Array.isArray(json)
           ? json.map((item) => ({
               store: item.nome_filial,
@@ -85,7 +84,7 @@ export default function PedidosByFilial() {
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="store" />
-          <YAxis />
+          <YAxis allowDecimals={false} />
           <Tooltip />
           <Bar dataKey="orders" fill="#8884d8" />
         </BarChart>
