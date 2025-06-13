@@ -82,11 +82,10 @@ export default function ProdutosPage() {
           detailRoute="/produtos/detalhes"
           idField="id_produto"
           showFields={[
-            "nome_produto",
-            "nome_grupo",
-            "valor_produto",
-            "nome_fornecedor",
-            "prazo_validade",
+            { value: "nome_produto", label: "Produto"},
+            { value: "nome_grupo", label: "Grupo"},
+            { value: "valor_produto", label: "Valor"},
+            { value: "nome_fornecedor", label: "Fornecedor"},
           ]}
           addButtonUrl="/produtos/registrar"
           addButtonLabel="Registrar Produto"

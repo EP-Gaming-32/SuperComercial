@@ -82,11 +82,10 @@ export default function LotesPage(){
         detailRoute="/lotes/detalhes"
         idField="id_lote"
         showFields={[
-          "codigo_lote",
-          "quantidade",
-          "data_expedicao",
-          "data_validade",
-          "quantidade",
+          { value: "codigo_lote", label: "Código"},
+          { value: "data_expedicao", label: "Expedição"},
+          { value: "data_validade", label: "Validade"},
+          { value: "quantidade", label: "Quantidade"},
         ]}
         addButtonUrl="/lotes/registrar"
         addButtonLabel="Registrar Lote"

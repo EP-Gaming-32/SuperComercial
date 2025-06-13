@@ -4,18 +4,57 @@ export const listarPedido = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
-  
+
+    //filtros
+
+    const {id_pedido, id_filial, id_fornecedor, tipo_pedido, valor_total, data_pedido, status_pedido} = req.query;
+
+    const conditions = [];
+    const values = [];
+
+    if (id_pedido) {
+      conditions.push('p.id_pedido = ?');
+      values.push(id_pedido);
+    }
+    if (id_filial) {
+      conditions.push('p.id_filial = ?');
+      values.push(id_filial);
+    }
+    if (id_fornecedor) {
+      conditions.push('p.id_fornecedor = ?');
+      values.push(id_fornecedor);
+    }
+    if (tipo_pedido) {
+      conditions.push('p.tipo_pedido LIKE ?');
+      values.push(`%${tipo_pedido}%`);
+    }
+    if (valor_total) {
+      conditions.push('p.valor_total LIKE ?');
+      values.push(`%${valor_total}%`);
+    }
+    if (data_pedido) {
+      conditions.push('p.data_pedido = ?');
+      values.push(data_pedido);
+    }
+
+    const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
     try {
       const [countResult] = await pool.query(
-        'SELECT COUNT(*) AS total FROM Pedidos'
+        `SELECT COUNT(*) AS total
+        FROM Pedidos p
+        ${whereClause}`,
+        values
       );
+
       const totalRecords = countResult[0].total;
   
       const [rows] = await pool.query(
-        `SELECT id_pedido, id_filial, id_fornecedor, data_pedido, tipo_pedido, valor_total, observacao 
-         FROM Pedidos
-         LIMIT ? OFFSET ?`,
-        [limit, offset]
+      `SELECT p.id_pedido, p.id_filial, p.id_fornecedor, p.data_pedido, p.tipo_pedido, p.valor_total, p.observacao 
+       FROM Pedidos p
+       ${whereClause}
+       LIMIT ? OFFSET ?`,
+      [...values, limit, offset]
       );
   
       const totalPages = Math.ceil(totalRecords / limit);

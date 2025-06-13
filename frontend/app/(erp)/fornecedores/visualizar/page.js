@@ -45,10 +45,10 @@ export default function FornecedorPage() {
           detailRoute="/fornecedores/detalhes"
           idField="id_fornecedor"
           showFields={[
-            "id_fornecedor",
-            "nome_fornecedor",
-            "tipo_pessoa",
-            "cnpj_cpf",
+            { value: "id_fornecedor", label: "ID"},
+            { value: "nome_fornecedor", label: "Fornecedor"},
+            { value: "tipo_pessoa", label: "Tipo"},
+            { value: "cnpj_cpf", label: "CNPJ/CPF"},
           ]}
           addButtonUrl="/fornecedores/registrar"
           addButtonLabel="Registrar Fornecedor"

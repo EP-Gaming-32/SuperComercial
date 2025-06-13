@@ -61,10 +61,10 @@ export default function FilialPage() {
         detailRoute="/filial/detalhes"
         idField="id_filial"
         showFields={[
-          "id_filial",
-          "nome_filial",
-          "endereco_filial",
-          "gestor_filial"
+          { value: "id_filial", label: "ID"},
+          { value: "nome_filial", label: "Filial"},
+          { value: "endereco_filial",label: "Endereço"},
+          { value: "gestor_filial", label: "Gestor"},
         ]}
         addButtonUrl="/filial/registrar"
         addButtonLabel="Registrar Filial"

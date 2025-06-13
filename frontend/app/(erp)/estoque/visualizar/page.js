@@ -108,12 +108,12 @@ export default function EstoquePage() {
           detailRoute="/estoque/detalhes"
           idField="id_estoque"
           showFields={[
-            "nome_produto",
-            "nome_filial",
-            "codigo_lote",
-            "quantidade",
-            "status_estoque",
-            "nome_fornecedor",
+            { value: "nome_produto", label: "Produto"},
+            { value: "nome_filial", label: "Filial"},
+            { value: "codigo_lote", label: "Código"},
+            {value: "quantidade", label: "Quantidade"},
+            {value: "status_estoque", label: "Status"},
+            {value: "nome_fornecedor", label: "Fornecedor"}
           ]}
           addButtonUrl="/estoque/registrar"
           addButtonLabel="Registrar Estoque"
