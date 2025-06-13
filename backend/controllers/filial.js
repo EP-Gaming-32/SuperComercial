@@ -5,18 +5,47 @@ export const listarFilial = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
+  //filtro
+
+  const { id_filial, nome_filial, endereco_filial, gestor_filial } = req.query;
+
+  const conditions = [];
+  const values = [];
+
+  if (id_filial) {
+    conditions.push("id_filial = ?");
+    values.push(id_filial);
+  }
+  if (nome_filial) {
+    conditions.push("nome_filial LIKE ?");
+    values.push(`%${nome_filial}%`);
+  }
+  if (endereco_filial) {
+    conditions.push("endereco_filial LIKE ?");
+    values.push(`%${endereco_filial}%`);
+  }
+  if (gestor_filial) {
+    conditions.push("gestor_filial LIKE ?");
+    values.push(`%${gestor_filial}%`);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+
   try {
     const [countResult] = await pool.query(
-      'SELECT COUNT(*) AS total FROM Filial'
+      `SELECT COUNT(*) AS total FROM Filial ${whereClause}`,
+      values
     );
     const totalRecords = countResult[0].total;
 
     const [rows] = await pool.query(
       `SELECT * FROM Filial
+       ${whereClause}
        LIMIT ? OFFSET ?`,
-      [limit, offset]
+      [...values, limit, offset]
     );
-
+    
     const totalPages = Math.ceil(totalRecords / limit);
     res.json({ data: rows, page, limit, totalRecords, totalPages });
   } catch (error) {
