@@ -12,6 +12,7 @@ import fornecedoresRoutes from './routes/fornecedores.js';
 import formaPagamentoRoutes from './routes/formaPagamento.js';
 import pedidoRoutes from './routes/pedido.js';
 import pedidoFilialRoutes from './routes/pedidoFilial.js';
+import ordemCompraRoutes from './routes/ordemCompra.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js';
 import historicoPedidoRoutes  from './routes/historicoPedido.js';
@@ -58,6 +59,8 @@ app.use('/formaPagamento', formaPagamentoRoutes);
 app.use('/pedido', pedidoRoutes);
 //endpoint Pedidos
 app.use('/pedidoFilial', pedidoFilialRoutes);
+//endpoint ordem de compra
+app.use('/ordemCompra', ordemCompraRoutes);
 //endpoint status do pedido
 app.use('/statusPedido', statusPedidoRoutes);
 //endpoint historico de status do pedido

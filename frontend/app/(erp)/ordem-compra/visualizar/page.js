@@ -1,31 +1,32 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from "react";
 import SearchPage from "@/components/searchPage/SearchPage";
 import BoxComponent from "@/components/BoxComponent";
 import styles from "./visualizar.module.css";
 
-export default function OrdemCompraPage() {
+export default function SearchPageOrdemCompra() {
   const [fornecedores, setFornecedores] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-
-  // Status fixos de OrdemCompra
-  const statusOptions = [
+  const [statusOptions] = useState([
     { value: "Pendente", label: "Pendente" },
     { value: "Recebido", label: "Recebido" },
     { value: "Cancelado", label: "Cancelado" },
-  ];
+  ]);
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     async function fetchFornecedores() {
       try {
-        console.log("[OrdemCompraPage] buscando fornecedores");
-        const resp = await fetch("http://localhost:5000/fornecedor");
-        const data = await resp.json();
-        setFornecedores(data.data || data || []);
-        console.log("[OrdemCompraPage] fornecedores:", data);
+        const resp = await fetch("http://localhost:5000/fornecedores");
+        const json = await resp.json();
+        setFornecedores(
+          (json.data || []).map(f => ({
+            value: f.id_fornecedor,
+            label: f.nome_fornecedor,
+          }))
+        );
       } catch (err) {
-        console.error("[OrdemCompraPage] Erro ao carregar fornecedores", err);
+        console.error("[SearchPageOrdemCompra] Erro ao carregar fornecedores", err);
       } finally {
         setCarregando(false);
       }
@@ -47,10 +48,7 @@ export default function OrdemCompraPage() {
               name: "id_fornecedor",
               label: "Fornecedor",
               type: "select",
-              options: fornecedores.map((f) => ({
-                value: f.id_fornecedor,
-                label: f.nome_fornecedor,
-              })),
+              options: fornecedores,
             },
             {
               name: "status",
@@ -63,22 +61,16 @@ export default function OrdemCompraPage() {
               label: "Data da Ordem",
               type: "text",
             },
-            {
-              name: "data_entrega_prevista",
-              label: "Previsto Entrega",
-              type: "text",
-            },
           ]}
           keywordName={null}
-          keywordPlaceholder="Buscar ordem"
+          keywordPlaceholder="Buscar ordem de compra"
           detailRoute="/ordem-compra/detalhes"
           idField="id_ordem_compra"
           showFields={[
             { value: "nome_fornecedor", label: "Fornecedor" },
+            { value: "status", label: "Status" },
             { value: "data_ordem", label: "Data da Ordem" },
-            { value: "data_entrega_prevista", label: "Entrega Prevista" },
             { value: "valor_total", label: "Valor Total" },
-            { value: "status", label: "Status Atual" },
           ]}
           addButtonUrl="/ordem-compra/registrar"
           addButtonLabel="Registrar Ordem"

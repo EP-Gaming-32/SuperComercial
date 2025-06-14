@@ -125,12 +125,12 @@ export const criarFornecedor = async (req, res) => {
 
 export const atualizarFornecedor = async (req, res) => {
   const { id } = req.params;
-  const { nome_fornecedor } = req.body;
+  const { nome_fornecedor, endereco_fornecedor, email_fornecedor, tipo_pessoa, observacao, telefone_fornecedor, cnpj_cpf  } = req.body;
 
   try {
     const [result] = await pool.query(
-      'UPDATE Fornecedor SET nome_fornecedor = ?, data_atualizacao = CURRENT_TIMESTAMP WHERE id_fornecedor = ?',
-      [nome_fornecedor, id]
+      'UPDATE Fornecedor SET nome_fornecedor = ?, endereco_fornecedor = ?, email_fornecedor = ?, tipo_pessoa = ?, observacao = ?, telefone_fornecedor = ?, cnpj_cpf = ?, data_atualizacao = CURRENT_TIMESTAMP WHERE id_fornecedor = ?',
+      [nome_fornecedor,endereco_fornecedor, email_fornecedor, tipo_pessoa, observacao, telefone_fornecedor, cnpj_cpf, id]
     );
 
     if (!result.affectedRows) {
