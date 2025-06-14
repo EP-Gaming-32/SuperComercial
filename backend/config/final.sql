@@ -1,7 +1,3 @@
--- Tabela de Usuários
-CREATE DATABASE erpDB;
-USE erpDB;
-
 CREATE TABLE Usuarios (
     UsuarioID INT AUTO_INCREMENT PRIMARY KEY,
     Nome VARCHAR(255) NOT NULL,
@@ -17,7 +13,7 @@ CREATE TABLE Grupos (
     nome_grupo VARCHAR(100) NOT NULL UNIQUE,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Tabela de Produtos
@@ -55,7 +51,7 @@ CREATE TABLE Fornecedor (
     endereco_fornecedor TEXT NOT NULL,
     telefone_fornecedor VARCHAR(20),
     email_fornecedor VARCHAR(100),
-    tipo_pessoa ENUM('juridica', 'fisica') NOT NULL,
+    tipo_pessoa ENUM('Jurídica', 'Física') NOT NULL,
     cnpj_cpf VARCHAR(20) NOT NULL UNIQUE,
     observacao TEXT,
     data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -189,7 +185,7 @@ CREATE TABLE ProdutoFornecedor (
     condicoes_pagamento VARCHAR(255),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_produto) REFERENCES Produtos(id_produto) ON DELETE CASCADE,
     FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id_fornecedor) ON DELETE CASCADE
 );
@@ -325,3 +321,7 @@ BEGIN
     END IF;
 END$$
 DELIMITER ;
+
+
+ALTER TABLE ProdutoFornecedor
+MODIFY COLUMN prazo_entrega INT NULL;
