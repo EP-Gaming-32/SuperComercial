@@ -10,7 +10,7 @@ export default function RegistrarPedidoFilialPage() {
 
   const initialData = {
     id_filial: "",
-    data_pedido: new Date().toISOString().split('T')[0],
+    data_pedido: "",
     status: "Pendente",
     observacao: ""
   };

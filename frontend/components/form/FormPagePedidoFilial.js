@@ -27,11 +27,10 @@ export default function FormPagePedidoFilial({
       setFormData({
         id_filial: data.id_filial || '',
         observacao: data.observacao || '',
-        data_pedido: data.data_pedido ? data.data_pedido.split('T')[0] : new Date().toISOString().split('T')[0],
+        data_pedido: data.data_pedido ? data.data_pedido.split('T')[0] : '',
         status: data.status || 'Pendente'
       });
-      
-      // Se estiver editando e houver produtos associados
+
       if (data.produtos && Array.isArray(data.produtos)) {
         setProdutosPedido(data.produtos);
       }

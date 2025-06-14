@@ -18,7 +18,7 @@ export default function PedidoPage() {
     async function fetchFilters() {
       try {
         console.log("[PedidoPage] buscando filiais");
-        const filialResposta = await fetch("http://localhost:5000/pedidoFilial/filiais");
+        const filialResposta = await fetch("http://localhost:5000/filial");
         const filialData = await filialResposta.json();
 
         setFiliais(filialData.data || filialData || []);
