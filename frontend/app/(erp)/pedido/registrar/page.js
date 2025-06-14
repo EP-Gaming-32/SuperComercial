@@ -10,7 +10,7 @@ export default function RegistrarPedidoFilialPage() {
 
   const initialData = {
     id_filial: "",
-    data_pedido: new Date().toISOString().split('T')[0],
+    data_pedido: "",
     status: "Pendente",
     observacao: ""
   };
@@ -85,7 +85,7 @@ export default function RegistrarPedidoFilialPage() {
       console.log("[RegistrarPedidoFilial] Pedido cadastrado:", resultado);
       
       alert("Pedido cadastrado com sucesso!");
-      router.push("/pedidoFilial/visualizar");
+      router.push("/pedido/visualizar");
     } catch (err) {
       console.error("[RegistrarPedidoFilial] Erro:", err);
       alert("Erro: " + err.message);

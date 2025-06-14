@@ -11,9 +11,11 @@ import produtosRoutes from './routes/produtos.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
 import formaPagamentoRoutes from './routes/formaPagamento.js';
 import pedidoRoutes from './routes/pedido.js';
+import pedidoFilialRoutes from './routes/pedidoFilial.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js';
-import historicoPedidoRoutes from './routes/historicoPedido.js';
+import historicoPedidoRoutes  from './routes/historicoPedido.js';
+import historicoPedidoFilialRoutes  from './routes/historicoPedidoFilial.js';
 import lotesRoutes from './routes/lotes.js';
 import estoqueRoutes from './routes/estoque.js';
 import movimentacaoEstoqueRoutes from './routes/movimentacaoEstoque.js';
@@ -42,24 +44,32 @@ app.post('/auth/login', loginUser);
 app.post('/forgot-password', forgotPassword);
 app.post('/reset-password/:token', resetPassword);
 
-// Montagem dos roteadores para cada módulo da API
-// AGORA, TODOS SERÃO ACESSADOS COM O PREFIXO '/api/'
-// Exemplo: http://localhost:5000/api/produtos, http://localhost:5000/api/grupos, etc.
-// ESTA É A CORREÇÃO MAIS IMPORTANTE!
-app.use('/api/produtos', produtosRoutes);
-app.use('/api/grupos', gruposRoutes);
-app.use('/api/fornecedores', fornecedoresRoutes);
-app.use('/api/filial', filialRoutes); // CORRIGIDO: Agora as filiais serão acessadas via /api/filial
-app.use('/api/formaPagamento', formaPagamentoRoutes);
-app.use('/api/pedido', pedidoRoutes);
-app.use('/api/statusPedido', statusPedidoRoutes);
-app.use('/api/historicoPedido', historicoPedidoRoutes);
-app.use('/api/lotes', lotesRoutes);
-app.use('/api/estoque', estoqueRoutes);
-app.use('/api/movimentacaoEstoque', movimentacaoEstoqueRoutes);
-app.use('/api/relatorios', relatoriosRoutes); // CORRIGIDO: Agora os relatórios serão acessados via /api/relatorios
+//endpoints para produtos
+app.use('/produtos', produtosRoutes);
+//endpont para grupos
+app.use('/grupos', gruposRoutes);
+//endpoint para fornecedores
+app.use('/fornecedores', fornecedoresRoutes);
+//endpoint filial
+app.use('/filial', filialRoutes);
+//endpoint formas de pagamentos
+app.use('/formaPagamento', formaPagamentoRoutes);
+//endpoint Pedidos
+app.use('/pedido', pedidoRoutes);
+//endpoint Pedidos
+app.use('/pedidoFilial', pedidoFilialRoutes);
+//endpoint status do pedido
+app.use('/statusPedido', statusPedidoRoutes);
+//endpoint historico de status do pedido
+app.use('/historicoPedido', historicoPedidoRoutes);
+//endpoint historico de status do pedido
+app.use('/historicoPedidoFilial', historicoPedidoFilialRoutes);
+//endpoints estoque
+app.use('/lotes', lotesRoutes);
+app.use('/estoque', estoqueRoutes);
+app.use('/movimentacaoEstoque', movimentacaoEstoqueRoutes);
+app.use('/relatorios', relatoriosRoutes);
 
-// Define a porta do servidor, usando a variável de ambiente PORT ou 5000 como fallback
 const PORT = process.env.PORT || 5000;
 
 // Inicia o servidor e escuta na porta definida

@@ -36,7 +36,9 @@ export default function ForgotPasswordPage() {
         <div className={styles.container}>
           <div className={styles.box}>
             <h2 className={styles.header}>Redefinir Senha</h2>
-            <form onSubmit={handleSubmit}>
+            
+            {/* ALTERAÇÃO AQUI: Adicionada a classe para o formulário */}
+            <form className={styles.form} onSubmit={handleSubmit}>
               <input
                 type="email"
                 placeholder="Digite seu e-mail"
@@ -49,6 +51,7 @@ export default function ForgotPasswordPage() {
                 Enviar Link
               </button>
             </form>
+
             {message && <p className={styles.message}>{message}</p>}
           </div>
         </div>
