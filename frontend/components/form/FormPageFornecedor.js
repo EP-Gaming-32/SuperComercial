@@ -2,6 +2,38 @@
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
 
+// --- FUNÇÕES DE FORMATAÇÃO ---
+
+const formatCPF = (value) => {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+};
+
+const formatCNPJ = (value) => {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 14)
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+};
+
+// --- NOVA FUNÇÃO PARA FORMATAR O TELEFONE ---
+// Formata para o padrão (DDD) 9 XXXX-XXXX
+const formatTelefone = (value) => {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/^(\d{2})(\d)/, '($1) $2') // Coloca parênteses nos dois primeiros dígitos
+    .replace(/(\d{5})(\d{4})$/, '$1-$2'); // Coloca hífen entre o quinto e o sexto dígito (contando após o DD)
+}
+
+
 export default function FormPageFornecedor({
   data,
   mode,
@@ -11,18 +43,44 @@ export default function FormPageFornecedor({
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    setFormData(data);
+    setFormData(data || {});
   }, [data]);
+
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, cnpj_cpf: '' }));
+  }, [formData.tipo_pessoa]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCnpjCpfChange = (e) => {
+    const { value } = e.target;
+    let formattedValue = value;
+
+    if (formData.tipo_pessoa === 'fisica') {
+      formattedValue = formatCPF(value);
+    } else if (formData.tipo_pessoa === 'juridica') {
+      formattedValue = formatCNPJ(value);
+    } else {
+      formattedValue = value.replace(/\D/g, '');
+    }
+
+    setFormData(prev => ({ ...prev, cnpj_cpf: formattedValue }));
+  };
+  
+  // --- NOVO HANDLER PARA O TELEFONE ---
+  const handleTelefoneChange = (e) => {
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, telefone_fornecedor: formatTelefone(value) }));
+  };
+
   const campoConfig = [
     { name: 'nome_fornecedor', label: 'Fornecedor', type: 'text', maxLength: 255 },
     { name: 'endereco_fornecedor', label: 'Endereço', type: 'text', maxLength: 255 },
-    { name: 'telefone_fornecedor', label: 'Telefone', type: 'text', maxLength: 15 },
+    // O campo de telefone será renderizado de forma customizada abaixo
     { name: 'email_fornecedor', label: 'Email', type: 'email', maxLength: 255 },
     {
       name: 'tipo_pessoa',
@@ -30,7 +88,6 @@ export default function FormPageFornecedor({
       type: 'select',
       options: ['juridica', 'fisica']
     },
-    { name: 'cnpj_cpf', label: 'CNPJ/CPF', type: 'text', maxLength: 12 },
     { name: 'observacao', label: 'Observação', type: 'textarea', maxLength: 255 },
   ];
 
@@ -49,55 +106,8 @@ export default function FormPageFornecedor({
               className={styles.input}
             >
               <option value="">Selecione...</option>
-              {(options || []).map(opt =>
-                typeof opt === 'string' ? (
-                  <option key={opt} value={opt}>{opt}</option>
-                ) : (
-                  <option key={opt[optionKey]} value={opt[optionKey]}>
-                    {opt[optionLabel]}
-                  </option>
-                )
-              )}
+              {options.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}
             </select>
-          ) : name === 'cnpj_cpf' ? (
-            <input
-              id={name}
-              name={name}
-              type="text"
-              value={formData[name] ?? ''}
-              onChange={(e) => {
-                const onlyNumbers = e.target.value.replace(/\D/g, '').slice(0, 12);
-                setFormData(prev => ({ ...prev, [name]: onlyNumbers }));
-              }}
-              className={styles.input}
-              maxLength={12}
-              pattern="[0-9]*"
-              inputMode="numeric"
-            />
-          ) : name === 'telefone_fornecedor' ? (
-            <input
-              id={name}
-              name={name}
-              type="text"
-              value={formData[name] ?? ''}
-              onChange={(e) => {
-                let onlyNumbers = e.target.value.replace(/\D/g, '').slice(0, 10);
-                let formatted = onlyNumbers;
-
-                if (onlyNumbers.length > 6) {
-                  formatted = `(${onlyNumbers.slice(0, 2)})${onlyNumbers.slice(2, 6)}-${onlyNumbers.slice(6)}`;
-                } else if (onlyNumbers.length > 2) {
-                  formatted = `(${onlyNumbers.slice(0, 2)})${onlyNumbers.slice(2)}`;
-                } else if (onlyNumbers.length > 0) {
-                  formatted = `(${onlyNumbers}`;
-                }
-
-                setFormData(prev => ({ ...prev, [name]: formatted }));
-              }}
-              className={styles.input}
-              maxLength={14}
-              inputMode="numeric"
-            />
           ) : type === 'textarea' ? (
             <textarea
               id={name}
@@ -120,6 +130,47 @@ export default function FormPageFornecedor({
           )}
         </div>
       ))}
+      
+      {/* --- CAMPO TELEFONE COM MÁSCARA ATUALIZADA --- */}
+      <div className={styles.field}>
+        <label htmlFor="telefone_fornecedor" className={styles.label}>Telefone</label>
+        <input
+          id="telefone_fornecedor"
+          name="telefone_fornecedor"
+          type="tel" // Usar type="tel" é semanticamente correto para telefones
+          value={formData.telefone_fornecedor ?? ''}
+          onChange={handleTelefoneChange} // Usa o novo handler
+          className={styles.input}
+          placeholder="Insira o número de telefone"
+          maxLength={16} // (11) 1 1111-1111 -> 16 caracteres
+          inputMode="numeric"
+        />
+      </div>
+
+      {/* --- CAMPO CNPJ/CPF COM MÁSCARA DINÂMICA --- */}
+      <div className={styles.field}>
+        <label htmlFor="cnpj_cpf" className={styles.label}>
+          {formData.tipo_pessoa === 'fisica' ? 'CPF' : formData.tipo_pessoa === 'juridica' ? 'CNPJ' : 'CNPJ/CPF'}
+        </label>
+        <input
+          id="cnpj_cpf"
+          name="cnpj_cpf"
+          type="text"
+          value={formData.cnpj_cpf ?? ''}
+          onChange={handleCnpjCpfChange}
+          className={styles.input}
+          disabled={!formData.tipo_pessoa}
+          placeholder={
+            formData.tipo_pessoa === 'fisica' 
+              ? '000.000.000-00' 
+              : formData.tipo_pessoa === 'juridica'
+              ? '00.000.000/0000-00'
+              : 'Selecione o tipo de pessoa'
+          }
+          maxLength={formData.tipo_pessoa === 'fisica' ? 14 : 18}
+          inputMode="numeric"
+        />
+      </div>
 
       <div className={styles.buttonGroup}>
         {onCancel && (
