@@ -26,7 +26,7 @@ export default function AuthPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const endpoint = slug === "cadastro" ? "/auth/cadastro" : "/auth/login";
-  
+
     try {
       const response = await fetch(`http://localhost:5000${endpoint}`, {
         method: "POST",
@@ -53,90 +53,94 @@ export default function AuthPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{slug === "login" ? "Login" : "Cadastro"}</title>
       </Head>
-      
+
       <div className={styles.wrapper}>
         <div className={styles.title}>
           <ColoredText />
         </div>
-        
+
         <div className={styles.container}>
           <div className={styles.loginBox}>
             <div className={styles.header}>
               {slug === "login" ? "Login" : "Junte-se a Nós!"}
             </div>
-            
+
             <form className={styles.form} onSubmit={handleSubmit}>
-  {slug === "cadastro" && (
-    <InputField
-      id="nome"
-      placeholder="Nome Completo"
-      value={formData.nome}
-      onChange={handleChange}
-      label="Nome"
-    />
-  )}
+              {slug === "cadastro" && (
+                <InputField
+                  id="nome"
+                  placeholder="Nome Completo"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  label="Nome"
+                />
+              )}
 
-  <InputField
-    id="email"
-    type="email"
-    placeholder="Seu email"
-    value={formData.email}
-    onChange={handleChange}
-    label="Email"
-  />
+              <InputField
+                id="email"
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                label="Email"
+              />
 
-  <InputField
-    id="senha"
-    type="password"
-    placeholder="Senha"
-    value={formData.senha}
-    onChange={handleChange}
-    label="Senha"
-  />
+              <InputField
+                id="senha"
+                type="password"
+                placeholder="Senha"
+                value={formData.senha}
+                onChange={handleChange}
+                label="Senha"
+              />
 
-  {slug === "cadastro" && (
-    <>
-      <InputField
-        id="telefone"
-        placeholder="+ 99 9999-9999"
-        value={formData.telefone}
-        onChange={handleChange}
-        label="Telefone"
-      />
-      
-      <InputField
-        id="celular"
-        placeholder="+ 99 99999-9999"
-        value={formData.celular}
-        onChange={handleChange}
-        label="Celular"
-      />
-    </>
-  )}
+              {slug === "cadastro" && (
+                <>
+                  <InputField
+                    id="telefone"
+                    placeholder="+ 99 9999-9999"
+                    value={formData.telefone}
+                    onChange={handleChange}
+                    label="Telefone"
+                  />
 
-  <button type="submit" className={styles.button}>
-    {slug === "login" ? "Login" : "Cadastrar"}
-  </button>
+                  <InputField
+                    id="celular"
+                    placeholder="+ 99 99999-9999"
+                    value={formData.celular}
+                    onChange={handleChange}
+                    label="Celular"
+                  />
+                </>
+              )}
+              
+              {/* ALTERAÇÃO 1: MOVIDO PARA CIMA E CLASSE ALTERADA */}
+              {slug === "login" && (
+                <button
+                  type="button"
+                  className={styles.forgotPasswordLink} // CLASSE NOVA E MINIMALISTA
+                  onClick={() => router.push("/forgot-password")}
+                >
+                  Esqueci a senha
+                </button>
+              )}
 
-  {slug === "login" && (
-    <button
-      type="button"
-      className={styles.linkButton}
-      onClick={() => router.push("/forgot-password")}
-    >
-      Esqueci a senha
-    </button>
-  )}
+              <button type="submit" className={styles.button}>
+                {slug === "login" ? "Login" : "Cadastrar"}
+              </button>
 
-  <button
-    type="button"
-    className={styles.buttonSecondary}
-    onClick={() => router.push(slug === "login" ? "/auth/cadastro" : "/auth/login")}
-  >
-    {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
-  </button>
-</form>
-
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={() =>
+                  router.push(
+                    slug === "login" ? "/auth/cadastro" : "/auth/login"
+                  )
+                }
+              >
+                {slug === "login" ? "Tela de Cadastro" : "Tela de Login"}
+              </button>
+            </form>
 
             {message && <p className={styles.message}>{message}</p>}
           </div>

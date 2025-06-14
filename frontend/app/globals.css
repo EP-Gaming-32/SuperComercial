@@ -1,9 +1,9 @@
 /* globals.css */
 :root {
-  --primary-color: #4a90e2;
-  --secondary-color: #29b6f6;
-  --background-light: #b3e5fc;
-  --background-lighter: #d1f0ff;
+  --primary-color: #1b3655;
+  --secondary-color: #c0bebedc;
+  --background-light: #292942fb;
+  --background-lighter: #1674a3;
   --text-color: #222;
 }
 
@@ -49,8 +49,4 @@ button {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
-}
-
-button:hover {
-  background: #0288d1;
 }
