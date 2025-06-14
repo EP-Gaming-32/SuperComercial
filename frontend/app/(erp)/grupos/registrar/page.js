@@ -8,7 +8,7 @@ import FormPageGrupos from "@/components/form/FormPageGrupos";
 export default function RegistrarGruposPage() {
   const router = useRouter();
 
-  const initialData = {   
+  const initialData = {
     id_grupo: "",
     nome_grupo: ""
   };
@@ -18,7 +18,7 @@ export default function RegistrarGruposPage() {
   const handleSubmit = async (updatedData) => {
     console.log("Cadastrando grupo:", updatedData);
 
-    try{
+    try {
       const res = await fetch('http://localhost:5000/grupos', {
         method: 'POST',
         headers: {
@@ -29,15 +29,16 @@ export default function RegistrarGruposPage() {
       if (!res.ok) throw new Error((await res.json()).message);
       alert('Grupo Cadastrado');
       router.push('/grupos/visualizar');
-    } catch (err){
+    } catch (err) {
       alert("Erro: " + err.message);
     }
   };
 
   return (
     <div className={styles.container} style={{ overflow: 'hidden' }}>
-      <h1>Cadastrar Grupo</h1>
+
       <BoxComponent className={styles.formWrapper}>
+        <h1>Cadastrar Grupo</h1>
         <FormPageGrupos
           data={grupoData}
           mode="add"

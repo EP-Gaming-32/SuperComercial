@@ -42,8 +42,9 @@ export default function DetalhesGruposPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Editar Grupo</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Editar Grupo</h1>
         <FormPageGrupos
           data={grupoData}
           mode="edit"

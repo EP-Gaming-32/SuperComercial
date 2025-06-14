@@ -42,8 +42,9 @@ export default function DetalhesFilialPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Editar Filial</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Editar Filial</h1>
         <FormPageFilial
           data={filialData}
           mode="edit"

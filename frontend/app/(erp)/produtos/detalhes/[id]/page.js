@@ -56,8 +56,9 @@ export default function DetalhesProdutosPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Editar Produto</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Editar Produto</h1>
         <FormPageProdutos
           data={productData}
           grupos={grupoData}

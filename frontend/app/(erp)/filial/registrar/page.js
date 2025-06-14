@@ -23,8 +23,8 @@ export default function RegistrarFilialPage() {
 
   const handleSubmit = async (updatedData) => {
     console.log("Cadastrando filial:", updatedData);
-    
-    try{
+
+    try {
       const res = await fetch('http://localhost:5000/filial', {
         method: 'POST',
         headers: {
@@ -35,15 +35,15 @@ export default function RegistrarFilialPage() {
       if (!res.ok) throw new Error((await res.json()).message);
       alert('Filial Cadastrada');
       router.push('/filial/visualizar');
-    } catch (err){
+    } catch (err) {
       alert("Erro: " + err.message);
     }
   };
 
   return (
     <div className={styles.container} style={{ overflow: 'hidden' }}>
-      <h1>Cadastrar Filial</h1>
       <BoxComponent className={styles.formWrapper}>
+        <h1>Cadastrar Filial</h1>
         <FormPageFilial
           data={filialData}
           mode="add"

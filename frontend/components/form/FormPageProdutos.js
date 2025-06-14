@@ -79,8 +79,6 @@ export default function FormPageProdutos({
     { name: 'valor_produto', label: 'Preço de Venda', type: 'currency' }, // ATUALIZADO
     { name: 'codigo_barras', label: 'Código de Barras', type: 'text', maxLength: 20 },
     { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores || [], optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
-    { name: 'preco_compra', label: 'Preço de Compra', type: 'currency' }, // ATUALIZADO
-    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'number' },
     { name: 'condicoes_pagamento', label: 'Condições', type: 'text', maxLength: 100 }
   ];
 

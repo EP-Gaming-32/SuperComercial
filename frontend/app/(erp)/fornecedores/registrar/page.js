@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./detalhes.module.css"; 
+import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageFornecedor from "@/components/form/FormPageFornecedor";
 
@@ -24,7 +24,7 @@ export default function RegistrarFornecedorPage() {
   const handleSubmit = async (updatedData) => {
     console.log("Cadastrando fornecedor:", updatedData);
 
-    try{
+    try {
       const res = await fetch('http://localhost:5000/fornecedores', {
         method: 'POST',
         headers: {
@@ -35,20 +35,20 @@ export default function RegistrarFornecedorPage() {
       if (!res.ok) throw new Error((await res.json()).message);
       alert('Fornecedor Cadastrado');
       router.push('/fornecedores/visualizar');
-    } catch (err){
+    } catch (err) {
       alert("Erro: " + err.message);
     }
   };
 
   return (
     <div className={styles.container} style={{ overflow: 'hidden' }}>
-      <h1>Cadastrar Fornecedor</h1>
       <BoxComponent className={styles.formWrapper}>
+        <h1>Cadastrar Fornecedor</h1>
         <FormPageFornecedor
           data={fornecedorData}
           mode="add"
           onSubmit={handleSubmit}
-          onCancel={() => router.back()}//ou só {router.back} ?
+          onCancel={() => router.back()}
         />
       </BoxComponent>
     </div>
