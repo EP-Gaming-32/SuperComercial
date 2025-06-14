@@ -7,9 +7,11 @@ import produtosRoutes from './routes/produtos.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
 import formaPagamentoRoutes from './routes/formaPagamento.js';
 import pedidoRoutes from './routes/pedido.js';
+import pedidoFilialRoutes from './routes/pedidoFilial.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js';
 import historicoPedidoRoutes  from './routes/historicoPedido.js';
+import historicoPedidoFilialRoutes  from './routes/historicoPedidoFilial.js';
 import lotesRoutes from './routes/lotes.js';
 import estoqueRoutes from './routes/estoque.js';
 import movimentacaoEstoqueRoutes from './routes/movimentacaoEstoque.js';
@@ -44,10 +46,14 @@ app.use('/filial', filialRoutes);
 app.use('/formaPagamento', formaPagamentoRoutes);
 //endpoint Pedidos
 app.use('/pedido', pedidoRoutes);
+//endpoint Pedidos
+app.use('/pedidoFilial', pedidoFilialRoutes);
 //endpoint status do pedido
 app.use('/statusPedido', statusPedidoRoutes);
 //endpoint historico de status do pedido
 app.use('/historicoPedido', historicoPedidoRoutes);
+//endpoint historico de status do pedido
+app.use('/historicoPedidoFilial', historicoPedidoFilialRoutes);
 //endpoints estoque
 app.use('/lotes', lotesRoutes);
 app.use('/estoque', estoqueRoutes);

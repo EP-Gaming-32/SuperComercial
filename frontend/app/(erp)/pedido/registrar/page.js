@@ -85,7 +85,7 @@ export default function RegistrarPedidoFilialPage() {
       console.log("[RegistrarPedidoFilial] Pedido cadastrado:", resultado);
       
       alert("Pedido cadastrado com sucesso!");
-      router.push("/pedidoFilial/visualizar");
+      router.push("/pedido/visualizar");
     } catch (err) {
       console.error("[RegistrarPedidoFilial] Erro:", err);
       alert("Erro: " + err.message);
