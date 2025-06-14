@@ -1,11 +1,13 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
+import LoteSection from '@/components/searchPage/LoteSection'; // 🔥 Novo componente
 
-export default function FormPageProdutos({
-  data,
-  grupos = [],
+export default function FormPageEstoqueLote({
+  data = {},
+  produtos = [],
   fornecedores = [],
+  filiais = [],
   mode,
   onSubmit,
   onCancel
@@ -27,15 +29,13 @@ export default function FormPageProdutos({
   };
 
   const campoConfig = [
-    { name: 'sku', label: 'SKU', type: 'text', maxLength: 20 },
-    { name: 'nome_produto', label: 'Nome', type: 'text', maxLength: 100 },
-    { name: 'id_grupo', label: 'Grupo', type: 'select', options: grupos || [], optionKey: 'id_grupo', optionLabel: 'nome_grupo' },
-    { name: 'valor_produto', label: 'Preço', type: 'number' },
-    { name: 'codigo_barras', label: 'Código de Barras', type: 'text', maxLength: 20 },
-    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores || [], optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
-    { name: 'preco_compra', label: 'Preço de Compra', type: 'number' },
-    { name: 'prazo_entrega', label: 'Prazo Entrega (dias)', type: 'number' },
-    { name: 'condicoes_pagamento', label: 'Condições', type: 'text', maxLength: 100 }
+    { name: 'id_produto', label: 'Produto', type: 'select', options: produtos, optionKey: 'id_produto', optionLabel: 'nome_produto' },
+    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores, optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
+    { name: 'id_filial', label: 'Filial', type: 'select', options: filiais, optionKey: 'id_filial', optionLabel: 'nome_filial' },
+    { name: 'local_armazenamento', label: 'Local de Armazenamento', type: 'text', maxLength: 255 },
+    { name: 'quantidade', label: 'Quantidade', type: 'number' },
+    { name: 'estoque_minimo', label: 'Estoque Mínimo', type: 'number' },
+    { name: 'estoque_maximo', label: 'Estoque Máximo', type: 'number' },
   ];
 
   return (
@@ -47,12 +47,12 @@ export default function FormPageProdutos({
             <select
               id={name}
               name={name}
-              value={formData[name] || ''}
+              value={formData[name] ?? ''}
               onChange={handleChange}
               className={styles.input}
             >
               <option value="">Selecione...</option>
-              {(options || []).map(opt => (
+              {options.map(opt => (
                 <option key={opt[optionKey]} value={opt[optionKey]}>
                   {opt[optionLabel]}
                 </option>
@@ -72,6 +72,13 @@ export default function FormPageProdutos({
         </div>
       ))}
 
+      {/* 🔥 Seção de lotes vinculados */}
+      {mode === 'edit' && data?.id_estoque && (
+        <div className={styles.historicoWrapper}>
+          <LoteSection id_estoque={data.id_estoque} />
+        </div>
+      )}
+
       <div className={styles.buttonGroup}>
         {onCancel && (
           <button type="button" onClick={onCancel} className={styles.backButton}>
@@ -79,7 +86,7 @@ export default function FormPageProdutos({
           </button>
         )}
         <button type="submit" className={styles.submitButton}>
-          {mode === 'edit' ? 'Atualizar' : 'Cadastrar'} Produto
+          {mode === 'edit' ? 'Atualizar' : 'Cadastrar'}
         </button>
       </div>
     </form>

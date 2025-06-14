@@ -6,7 +6,7 @@ export const listarProdutos = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  const { nome_produto, id_grupo, id_fornecedor, unidade_medida } = req.query;
+  const { nome_produto, id_grupo, id_fornecedor} = req.query;
 
   const conditions = ['p.ativo = TRUE'];
   const values = [];
@@ -22,10 +22,6 @@ export const listarProdutos = async (req, res) => {
   if (id_fornecedor) {
     conditions.push('pf.id_fornecedor = ? AND pf.ativo = TRUE');
     values.push(id_fornecedor);
-  }
-  if (unidade_medida) {
-    conditions.push('p.unidade_medida = ?');
-    values.push(unidade_medida);
   }
 
   const whereClause = `WHERE ${conditions.join(' AND ')}`;
@@ -80,10 +76,6 @@ export const listarProdutosUnicos = async (req, res) => {
     conditions.push('id_grupo = ?');
     values.push(id_grupo);
   }
-  if (unidade_medida) {
-    conditions.push('unidade_medida = ?');
-    values.push(unidade_medida);
-  }
 
   const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
@@ -123,8 +115,6 @@ export const criarProduto = async (req, res) => {
     nome_produto,
     id_grupo,
     valor_produto,
-    prazo_validade,
-    unidade_medida,
     codigo_barras,
     id_fornecedor,
     preco_compra,
@@ -139,9 +129,9 @@ export const criarProduto = async (req, res) => {
   try {
     const [result] = await pool.query(
       `INSERT INTO Produtos
-         (sku, nome_produto, id_grupo, valor_produto, prazo_validade, unidade_medida, codigo_barras)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [sku, nome_produto, id_grupo || null, valor_produto, prazo_validade || null, unidade_medida, codigo_barras]
+        (sku, nome_produto, id_grupo, valor_produto, codigo_barras)
+      VALUES (?, ?, ?, ?, ?)`,
+      [sku, nome_produto, id_grupo || null, valor_produto, codigo_barras]
     );
     const productId = result.insertId;
 
@@ -206,8 +196,7 @@ export const atualizarProduto = async (req, res) => {
   } = req.body;
 
   const camposPermitidos = [
-    'sku','nome_produto','id_grupo','valor_produto',
-    'prazo_validade','unidade_medida','codigo_barras'
+    'sku','nome_produto','id_grupo','valor_produto','codigo_barras'
   ];
 
   const fields = [];

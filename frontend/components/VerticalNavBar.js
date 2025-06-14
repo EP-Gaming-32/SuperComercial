@@ -43,10 +43,14 @@ export default function VerticalNavBar() {
                   Filial
                 </Link>
               </li>
-
               <li>
                 <Link href="/produtos/visualizar" className={styles.navLink}>
                   Produtos
+                </Link>
+              </li>
+              <li>
+                <Link href="/grupos/visualizar" className={styles.navLink}>
+                  Grupos
                 </Link>
               </li>
             </ul>

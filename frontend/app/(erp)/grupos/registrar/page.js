@@ -8,7 +8,7 @@ import FormPageGrupos from "@/components/form/FormPageGrupos";
 export default function RegistrarGruposPage() {
   const router = useRouter();
 
-  const initialData = {
+  const initialData = {   
     id_grupo: "",
     nome_grupo: ""
   };
