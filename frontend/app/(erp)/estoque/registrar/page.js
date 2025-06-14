@@ -54,8 +54,9 @@ export default function RegistrarEstoquePage() {
 
   return (
     <div className={styles.container}>
-      <h1>Cadastrar Estoque</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Cadastrar Estoque</h1>
         <FormPageEstoqueLote
           data={formData}
           produtos={produtos}

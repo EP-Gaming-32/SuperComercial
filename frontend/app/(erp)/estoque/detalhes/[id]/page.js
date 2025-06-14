@@ -58,8 +58,9 @@ export default function DetalhesEstoquePage() {
 
   return (
     <div className={styles.container}>
-      <h1>Editar Estoque</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Editar Estoque</h1>
         <FormPageEstoqueLote
           data={formData}
           produtos={produtos}

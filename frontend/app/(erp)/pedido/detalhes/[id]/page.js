@@ -116,8 +116,9 @@ export default function DetalhesPedidosPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Editar Pedido de Filial</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Editar Pedido de Filial</h1>
         <FormPagePedidoFilial
           data={pedidoData}
           filial={filiais}

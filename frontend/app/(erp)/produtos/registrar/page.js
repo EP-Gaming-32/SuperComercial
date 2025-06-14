@@ -59,8 +59,8 @@ export default function RegistrarProdutosPage() {
 
   return (
     <div className={styles.container} style={{ overflow: 'hidden' }}>
-      <h1>Cadastrar Produto</h1>
       <BoxComponent className={styles.formWrapper}>
+        <h1>Cadastrar Produto</h1>
         <FormPageProdutos
           data={productData}
           grupos={grupoData}

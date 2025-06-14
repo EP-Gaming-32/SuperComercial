@@ -42,8 +42,9 @@ export default function DetalhesFornecedorPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Editar Fornecedor</h1>
+      
       <BoxComponent className={styles.formWrapper}>
+        <h1>Editar Fornecedor</h1>
         <FormPageFornecedor
           data={fornecedoreData}
           mode="edit"
