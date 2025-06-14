@@ -188,6 +188,8 @@ CREATE TABLE ProdutoFornecedor (
     prazo_entrega INT NULL,
     condicoes_pagamento VARCHAR(255),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
     FOREIGN KEY (id_produto) REFERENCES Produtos(id_produto) ON DELETE CASCADE,
     FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id_fornecedor) ON DELETE CASCADE
 );
