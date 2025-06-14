@@ -14,8 +14,10 @@ CREATE TABLE Usuarios (
 -- Tabela de Grupos
 CREATE TABLE Grupos (
     id_grupo INT AUTO_INCREMENT PRIMARY KEY,
-    nome_grupo VARCHAR(100) NOT NULL UNIQUE,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE
+    nome_grupo VARCHAR(100) NOT NULL,
+    descricao VARCHAR(255),
+    data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Tabela de Produtos
