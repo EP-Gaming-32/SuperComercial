@@ -123,7 +123,7 @@ export const visualizarPedido = async (req, res) => {
          p.tipo_pedido,
          p.valor_total,
          p.observacao,
-         h.id_status,                        -- <--- adiciona aqui
+         h.id_status,
          s.descricao AS status_atual,
          h.data_atualizacao
        FROM Pedidos p
@@ -151,41 +151,40 @@ export const visualizarPedido = async (req, res) => {
 };
 
 export const criarPedido = async (req, res) => {
-    const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao, id_status } = req.body;
+  const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao, id_status } = req.body;
   
-    if (!id_filial || !id_fornecedor || !tipo_pedido || !valor_total || !id_status) {
-      return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
-    }
+  if (!id_filial || !id_fornecedor || !tipo_pedido || !valor_total || !id_status) {
+    return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
+  }
   
-    const conn = await pool.getConnection();
+  const conn = await pool.getConnection();
   
-    try {
-      await conn.beginTransaction();
+  try {
+    await conn.beginTransaction();
   
-      const [pedidoResult] = await conn.query(
-        'INSERT INTO Pedidos (id_filial, id_fornecedor, tipo_pedido, valor_total, observacao) VALUES (?, ?, ?, ?, ?)',
-        [id_filial, id_fornecedor, tipo_pedido, valor_total, observacao]
-      );
+    const [pedidoResult] = await conn.query(
+      'INSERT INTO Pedidos (id_filial, id_fornecedor, tipo_pedido, valor_total, observacao) VALUES (?, ?, ?, ?, ?)',
+      [id_filial, id_fornecedor, tipo_pedido, valor_total, observacao]
+    );
   
-      const id_pedido = pedidoResult.insertId;
+    const id_pedido = pedidoResult.insertId;
   
-      await conn.query(
-        'INSERT INTO HistoricoStatusPedido (id_pedido, id_status) VALUES (?, ?)',
-        [id_pedido, id_status]
-      );
+    await conn.query(
+      'INSERT INTO HistoricoStatusPedido (id_pedido, id_status) VALUES (?, ?)',
+      [id_pedido, id_status]
+    );
   
-      await conn.commit();
-      res.status(201).json({ id_pedido, message: 'Pedido criado com histórico' });
-    } catch (error) {
-      await conn.rollback();
-      console.error('Erro ao criar pedido', error);
-      res.status(500).json({ message: 'Erro ao criar pedido' });
-    } finally {
-      conn.release();
-    }
-  };
+    await conn.commit();
+    res.status(201).json({ id_pedido, message: 'Pedido criado com histórico' });
+  } catch (error) {
+    await conn.rollback();
+    console.error('Erro ao criar pedido', error);
+    res.status(500).json({ message: 'Erro ao criar pedido' });
+  } finally {
+    conn.release();
+  }
+};
   
-
   export const atualizarPedido = async (req, res) => {
   const { id } = req.params;
   const { id_filial, id_fornecedor, tipo_pedido, valor_total, observacao, id_status } = req.body;
@@ -227,22 +226,30 @@ export const criarPedido = async (req, res) => {
   }
 };
 
-  export const removerPedido = async (req, res) => {
-    const { id } = req.params;
-  
-    try {
-      const [result] = await pool.query(
-        'DELETE FROM Pedidos WHERE id_pedido = ?',
-        [id]
-      );
-  
-      if (!result.affectedRows) {
-        return res.status(404).json({ message: 'Pedido não encontrado' });
-      }
-  
-      res.json({ message: 'Pedido removido' });
-    } catch (error) {
-      console.error('Erro ao remover pedido', error);
-      res.status(500).json({ message: 'Erro ao remover pedido' });
+// REMOÇÃO LÓGICA: cancelamento do pedido
+export const removerPedido = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Busca o id_status de 'Cancelado'
+    const [statusRows] = await pool.query(
+      'SELECT id_status FROM StatusPedido WHERE descricao = ?',
+      ['Cancelado']
+    );
+    if (!statusRows.length) {
+      return res.status(500).json({ message: "Status 'Cancelado' não encontrado" });
     }
-  };
+    const id_status_cancelado = statusRows[0].id_status;
+
+    // Insere no histórico o cancelamento
+    await pool.query(
+      'INSERT INTO HistoricoStatusPedido (id_pedido, id_status) VALUES (?, ?)',
+      [id, id_status_cancelado]
+    );
+
+    res.json({ message: `Pedido ${id} cancelado com sucesso` });
+  } catch (error) {
+    console.error('Erro ao cancelar pedido', error);
+    res.status(500).json({ message: 'Erro interno ao cancelar pedido' });
+  }
+};

@@ -1,47 +1,43 @@
 import pool from '../config/db.js';
 
+// Listar produtos (só ativos, com fornecedores ativos)
 export const listarProdutos = async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  // Filtros opcionais
   const { nome_produto, id_grupo, id_fornecedor, unidade_medida } = req.query;
-  
-  const conditions = [];
+
+  const conditions = ['p.ativo = TRUE'];
   const values = [];
 
   if (nome_produto) {
     conditions.push('p.nome_produto LIKE ?');
     values.push(`%${nome_produto}%`);
   }
-
   if (id_grupo) {
     conditions.push('p.id_grupo = ?');
     values.push(id_grupo);
   }
-
   if (id_fornecedor) {
-    conditions.push('pf.id_fornecedor = ?');
+    conditions.push('pf.id_fornecedor = ? AND pf.ativo = TRUE');
     values.push(id_fornecedor);
   }
-
   if (unidade_medida) {
     conditions.push('p.unidade_medida = ?');
     values.push(unidade_medida);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
   try {
     const [countResult] = await pool.query(
-      `SELECT COUNT(*) AS total
+      `SELECT COUNT(DISTINCT p.id_produto) AS total
        FROM Produtos p
        LEFT JOIN ProdutoFornecedor pf ON pf.id_produto = p.id_produto
        ${whereClause}`,
       values
     );
-
     const totalRecords = countResult[0].total;
 
     const [rows] = await pool.query(
@@ -51,7 +47,7 @@ export const listarProdutos = async (req, res) => {
          f.nome_fornecedor
        FROM Produtos p
        LEFT JOIN Grupos g ON p.id_grupo = g.id_grupo
-       LEFT JOIN ProdutoFornecedor pf ON pf.id_produto = p.id_produto
+       LEFT JOIN ProdutoFornecedor pf ON pf.id_produto = p.id_produto AND pf.ativo = TRUE
        LEFT JOIN Fornecedor f ON pf.id_fornecedor = f.id_fornecedor
        ${whereClause}
        LIMIT ? OFFSET ?`,
@@ -66,45 +62,42 @@ export const listarProdutos = async (req, res) => {
   }
 };
 
+// Listar produtos únicos (só ativos)
 export const listarProdutosUnicos = async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
   const { nome_produto, id_grupo, unidade_medida } = req.query;
-
-  const conditions = [];
+  const conditions = ['ativo = TRUE'];
   const values = [];
 
   if (nome_produto) {
-    conditions.push('p.nome_produto LIKE ?');
+    conditions.push('nome_produto LIKE ?');
     values.push(`%${nome_produto}%`);
   }
-
   if (id_grupo) {
-    conditions.push('p.id_grupo = ?');
+    conditions.push('id_grupo = ?');
     values.push(id_grupo);
   }
-
   if (unidade_medida) {
-    conditions.push('p.unidade_medida = ?');
+    conditions.push('unidade_medida = ?');
     values.push(unidade_medida);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
   try {
     const [countResult] = await pool.query(
       `SELECT COUNT(*) AS total
-       FROM Produtos p
+       FROM Produtos
        ${whereClause}`,
       values
     );
-
     const totalRecords = countResult[0].total;
 
     const [rows] = await pool.query(
-      `SELECT 
+      `SELECT
          p.*,
          g.nome_grupo
        FROM Produtos p
@@ -118,33 +111,29 @@ export const listarProdutosUnicos = async (req, res) => {
     const totalPages = Math.ceil(totalRecords / limit);
     res.json({ data: rows, page, limit, totalRecords, totalPages });
   } catch (error) {
-    console.error('Erro ao listar produtos únicos', error);
+    console.error('Erro em listar produtos únicos', error);
     res.status(500).json({ error: 'Erro interno ao listar produtos' });
   }
 };
 
+// Criar produto
 export const criarProduto = async (req, res) => {
-  const { sku, nome_produto, id_grupo, valor_produto, prazo_validade,
-          unidade_medida, codigo_barras, id_fornecedor,
-          preco_compra, prazo_entrega, condicoes_pagamento } = req.body;
+  const {
+    sku,
+    nome_produto,
+    id_grupo,
+    valor_produto,
+    prazo_validade,
+    unidade_medida,
+    codigo_barras,
+    id_fornecedor,
+    preco_compra,
+    prazo_entrega,
+    condicoes_pagamento
+  } = req.body;
 
   if (!sku || !nome_produto || !valor_produto) {
     return res.status(400).json({ message: 'Campos obrigatórios faltando' });
-  }
-
-
-  if (id_grupo) {
-    const [g] = await pool.query(
-      'SELECT 1 FROM Grupos WHERE id_grupo = ?', [id_grupo]
-    );
-    if (!g.length) return res.status(400).json({ message: 'Grupo inválido' });
-  }
-
-  if (id_fornecedor) {
-    const [f] = await pool.query(
-      'SELECT 1 FROM Fornecedor WHERE id_fornecedor = ?', [id_fornecedor]
-    );
-    if (!f.length) return res.status(400).json({ message: 'Fornecedor inválido' });
   }
 
   try {
@@ -152,32 +141,30 @@ export const criarProduto = async (req, res) => {
       `INSERT INTO Produtos
          (sku, nome_produto, id_grupo, valor_produto, prazo_validade, unidade_medida, codigo_barras)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [sku, nome_produto, id_grupo || null, valor_produto,
-       prazo_validade || null, unidade_medida, codigo_barras]
+      [sku, nome_produto, id_grupo || null, valor_produto, prazo_validade || null, unidade_medida, codigo_barras]
     );
-
     const productId = result.insertId;
 
     if (id_fornecedor) {
-        await pool.query(
-          `INSERT INTO ProdutoFornecedor
-             (id_produto, id_fornecedor, preco, prazo_entrega, condicoes_pagamento)
-           VALUES (?, ?, ?, ?, ?)`,
-          [productId, id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento]
-        );
-      }
+      await pool.query(
+        `INSERT INTO ProdutoFornecedor
+           (id_produto, id_fornecedor, preco, prazo_entrega, condicoes_pagamento)
+         VALUES (?, ?, ?, ?, ?)`,
+        [productId, id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento]
+      );
+    }
 
-    return res.status(201).json({ message: 'Produto registrado com sucesso!', id_produto: productId });
+    res.status(201).json({ message: 'Produto registrado com sucesso!', id_produto: productId });
   } catch (error) {
     console.error('Erro em criar produto', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'SKU ou código de barras duplicado' });
     }
-    return res.status(500).json({ error: 'Erro interno ao criar produto' });
+    res.status(500).json({ error: 'Erro interno ao criar produto' });
   }
 };
 
-
+// Visualizar produto (só ativo)
 export const visualizarProduto = async (req, res) => {
   const { id } = req.params;
   try {
@@ -185,20 +172,21 @@ export const visualizarProduto = async (req, res) => {
       `SELECT
          p.*,
          g.nome_grupo,
-         pf.id_fornecedor,               -- <-- ADICIONAR AQUI
+         pf.id_fornecedor,
          f.nome_fornecedor,
-         pf.preco      AS preco_compra,
+         pf.preco AS preco_compra,
          pf.prazo_entrega,
          pf.condicoes_pagamento
        FROM Produtos p
        LEFT JOIN Grupos g ON p.id_grupo = g.id_grupo
-       LEFT JOIN ProdutoFornecedor pf ON pf.id_produto = p.id_produto
+       LEFT JOIN ProdutoFornecedor pf ON pf.id_produto = p.id_produto AND pf.ativo = TRUE
        LEFT JOIN Fornecedor f ON pf.id_fornecedor = f.id_fornecedor
-       WHERE p.id_produto = ?`,
+       WHERE p.id_produto = ? AND p.ativo = TRUE`,
       [id]
     );
-    if (!rows.length) return res.status(404).json({ message: 'Produto não encontrado' });
-
+    if (!rows.length) {
+      return res.status(404).json({ message: 'Produto não encontrado' });
+    }
     res.json(rows[0]);
   } catch (error) {
     console.error('Erro em visualizar produto', error);
@@ -206,46 +194,54 @@ export const visualizarProduto = async (req, res) => {
   }
 };
 
-
+// Atualizar produto
 export const atualizarProduto = async (req, res) => {
   const { id } = req.params;
   const dados = req.body;
-  const { id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento } = req.body;
-
+  const {
+    id_fornecedor,
+    preco_compra,
+    prazo_entrega,
+    condicoes_pagamento
+  } = req.body;
 
   const camposPermitidos = [
-    'sku','nome_produto',
-    'id_grupo','valor_produto',
-    'prazo_validade','unidade_medida',
-    'codigo_barras'];
+    'sku','nome_produto','id_grupo','valor_produto',
+    'prazo_validade','unidade_medida','codigo_barras'
+  ];
 
-  const fields = [], values = [];
-
-  for (const c of camposPermitidos) {
-    if (dados[c] !== undefined) {
-      fields.push(`${c} = ?`);
-      values.push(dados[c]);
+  const fields = [];
+  const values = [];
+  for (const campo of camposPermitidos) {
+    if (dados[campo] !== undefined) {
+      fields.push(`${campo} = ?`);
+      values.push(dados[campo]);
     }
   }
-  if (!fields.length) return res.json({ message: 'Nenhuma alteração feita' });
+
+  if (!fields.length) {
+    return res.status(400).json({ message: 'Nenhuma alteração feita' });
+  }
 
   try {
     const [result] = await pool.query(
-      `UPDATE Produtos SET ${fields.join(',')} WHERE id_produto = ?`,
+      `UPDATE Produtos
+         SET ${fields.join(', ')}, data_atualizacao = CURRENT_TIMESTAMP
+       WHERE id_produto = ? AND ativo = TRUE`,
       [...values, id]
     );
-    if (!result.affectedRows) return res.status(404).json({ message: 'Produto não encontrado' });
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Produto não encontrado ou inativo' });
+    }
 
-
-    const [updateResult] = await pool.query(
+    // atualizar relação fornecedor, se houver
+    const [pfResult] = await pool.query(
       `UPDATE ProdutoFornecedor
-         SET id_fornecedor = ?, preco = ?, prazo_entrega = ?, condicoes_pagamento = ?
-       WHERE id_produto = ?`,
-      [id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento, id]
+         SET preco = ?, prazo_entrega = ?, condicoes_pagamento = ?, data_atualizacao = CURRENT_TIMESTAMP
+       WHERE id_produto = ? AND ativo = TRUE`,
+      [preco_compra, prazo_entrega, condicoes_pagamento, id]
     );
-    
-
-    if (updateResult.affectedRows === 0) {
+    if (!pfResult.affectedRows && id_fornecedor) {
       await pool.query(
         `INSERT INTO ProdutoFornecedor
            (id_produto, id_fornecedor, preco, prazo_entrega, condicoes_pagamento)
@@ -261,20 +257,22 @@ export const atualizarProduto = async (req, res) => {
   }
 };
 
-
+// Remoção lógica de produto
 export const removerProduto = async (req, res) => {
   const { id } = req.params;
-  if (isNaN(id)) return res.status(400).json({ message: 'ID inválido' });
-
   try {
     const [result] = await pool.query(
-      'DELETE FROM Produtos WHERE id_produto = ?',
+      `UPDATE Produtos
+         SET ativo = FALSE, data_atualizacao = CURRENT_TIMESTAMP
+       WHERE id_produto = ? AND ativo = TRUE`,
       [id]
     );
-    if (!result.affectedRows) return res.status(404).json({ message: 'Produto não encontrado' });
-    res.json({ message: 'Produto removido com sucesso' });
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Produto não encontrado ou já inativo' });
+    }
+    res.json({ message: 'Produto inativado com sucesso' });
   } catch (error) {
     console.error('Erro em remover produto', error);
-    res.status(500).json({ message: 'Erro interno ao remover produto' });
+    res.status(500).json({ message: 'Erro interno ao inativar produto' });
   }
 };

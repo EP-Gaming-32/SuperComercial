@@ -7,14 +7,11 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 
 export default function FornecedorByFilial() {
-  const [dataOriginal, setDataOriginal] = useState([]);
-  const [fornecedorSelecionado, setFornecedorSelecionado] = useState("Todos");
-  const [fornecedores, setFornecedores] = useState([]);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
     async function fetchFornecedores() {
@@ -22,26 +19,21 @@ export default function FornecedorByFilial() {
         const response = await fetch("http://localhost:5000/relatorios/fornecedores-filial");
         const rawData = await response.json();
 
-        // Agrupar por loja e contar por fornecedor
-        const agrupado = {};
+        // Agrupar e contar fornecedores por filial
+        const agrupado = rawData.reduce((acc, item) => {
+          const { nome_filial } = item;
+          const existente = acc.find((f) => f.store === nome_filial);
 
-        rawData.forEach((item) => {
-          const { nome_filial, nome_fornecedor } = item;
-
-          if (!agrupado[nome_filial]) {
-            agrupado[nome_filial] = { loja: nome_filial };
+          if (existente) {
+            existente.suppliers += 1;
+          } else {
+            acc.push({ store: nome_filial, suppliers: 1 });
           }
 
-          agrupado[nome_filial][nome_fornecedor] =
-            (agrupado[nome_filial][nome_fornecedor] || 0) + 1;
-        });
+          return acc;
+        }, []);
 
-        const lista = Object.values(agrupado);
-        setDataOriginal(lista);
-
-        // Extrai nomes únicos de fornecedores
-        const nomesUnicos = [...new Set(rawData.map((i) => i.nome_fornecedor))];
-        setFornecedores(["Todos", ...nomesUnicos]);
+        setData(agrupado);
       } catch (error) {
         console.error("Erro ao buscar dados de fornecedores por filial:", error);
       }
@@ -50,49 +42,16 @@ export default function FornecedorByFilial() {
     fetchFornecedores();
   }, []);
 
-  const dataFiltrada =
-    fornecedorSelecionado === "Todos"
-      ? dataOriginal
-      : dataOriginal.map((item) => ({
-          loja: item.loja,
-          [fornecedorSelecionado]: item[fornecedorSelecionado] || 0,
-        }));
-
-  const cores = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#a6d8ff", "#c0a0ff"];
-
   return (
     <div>
       <h3 className="text-lg font-bold mb-4">Relatório de Fornecedores por Loja</h3>
-
-      <div style={{ marginBottom: 10 }}>
-        <label htmlFor="filtroFornecedor">Fornecedor: </label>
-        <select
-          id="filtroFornecedor"
-          value={fornecedorSelecionado}
-          onChange={(e) => setFornecedorSelecionado(e.target.value)}
-        >
-          {fornecedores.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={dataFiltrada}>
+        <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="loja" />
+          <XAxis dataKey="store" />
           <YAxis allowDecimals={false} />
           <Tooltip />
-          <Legend />
-          {fornecedorSelecionado === "Todos"
-            ? fornecedores
-                .filter((f) => f !== "Todos")
-                .map((f, index) => (
-                  <Bar key={f} dataKey={f} fill={cores[index % cores.length]} />
-                ))
-            : <Bar dataKey={fornecedorSelecionado} fill="#8884d8" />}
+          <Bar dataKey="suppliers" fill="#00C49F" />
         </BarChart>
       </ResponsiveContainer>
     </div>

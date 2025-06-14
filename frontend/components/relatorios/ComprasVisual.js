@@ -11,15 +11,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import styles from "./Visuals.module.css";
-import Card from "./Card";
 
 export default function ComprasVisual() {
   const [data, setData] = useState([]);
   const [filiais, setFiliais] = useState([]);
   const [filialSelecionada, setFilialSelecionada] = useState("");
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todos");
-
-  const categorias = ["Todos", "Alimentos", "Eletrônicos", "Higiene"];
 
   // Carrega as filiais
   useEffect(() => {
@@ -55,17 +51,12 @@ export default function ComprasVisual() {
             }),
             valor_total: parseFloat(item.valor_total_pedidos),
             total_pedidos: parseInt(item.total_pedidos),
-            categoria: item.categoria || "Outros",
           };
         });
         setData(formatado);
       })
       .catch((err) => console.error("Erro ao buscar dados de pedidos:", err));
   }, [filialSelecionada]);
-
-  const dataFiltrada = categoriaSelecionada === "Todos"
-    ? data
-    : data.filter(item => item.categoria === categoriaSelecionada);
 
   return (
     <div className={styles.visualContainer}>
@@ -88,7 +79,7 @@ export default function ComprasVisual() {
 
       <div className={styles.visualContent}>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={dataFiltrada}>
+          <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" tick={{ fontSize: 10 }} />
             <YAxis
@@ -138,44 +129,6 @@ export default function ComprasVisual() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-
-      <Card title="Compras - Valor Total por Categoria">
-        <div style={{ marginBottom: "10px" }}>
-          <label>Filtrar por categoria:</label>
-          <select
-            onChange={(e) => setCategoriaSelecionada(e.target.value)}
-            value={categoriaSelecionada}
-            style={{ marginLeft: "10px" }}
-          >
-            {categorias.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={dataFiltrada}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-            <YAxis
-              tick={{ fontSize: 10 }}
-              label={{
-                value: "Valor Total",
-                angle: -90,
-                position: "insideLeft",
-                fontSize: 10,
-              }}
-            />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="valor_total"
-              stroke="#ff9800"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
     </div>
   );
 }

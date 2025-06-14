@@ -1,269 +1,129 @@
 "use client";
-
-import React, { useState } from "react";
-
-import {
-
-  BarChart,
-
-  Bar,
-
-  XAxis,
-
-  YAxis,
-
-  CartesianGrid,
-
-  Tooltip,
-
-  Legend,
-
-  ResponsiveContainer,
-
-} from "recharts";
-
-
-
-export default function EstoqueBarChart() {
-
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todos");
-
-
-
-  const categorias = ["Todos", "Eletrônicos", "Alimentos", "Higiene"];
-
-
-
-  // Dados detalhados com subcategorias
-
-  const dataOriginal = [
-
-    {
-
-      loja: "Loja A",
-
-      Eletrônicos: { Celular: 150, TV: 100, Fone: 150 },
-
-      Alimentos: { Bolacha: 120, Farinha: 100, Salgado: 80 },
-
-      Higiene: { Sabonete: 90, Shampoo: 110 },
-
-    },
-
-    {
-
-      loja: "Loja B",
-
-      Eletrônicos: { Celular: 80, TV: 100, Fone: 70 },
-
-      Alimentos: { Bolacha: 200, Farinha: 150, Salgado: 100 },
-
-      Higiene: { Sabonete: 60, Shampoo: 90 },
-
-    },
-
-    {
-
-      loja: "Loja C",
-
-      Eletrônicos: { Celular: 200, TV: 150, Fone: 150 },
-
-      Alimentos: { Bolacha: 130, Farinha: 110, Salgado: 110 },
-
-      Higiene: { Sabonete: 50, Shampoo: 50 },
-
-    },
-
-  ];
-
-
-
-  // Função para somar valores de uma categoria por loja
-
-  function somaCategoria(categoria, loja) {
-
-    return Object.values(loja[categoria] || {}).reduce((a, b) => a + b, 0);
-
-  }
-
-
-
-  // Dados para "Todos" - soma geral por loja
-
-  if (categoriaSelecionada === "Todos") {
-
-    const dataTodos = dataOriginal.map((loja) => ({
-
-      loja: loja.loja,
-
-      Eletrônicos: somaCategoria("Eletrônicos", loja),
-
-      Alimentos: somaCategoria("Alimentos", loja),
-
-      Higiene: somaCategoria("Higiene", loja),
-
-    }));
-
-
-
-    return (
-
-      <div>
-
-        <h3>Relatório de Estoque por Loja</h3>
-
-
-
-        <label>Filtrar por categoria:</label>
-
-        <select
-
-          onChange={(e) => setCategoriaSelecionada(e.target.value)}
-
-          value={categoriaSelecionada}
-
-          style={{ marginBottom: 10, marginLeft: 10 }}
-
-        >
-
-          {categorias.map((cat) => (
-
-            <option key={cat} value={cat}>
-
-              {cat}
-
-            </option>
-
-          ))}
-
-        </select>
-
-
-
-        <ResponsiveContainer width="100%" height={350}>
-
-          <BarChart data={dataTodos} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-
-            <CartesianGrid strokeDasharray="3 3" />
-
-            <XAxis dataKey="loja" />
-
-            <YAxis />
-
-            <Tooltip />
-
-            <Legend />
-
-            <Bar dataKey="Eletrônicos" fill="#8884d8" />
-
-            <Bar dataKey="Alimentos" fill="#82ca9d" />
-
-            <Bar dataKey="Higiene" fill="#ffc658" />
-
-          </BarChart>
-
-        </ResponsiveContainer>
-
-      </div>
-
-    );
-
-  }
-
-
-
-  // Dados para uma categoria específica: transformar subcategorias em barras
-
-  // Exemplo: para "Alimentos" mostramos Bolacha, Farinha, Salgado, cada um como uma barra agrupada por loja
-
-  const subcategorias = Object.keys(dataOriginal[0][categoriaSelecionada] || {});
-
-
-
-  // Monta dados para gráfico, cada objeto com { loja: "Loja A", Bolacha: val, Farinha: val, Salgado: val }
-
-  const dataPorSubcategoria = dataOriginal.map((loja) => {
-
-    let obj = { loja: loja.loja };
-
-    subcategorias.forEach((sub) => {
-
-      obj[sub] = loja[categoriaSelecionada][sub] || 0;
-
-    });
-
-    return obj;
-
-  });
-
-
-
-  // Cores para as barras (repete se precisar)
-
-  const colors = ["#8884d8", "#82ca9d", "#ffc658", "#d88484", "#84d8d8"];
-
-
+import React, { useEffect, useState } from "react";
+import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
+
+export default function EstoqueTreemap() {
+  const [data, setData] = useState([]);
+  const [filiais, setFiliais] = useState([]);
+  const [filialSelecionada, setFilialSelecionada] = useState("");
+
+  // Buscar lista de filiais
+  useEffect(() => {
+    fetch("http://localhost:5000/filial?page=1&limit=100")
+      .then((res) => res.json())
+      .then((resposta) => {
+        const lista = resposta.data.map((f) => ({
+          id: f.id_filial.toString(),
+          nome: f.nome_filial,
+        }));
+        setFiliais(lista);
+        if (lista.length > 0) {
+          setFilialSelecionada(lista[0].nome); // usamos nome_filial como chave
+        }
+      })
+      .catch((err) => console.error("Erro ao buscar filiais:", err));
+  }, []);
+
+  // Buscar dados do relatório de estoque
+  useEffect(() => {
+    async function fetchEstoque() {
+      try {
+        const response = await fetch("http://localhost:5000/relatorios/estoque-filial");
+        const rawData = await response.json();
+
+        // Agrupar por nome_filial
+        const agrupado = rawData.reduce((acc, item) => {
+          const { nome_filial, nome_produto, quantidade } = item;
+
+          let filial = acc.find((f) => f.name === nome_filial);
+          if (!filial) {
+            filial = { name: nome_filial, children: [] };
+            acc.push(filial);
+          }
+
+          filial.children.push({
+            name: nome_produto,
+            stock: quantidade,
+          });
+
+          return acc;
+        }, []);
+
+        setData(agrupado);
+      } catch (error) {
+        console.error("Erro ao buscar dados de estoque:", error);
+      }
+    }
+
+    fetchEstoque();
+  }, []);
+
+  // Dados filtrados por filial selecionada
+  const dadosFiltrados = data.find((f) => f.name === filialSelecionada)?.children || [];
 
   return (
-
     <div>
+      <h3 className="text-lg font-bold mb-4">Relatório de Estoque por Loja</h3>
 
-      <h3>Relatório de Estoque por Loja - Categoria: {categoriaSelecionada}</h3>
-
-
-
-      <label>Filtrar por categoria:</label>
-
-      <select
-
-        onChange={(e) => setCategoriaSelecionada(e.target.value)}
-
-        value={categoriaSelecionada}
-
-        style={{ marginBottom: 10, marginLeft: 10 }}
-
-      >
-
-        {categorias.map((cat) => (
-
-          <option key={cat} value={cat}>
-
-            {cat}
-
-          </option>
-
-        ))}
-
-      </select>
-
-
-
-      <ResponsiveContainer width="100%" height={350}>
-
-        <BarChart data={dataPorSubcategoria} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-
-          <CartesianGrid strokeDasharray="3 3" />
-
-          <XAxis dataKey="loja" />
-
-          <YAxis />
-
-          <Tooltip />
-
-          <Legend />
-
-          {subcategorias.map((sub, index) => (
-
-            <Bar key={sub} dataKey={sub} fill={colors[index % colors.length]} />
-
+      <div className="mb-4">
+        <label className="mr-2 font-semibold" htmlFor="filialSelect">Filial:</label>
+        <select
+          id="filialSelect"
+          value={filialSelecionada}
+          onChange={(e) => setFilialSelecionada(e.target.value)}
+          className="border px-2 py-1 rounded"
+        >
+          {filiais.map((filial) => (
+            <option key={filial.id} value={filial.nome}>
+              {filial.nome}
+            </option>
           ))}
+        </select>
+      </div>
 
-        </BarChart>
-
+      <ResponsiveContainer width="100%" height={500}>
+        <Treemap
+          data={dadosFiltrados}
+          dataKey="stock"
+          nameKey="name"
+          stroke="#fff"
+          fill="#82ca9d"
+          content={<CustomTreemapContent />}
+          isAnimationActive={false}
+        >
+          <Tooltip />
+        </Treemap>
       </ResponsiveContainer>
-
     </div>
-
   );
-
 }
+
+// Treemap personalizado
+const CustomTreemapContent = (props) => {
+  const { depth, x, y, width, height, name, payload } = props;
+  const stock = payload?.stock;
+
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill={depth === 0 ? "#82ca9d" : "#8dd1e1"}
+        stroke="#fff"
+      />
+      {width > 60 && height > 20 && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2}
+          textAnchor="middle"
+          fill="#fff"
+          fontSize={12}
+        >
+          {name} {stock !== undefined ? `(${stock})` : ""}
+        </text>
+      )}
+    </g>
+  );
+};
