@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 // Função auxiliar para buscar filiais
 export const fetchFiliais = async () => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000';
     // O endpoint /api/filial espera page e limit, mesmo que queiramos todos
     // Vamos solicitar um limite grande o suficiente para pegar todas ou a maioria das filiais.
     // Ou, se houver um endpoint /api/filial/all sem paginação, seria melhor usar ele.
@@ -43,7 +43,7 @@ const useChartData = (endpoint, initialParams = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api';
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000';
       let url = `${baseUrl}${endpoint}`;
 
       const queryParams = new URLSearchParams();

@@ -1,12 +1,12 @@
 import pool from '../config/db.js';
 
-// Listar produtos (só ativos, com fornecedores ativos)
+// Listar produtos (ativos e fornecedores ativos)
 export const listarProdutos = async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  const { nome_produto, id_grupo, id_fornecedor} = req.query;
+  const { nome_produto, id_grupo, id_fornecedor } = req.query;
 
   const conditions = ['p.ativo = TRUE'];
   const values = [];
@@ -64,7 +64,7 @@ export const listarProdutosUnicos = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  const { nome_produto, id_grupo, unidade_medida } = req.query;
+  const { nome_produto, id_grupo } = req.query;
   const conditions = ['ativo = TRUE'];
   const values = [];
 
@@ -117,8 +117,6 @@ export const criarProduto = async (req, res) => {
     valor_produto,
     codigo_barras,
     id_fornecedor,
-    preco_compra,
-    prazo_entrega,
     condicoes_pagamento
   } = req.body;
 
@@ -138,9 +136,9 @@ export const criarProduto = async (req, res) => {
     if (id_fornecedor) {
       await pool.query(
         `INSERT INTO ProdutoFornecedor
-           (id_produto, id_fornecedor, preco, prazo_entrega, condicoes_pagamento)
-         VALUES (?, ?, ?, ?, ?)`,
-        [productId, id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento]
+           (id_produto, id_fornecedor, condicoes_pagamento, preco)
+         VALUES (?, ?, ?, ?)`,
+        [productId, id_fornecedor, condicoes_pagamento, valor_produto]
       );
     }
 
@@ -154,7 +152,7 @@ export const criarProduto = async (req, res) => {
   }
 };
 
-// Visualizar produto (só ativo)
+// Visualizar produto (ativo)
 export const visualizarProduto = async (req, res) => {
   const { id } = req.params;
   try {
@@ -164,9 +162,8 @@ export const visualizarProduto = async (req, res) => {
          g.nome_grupo,
          pf.id_fornecedor,
          f.nome_fornecedor,
-         pf.preco AS preco_compra,
-         pf.prazo_entrega,
-         pf.condicoes_pagamento
+         pf.condicoes_pagamento,
+         pf.preco AS preco_fornecedor
        FROM Produtos p
        LEFT JOIN Grupos g ON p.id_grupo = g.id_grupo
        LEFT JOIN ProdutoFornecedor pf ON pf.id_produto = p.id_produto AND pf.ativo = TRUE
@@ -190,13 +187,11 @@ export const atualizarProduto = async (req, res) => {
   const dados = req.body;
   const {
     id_fornecedor,
-    preco_compra,
-    prazo_entrega,
     condicoes_pagamento
   } = req.body;
 
   const camposPermitidos = [
-    'sku','nome_produto','id_grupo','valor_produto','codigo_barras'
+    'sku', 'nome_produto', 'id_grupo', 'valor_produto', 'codigo_barras'
   ];
 
   const fields = [];
@@ -226,16 +221,18 @@ export const atualizarProduto = async (req, res) => {
     // atualizar relação fornecedor, se houver
     const [pfResult] = await pool.query(
       `UPDATE ProdutoFornecedor
-         SET preco = ?, prazo_entrega = ?, condicoes_pagamento = ?, data_atualizacao = CURRENT_TIMESTAMP
+         SET condicoes_pagamento = ?, preco = ?, data_atualizacao = CURRENT_TIMESTAMP
        WHERE id_produto = ? AND ativo = TRUE`,
-      [preco_compra, prazo_entrega, condicoes_pagamento, id]
+      [condicoes_pagamento, dados.valor_produto, id]
     );
+
+    // Se não tinha fornecedor antes, faz o insert
     if (!pfResult.affectedRows && id_fornecedor) {
       await pool.query(
         `INSERT INTO ProdutoFornecedor
-           (id_produto, id_fornecedor, preco, prazo_entrega, condicoes_pagamento)
-         VALUES (?, ?, ?, ?, ?)`,
-        [id, id_fornecedor, preco_compra, prazo_entrega, condicoes_pagamento]
+           (id_produto, id_fornecedor, condicoes_pagamento, preco)
+         VALUES (?, ?, ?, ?)`,
+        [id, id_fornecedor, condicoes_pagamento, dados.valor_produto]
       );
     }
 

@@ -14,10 +14,10 @@ CREATE TABLE Usuarios (
 -- Tabela de Grupos
 CREATE TABLE Grupos (
     id_grupo INT AUTO_INCREMENT PRIMARY KEY,
-    nome_grupo VARCHAR(100) NOT NULL,
-    descricao VARCHAR(255),
+    nome_grupo VARCHAR(100) NOT NULL UNIQUE,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 );
 
 -- Tabela de Produtos
@@ -185,7 +185,7 @@ CREATE TABLE ProdutoFornecedor (
     id_produto INT NOT NULL,
     id_fornecedor INT NOT NULL,
     preco DECIMAL(10,2) NOT NULL,
-    prazo_entrega INT NOT NULL,
+    prazo_entrega INT NULL,
     condicoes_pagamento VARCHAR(255),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (id_produto) REFERENCES Produtos(id_produto) ON DELETE CASCADE,
