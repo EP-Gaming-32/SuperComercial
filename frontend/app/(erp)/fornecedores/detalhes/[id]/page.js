@@ -30,7 +30,7 @@ export default function DetalhesFornecedorPage() {
         const err = await res.json();
         throw new Error(err.message || "Erro na atualização");
       }
-      alert("fornecedore atualizado com sucesso!");
+      alert("Fornecedor atualizado com sucesso!");
       router.push("/fornecedores/visualizar");
     } catch (err) {
       console.error(err);

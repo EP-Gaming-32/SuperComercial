@@ -30,7 +30,7 @@ export default function DetalhesFilialPage() {
         const err = await res.json();
         throw new Error(err.message || "Erro na atualização");
       }
-      alert("filial atualizado com sucesso!");
+      alert("Filial atualizado com sucesso!");
       router.push("/filial/visualizar");
     } catch (err) {
       console.error(err);

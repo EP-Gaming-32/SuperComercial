@@ -116,6 +116,7 @@ export default function FormPageFornecedor({
               onChange={handleChange}
               className={styles.input}
               maxLength={maxLength}
+              style={{ resize: 'none' }}
             />
           ) : (
             <input

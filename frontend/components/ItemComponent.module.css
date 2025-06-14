@@ -4,9 +4,9 @@
   align-items: stretch;
   gap: 0;
   padding: 0.8rem;
-  border: 1px solid #ddd;
+  border: 1px solid #0000002a;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: #ebebebdc;
   margin: 0.5rem 0;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -24,8 +24,8 @@
   align-items: center;
   justify-content: flex-start;
   padding: 0.5rem;
-  border-right: 1px solid #ccc;
-  gap: 0.3rem;               /* espaço entre label e valor */
+  border-right: 1px solid #1b3655;
+  gap: 0.4rem;               /* espaço entre label e valor */
 }
 
 /* Último campo (botão delete ou outro) não tem borda */

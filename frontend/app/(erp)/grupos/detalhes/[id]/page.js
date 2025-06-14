@@ -30,7 +30,7 @@ export default function DetalhesGruposPage() {
         const err = await res.json();
         throw new Error(err.message || "Erro na atualização");
       }
-      alert("grupo atualizado com sucesso!");
+      alert("Grupo atualizado com sucesso!");
       router.push("/grupos/visualizar");
     } catch (err) {
       console.error(err);
