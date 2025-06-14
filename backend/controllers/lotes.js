@@ -1,40 +1,39 @@
+// controllers/lotes.js
 import pool from '../config/db.js';
 
 export const listarLotes = async (req, res) => {
-  const page  = parseInt(req.query.page,10)||1;
-  const limit = parseInt(req.query.limit,10)||10;
-  const offset= (page-1)*limit;
+  const page  = parseInt(req.query.page,10) || 1;
+  const limit = parseInt(req.query.limit,10) || 10;
+  const offset= (page - 1) * limit;
 
-  //filtros
-
-  const { id_produto, id_lote, codigo_lote, data_expedicao, data_validade, quantidade} = req.query;
-
+  // filtros
+  const { id_produto, id_lote, codigo_lote, data_expedicao, data_validade, quantidade } = req.query;
   const conditions = [];
   const values = [];
 
   if (id_produto) {
-    conditions.push("p.id_produto = ?");
+    conditions.push('l.id_produto = ?');
     values.push(id_produto);
   }
   if (id_lote) {
-    conditions.push("l.id_lote = ?");
+    conditions.push('l.id_lote = ?');
     values.push(id_lote);
   }
   if (codigo_lote) {
-    conditions.push("l.codigo_lote LIKE ?");
+    conditions.push('l.codigo_lote LIKE ?');
     values.push(`%${codigo_lote}%`);
   }
   if (data_expedicao) {
-    conditions.push("l.data_expedicao LIKE ?");
-    values.push(`%${data_expedicao}%`);
+    conditions.push('DATE(l.data_expedicao) = ?');
+    values.push(data_expedicao);
   }
   if (data_validade) {
-    conditions.push("l.data_validade LIKE ?");
-    values.push(`%${data_validade}%`);
+    conditions.push('DATE(l.data_validade) = ?');
+    values.push(data_validade);
   }
   if (quantidade) {
-    conditions.push("l.quantidade LIKE ?");
-    values.push(`%${quantidade}%`);
+    conditions.push('l.quantidade = ?');
+    values.push(quantidade);
   }
 
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -42,21 +41,24 @@ export const listarLotes = async (req, res) => {
   try {
     const [countResult] = await pool.query(
       `SELECT COUNT(*) AS total
-      FROM Lote l
-      JOIN Produtos p ON l.id_produto = p.id_produto
-      ${whereClause}`,
+       FROM Lote l
+       JOIN Produtos p ON l.id_produto = p.id_produto
+       ${whereClause}`,
       values
-    )
-    
+    );
     const totalRecords = countResult[0].total;
 
     const [rows] = await pool.query(
-      `SELECT l.*, p.nome_produto 
-         FROM Lote l
-         JOIN Produtos p ON l.id_produto = p.id_produto
-         ${whereClause} 
-         LIMIT ? OFFSET ?`, [...values, limit, offset]
+      `SELECT l.id_lote, l.id_produto, p.nome_produto,
+         l.codigo_lote, l.data_expedicao, l.data_validade, l.quantidade
+       FROM Lote l
+       JOIN Produtos p ON l.id_produto = p.id_produto
+       ${whereClause}
+       ORDER BY l.id_lote DESC
+       LIMIT ? OFFSET ?`,
+      [...values, limit, offset]
     );
+
     const totalPages = Math.ceil(totalRecords / limit);
     res.json({ data: rows, page, limit, totalRecords, totalPages });
   } catch (err) {
@@ -68,14 +70,16 @@ export const listarLotes = async (req, res) => {
 export const visualizarLotes = async (req, res) => {
   const { id } = req.params;
   try {
-    const [[lote]] = await pool.query(
-      `SELECT l.*, p.nome_produto
-         FROM Lote l
-         JOIN Produtos p ON l.id_produto = p.id_produto
-       WHERE l.id_lote = ?`, [id]
+    const [rows] = await pool.query(
+      `SELECT l.id_lote, l.id_produto, p.nome_produto,
+         l.codigo_lote, l.data_expedicao, l.data_validade, l.quantidade
+       FROM Lote l
+       JOIN Produtos p ON l.id_produto = p.id_produto
+       WHERE l.id_lote = ?`,
+      [id]
     );
-    if (!lote) return res.status(404).json({ message: 'Lote não encontrado' });
-    res.json(lote);
+    if (!rows.length) return res.status(404).json({ message: 'Lote não encontrado' });
+    res.json(rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro interno ao visualizar lote' });
@@ -84,14 +88,15 @@ export const visualizarLotes = async (req, res) => {
 
 export const criarLotes = async (req, res) => {
   const { id_produto, codigo_lote, data_expedicao, data_validade, quantidade } = req.body;
-  if (!id_produto||!codigo_lote||!data_expedicao||quantidade==null)
+  if (!id_produto || !codigo_lote || !data_expedicao || quantidade == null) {
     return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
+  }
   try {
     const [result] = await pool.query(
       `INSERT INTO Lote
          (id_produto, codigo_lote, data_expedicao, data_validade, quantidade)
        VALUES (?, ?, ?, ?, ?)`,
-      [id_produto, codigo_lote, data_expedicao, data_validade||null, quantidade]
+      [id_produto, codigo_lote, data_expedicao, data_validade || null, quantidade]
     );
     res.status(201).json({ id_lote: result.insertId });
   } catch (err) {
@@ -103,21 +108,22 @@ export const criarLotes = async (req, res) => {
 export const atualizarLotes = async (req, res) => {
   const { id } = req.params;
   const campos = ['id_produto','codigo_lote','data_expedicao','data_validade','quantidade'];
-  const updates = [], vals = [];
-  for (const c of campos) {
-    if (req.body[c]!==undefined) {
+  const updates = [];
+  const vals = [];
+  campos.forEach(c => {
+    if (req.body[c] !== undefined) {
       updates.push(`${c} = ?`);
       vals.push(req.body[c]);
     }
-  }
-  if (!updates.length) return res.status(400).json({ message:'Nenhuma alteração' });
+  });
+  if (!updates.length) return res.status(400).json({ message:'Nenhuma alteração enviada' });
   try {
     const [r] = await pool.query(
       `UPDATE Lote SET ${updates.join(', ')} WHERE id_lote = ?`,
       [...vals, id]
     );
     if (!r.affectedRows) return res.status(404).json({ message:'Lote não encontrado' });
-    res.json({ message:'Lote atualizado' });
+    res.json({ message:'Lote atualizado com sucesso' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error:'Erro interno ao atualizar lote' });
@@ -129,9 +135,34 @@ export const removerLotes = async (req, res) => {
   try {
     const [r] = await pool.query(`DELETE FROM Lote WHERE id_lote = ?`, [id]);
     if (!r.affectedRows) return res.status(404).json({ message:'Lote não encontrado' });
-    res.json({ message:'Lote removido' });
+    res.json({ message:'Lote removido com sucesso' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error:'Erro interno ao remover lote' });
+  }
+};
+
+export const listarLotesByEstoque = async (req, res) => {
+  const { id_estoque } = req.query;
+
+  if (!id_estoque) {
+    return res.status(400).json({ message: 'id_estoque é obrigatório' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT l.id_lote, l.id_produto, p.nome_produto,
+              l.codigo_lote, l.data_expedicao, l.data_validade, l.quantidade
+         FROM Lote l
+         JOIN Produtos p ON l.id_produto = p.id_produto
+         JOIN Estoque e  ON e.id_lote = l.id_lote
+         WHERE e.id_estoque = ?`,
+      [id_estoque]
+    );
+
+    res.json({ data: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro interno ao listar lotes por estoque' });
   }
 };

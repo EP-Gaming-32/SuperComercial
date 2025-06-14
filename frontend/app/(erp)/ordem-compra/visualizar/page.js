@@ -1,4 +1,3 @@
-// app/(erp)/pedido/visualizar/page.js
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,123 +5,85 @@ import SearchPage from "@/components/searchPage/SearchPage";
 import BoxComponent from "@/components/BoxComponent";
 import styles from "./visualizar.module.css";
 
-export default function PedidoPage() {
-  const [filial, setFilial] = useState([]);
+export default function OrdemCompraPage() {
   const [fornecedores, setFornecedores] = useState([]);
-  const [statusPedido, setStatusPedido] = useState([]);
-  const [carregando, setCarregando] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+
+  // Status fixos de OrdemCompra
+  const statusOptions = [
+    { value: "Pendente", label: "Pendente" },
+    { value: "Recebido", label: "Recebido" },
+    { value: "Cancelado", label: "Cancelado" },
+  ];
 
   useEffect(() => {
-    async function fetchFilters() {
-      try{
-        console.log("[PedidoPage] buscando fornecedores, filiais");
-        const [filialResposta, fornecedorResposta, statusPedidoResposta] = await Promise.all([
-          fetch("http://localhost:5000/filial"),
-          fetch("http://localhost:5000/fornecedores"),
-          fetch("http://localhost:5000/statusPedido"),
-      ]);
-
-      const filialData = await filialResposta.json();
-      const fornecedorData = await fornecedorResposta.json();
-      const StatusPedidoData = await statusPedidoResposta.json();
-
-      setFilial(filialData.data || filialData);
-      setFornecedores(fornecedorData.data || fornecedorData);
-      setStatusPedido(StatusPedidoData.data || StatusPedidoData);
-
-      console.log(
-        "[EstoquePage] buscou: ",
-         "Fornecedores: ",
-        fornecedorData,
-         "filial: ",
-        filialData,
-         "Status Pedido: ",
-         StatusPedidoData,
-      );
-    } catch (err) {
-      console.error("[PedidoPage] Erro ao carregar filtros", err);
-    } finally {
-      setCarregando(false);
+    async function fetchFornecedores() {
+      try {
+        console.log("[OrdemCompraPage] buscando fornecedores");
+        const resp = await fetch("http://localhost:5000/fornecedor");
+        const data = await resp.json();
+        setFornecedores(data.data || data || []);
+        console.log("[OrdemCompraPage] fornecedores:", data);
+      } catch (err) {
+        console.error("[OrdemCompraPage] Erro ao carregar fornecedores", err);
+      } finally {
+        setCarregando(false);
+      }
     }
-  }
-
-  fetchFilters();
-
+    fetchFornecedores();
   }, []);
 
-  if (carregando) return <p>Carregando Filtros...</p>;
+  if (carregando) return <p>Carregando filtros...</p>;
 
-  return(
+  return (
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-          title=""
-          endpoint="pedido"
-          hookParams={{ limit: 10}}
+          title="Ordens de Compra"
+          endpoint="ordemCompra"
+          hookParams={{ limit: 10 }}
           filters={[
             {
               name: "id_fornecedor",
               label: "Fornecedor",
               type: "select",
-              options: fornecedores.map((fo) => ({
-                value: fo.id_fornecedor,
-                label: fo.nome_fornecedor,
+              options: fornecedores.map((f) => ({
+                value: f.id_fornecedor,
+                label: f.nome_fornecedor,
               })),
             },
             {
-              name: "id_filial",
-              label: "Filial",
-              type: "select",
-              options: filial.map((fi) => ({
-                value: fi.id_filial,
-                label: fi.nome_filial,
-              })),
-            },
-            {
-              name: "tipo_pedido",
-              label: "Tipo de Pedido",
-              type: "select",
-              options: [
-                { value: "compra", label: "Compra" },
-                { value: "reposição", label: "Reposição" },
-              ],
-            },
-            {
-              name: "valor_total",
-              label: "Valor Total",
-              type: "text",
-            },
-            {
-              name: "data_pedido",
-              label: "Data do Pedido",
-              type: "text",
-            },
-            {
-              name: "status_pedido",
+              name: "status",
               label: "Status",
               type: "select",
-              options: statusPedido.map((status) => ({
-                value: status.descricao,
-                label: status.descricao,
-              })),
+              options: statusOptions,
+            },
+            {
+              name: "data_ordem",
+              label: "Data da Ordem",
+              type: "text",
+            },
+            {
+              name: "data_entrega_prevista",
+              label: "Previsto Entrega",
+              type: "text",
             },
           ]}
           keywordName={null}
-          keywordPlaceholder="buscar pedido"
-          detailRoute="/pedido/detalhes"
-          idField="id_pedido"
+          keywordPlaceholder="Buscar ordem"
+          detailRoute="/ordem-compra/detalhes"
+          idField="id_ordem_compra"
           showFields={[
-            { value: "nome_filial", label: "Filial"},
-            { value: "nome_fornecedor", label: "Fornecedor"},
-            { value: "tipo_pedido", label: "Tipo"},
-            { value: "valor_total", label: "Valor"},
-            { value: "status_atual", label: "Status Atual" },
-            { value: "data_pedido", label: "Data"},
+            { value: "nome_fornecedor", label: "Fornecedor" },
+            { value: "data_ordem", label: "Data da Ordem" },
+            { value: "data_entrega_prevista", label: "Entrega Prevista" },
+            { value: "valor_total", label: "Valor Total" },
+            { value: "status", label: "Status Atual" },
           ]}
-          addButtonUrl="/pedido/registrar"
-          addButtonLabel="Registrar Pedido"
+          addButtonUrl="/ordem-compra/registrar"
+          addButtonLabel="Registrar Ordem"
         />
       </BoxComponent>
     </div>
-  )
+  );
 }

@@ -3,17 +3,16 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
-import FormPageEstoque from "@/components/form/FormPageEstoque";
+import FormPageEstoqueLote from "@/components/form/FormPageEstoqueLote";
 
 export default function DetalhesEstoquePage() {
   const { id } = useParams();
   const router = useRouter();
 
   const [formData, setFormData] = useState(null);
-  const [produtos, setProdutos]       = useState([]);
+  const [produtos, setProdutos] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
-  const [filiais, setFiliais]         = useState([]);
-  const [lotes, setLotes]             = useState([]);
+  const [filiais, setFiliais] = useState([]);
 
   useEffect(() => {
     fetch(`http://localhost:5000/estoque/${id}`)
@@ -34,12 +33,10 @@ export default function DetalhesEstoquePage() {
     Promise.all([
       fetch("http://localhost:5000/produtos?limit=100")
         .then(r => r.json()).then(j => setProdutos(j.data ?? [])),
-      fetch("http://localhost:5000/fornecedores")
+      fetch("http://localhost:5000/fornecedores?limit=100")
         .then(r => r.json()).then(j => setFornecedores(j.data ?? [])),
-      fetch("http://localhost:5000/filial?limit=100")
+      fetch("http://localhost:5000/filiais?limit=100")
         .then(r => r.json()).then(j => setFiliais(j.data ?? [])),
-      fetch("http://localhost:5000/lotes?limit=100")
-        .then(r => r.json()).then(j => setLotes(j.data ?? [])),
     ]).catch(console.error);
   }, []);
 
@@ -63,12 +60,11 @@ export default function DetalhesEstoquePage() {
     <div className={styles.container}>
       <h1>Editar Estoque</h1>
       <BoxComponent className={styles.formWrapper}>
-        <FormPageEstoque
+        <FormPageEstoqueLote
           data={formData}
           produtos={produtos}
           fornecedores={fornecedores}
           filiais={filiais}
-          lotes={lotes}
           mode="edit"
           onSubmit={handleUpdate}
           onCancel={() => router.back()}
