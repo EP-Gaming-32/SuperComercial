@@ -1,5 +1,5 @@
 'use client';
-import { useSearch } from './hooks/useSearch';
+import { useSearch } from '../../hooks/useSearch';
 import styles from './detalhes.module.css';
 
 export default function LoteSection({ id_estoque }) {

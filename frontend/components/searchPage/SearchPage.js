@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import SearchComponent from "@/components/SearchComponent";
 import ShowComponent from "@/components/ShowComponent";
 import PaginationComponent from "@/components/PaginationComponent";
-import { useSearch } from "./hooks/useSearch";
+import { useSearch } from "../../hooks/useSearch";
 
 export default function SearchPage({
   title,
