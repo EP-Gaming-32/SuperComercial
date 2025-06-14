@@ -66,3 +66,52 @@
 .horizontalNavbar .navLink {
   color:white;
 }
+
+.verticalNavbar {
+  width: 250px;
+  background-color: #1e1e2f;
+  height: 100vh;
+  padding: 20px;
+  color: white;
+}
+
+.brand {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+}
+
+.navItem {
+  margin-bottom: 10px;
+}
+
+.navLink {
+  color: white;
+  text-decoration: none;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.navLink:hover {
+  background-color: #33334d;
+}
+
+.subMenu {
+  list-style: none;
+  padding-left: 15px;
+  margin-top: 5px;
+}
+
+.subMenu li {
+  margin-bottom: 5px;
+}
