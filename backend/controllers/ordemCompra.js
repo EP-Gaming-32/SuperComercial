@@ -148,3 +148,105 @@ export const listarHistoricoStatusOrdemCompra = async (req, res) => {
   }
 };
 
+export const listarDetalhesOrdemCompra = async (req, res) => {
+  const { id } = req.params;
+  try {
+    // 1) Dados da ordem
+    const [ordemRows] = await pool.query(
+      `SELECT oc.id_ordem_compra,
+              oc.id_fornecedor,
+              f.nome_fornecedor,
+              oc.data_ordem,
+              oc.data_entrega_prevista,
+              oc.valor_total,
+              oc.status,
+              oc.observacao
+       FROM OrdemCompra oc
+       JOIN Fornecedor f USING(id_fornecedor)
+       WHERE oc.id_ordem_compra = ?`,
+      [id]
+    );
+    if (ordemRows.length === 0) {
+      return res.status(404).json({ message: 'Ordem de compra não encontrada' });
+    }
+    const ordem = ordemRows[0];
+
+    // 2) Itens da ordem — use id_item_oc (não id_item_ordem)
+    const [itensRows] = await pool.query(
+      `SELECT ioc.id_item_oc       AS id,
+              ioc.id_produto,
+              p.nome_produto,
+              ioc.quantidade,
+              ioc.preco_unitario
+       FROM ItensOrdemCompra ioc
+       JOIN Produtos p USING(id_produto)
+       WHERE ioc.id_ordem_compra = ?`,
+      [id]
+    );
+
+    // 3) Retorna tudo junto
+    res.json({ data: { ...ordem, itens: itensRows } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao buscar detalhes da ordem' });
+  }
+};
+
+export const criarOrdemCompleta = async (req, res) => {
+  const {
+    id_fornecedor,
+    data_ordem,
+    data_entrega_prevista,
+    observacao,
+    pedidos_filial = [],  // ids
+    itens = []            // { id_produto, quantidade, preco_unitario }
+  } = req.body;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // calcula o total
+    const valor_total = itens.reduce(
+      (sum, i) => sum + i.preco_unitario * i.quantidade,
+      0
+    );
+
+    // insere ordem com o total
+    const [ordemResult] = await conn.query(
+      `INSERT INTO OrdemCompra
+         (id_fornecedor, data_ordem, data_entrega_prevista, valor_total, status, observacao)
+       VALUES (?, ?, ?, ?, 'Pendente', ?)`,
+      [id_fornecedor, data_ordem, data_entrega_prevista, valor_total, observacao]
+    );
+    const id_ordem = ordemResult.insertId;
+
+    // vincula pedidos
+    for (const id_ped of pedidos_filial) {
+      await conn.query(
+        `INSERT INTO OrdemCompraPedidoFilial (id_ordem_compra, id_pedido_filial)
+         VALUES (?, ?)`,
+        [id_ordem, id_ped]
+      );
+    }
+
+    // insere itens com preço unitário
+    for (const { id_produto, quantidade, preco_unitario } of itens) {
+      await conn.query(
+        `INSERT INTO ItensOrdemCompra
+           (id_ordem_compra, id_produto, quantidade, preco_unitario)
+         VALUES (?, ?, ?, ?)`,
+        [id_ordem, id_produto, quantidade, preco_unitario]
+      );
+    }
+
+    await conn.commit();
+    res.status(201).json({ data: { id_ordem_compra: id_ordem } });
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao criar ordem completa: ' + err.message });
+  } finally {
+    conn.release();
+  }
+};

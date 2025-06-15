@@ -1,131 +1,151 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import BoxComponent from '@/components/BoxComponent';
-import FormPageOrdemCompra from '@/components/form/FormPageOrdemCompra';
-import styles from './detalhes.module.css';
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import styles from "./detalhes.module.css";
+import BoxComponent from "@/components/BoxComponent";
+import FormPageOrdemCompra from "@/components/form/FormPageOrdemCompra";
 
-export default function EditarOrdemCompraPage() {
+export default function DetalhesOrdemCompraPage() {
+  const { id } = useParams();
   const router = useRouter();
-  const { id_ordem_compra } = useParams();
 
+  const [ordemData, setOrdemData] = useState(null);
   const [fornecedores, setFornecedores] = useState([]);
-  const [dataOrdem, setDataOrdem] = useState(null);
-  const [produtosOriginais, setProdutosOriginais] = useState([]);
+  const [produtosFornecedores, setProdutosFornecedores] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      // Paralelizar fetch de fornecedores, dados da ordem e itens
-      const [resFor, resOrdem, resItens] = await Promise.all([
-        fetch('http://localhost:5000/fornecedores'),
-        fetch(`http://localhost:5000/ordemCompra/${id_ordem_compra}`),
-        fetch(`http://localhost:5000/ordemCompra/itens?id_ordem_compra=${id_ordem_compra}`)
+      const [resOrdem, resFornecedores, resProdFor] = await Promise.all([
+        fetch(`http://localhost:5000/ordemCompra/detalhes/${id}`),
+        fetch("http://localhost:5000/fornecedores"),
+        fetch("http://localhost:5000/ordemCompra/produtoFornecedor")
       ]);
 
-      if (!resFor.ok)   throw new Error('Falha ao carregar fornecedores');
-      if (!resOrdem.ok) throw new Error('Falha ao carregar ordem de compra');
-      if (!resItens.ok) throw new Error('Falha ao carregar itens da ordem');
+      if (!resOrdem.ok) throw new Error("Falha ao carregar dados da ordem");
+      if (!resFornecedores.ok) throw new Error("Falha ao carregar fornecedores");
+      if (!resProdFor.ok) throw new Error("Falha ao carregar produtos-fornecedor");
 
-      const [jsonFor, jsonOrdem, jsonItens] = await Promise.all([
-        resFor.json(),
+      const [ordemJson, fornecJson, prodForJson] = await Promise.all([
         resOrdem.json(),
-        resItens.json()
+        resFornecedores.json(),
+        resProdFor.json()
       ]);
 
-      // Fornecedores
-      setFornecedores(jsonFor.data || []);
+      // Normaliza produtos-fornecedor
+      const pfList = (prodForJson.data || []).map(pf => ({
+        ...pf,
+        preco: parseFloat(pf.preco) || 0
+      }));
+      setProdutosFornecedores(pfList);
 
-      // Dados da ordem
-      const ordemRaw = jsonOrdem.data || jsonOrdem;
-      const normalizedOrdem = {
-        id_fornecedor: ordemRaw.id_fornecedor,
-        data_ordem: ordemRaw.data_ordem,
-        data_entrega_prevista: ordemRaw.data_entrega_prevista,
-        observacao: ordemRaw.observacao,
-        itens: Array.isArray(jsonItens.data)
-          ? jsonItens.data.map(item => ({
-              id_produto: item.id_produto,
-              nome_produto: item.nome_produto,
-              quantidade: item.quantidade,
-              preco_fornecedor: parseFloat(item.preco_unitario) || 0
+      // Normaliza dados da ordem e itens
+      const raw = ordemJson.data;
+      const norm = {
+        ...raw,
+        itens: Array.isArray(raw.itens)
+          ? raw.itens.map(item => ({
+              ...item,
+              preco_unitario: parseFloat(item.preco_unitario) || 0
             }))
           : []
       };
-      setDataOrdem(normalizedOrdem);
+      setOrdemData(norm);
 
-      // ProdutosOriginais = itens atuais para edição
-      setProdutosOriginais(normalizedOrdem.itens);
-
+      // Fornecedores
+      setFornecedores(fornecJson.data || []);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Erro inesperado');
+      setError(err.message || "Erro inesperado");
     } finally {
       setLoading(false);
     }
-  }, [id_ordem_compra]);
+  }, [id]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
-  const handleUpdate = async (updated) => {
+  const handleUpdate = async updatedData => {
     setLoading(true);
     try {
-      // 1) Atualizar ordem
-      const res = await fetch(`http://localhost:5000/ordemCompra/${id_ordem_compra}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_fornecedor: updated.id_fornecedor,
-          data_ordem: updated.data_ordem,
-          data_entrega_prevista: updated.data_entrega_prevista,
-          observacao: updated.observacao
-        })
+      const res = await fetch(`http://localhost:5000/ordemCompra/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData)
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Erro ao atualizar ordem');
+        const { message } = await res.json();
+        throw new Error(message || "Erro ao atualizar ordem");
       }
-
-      // 2) Atualizar itens da ordem (batch replace)
-      const resItens = await fetch(`http://localhost:5000/ordemCompra/${id_ordem_compra}/itens`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated.itens)
-      });
-      if (!resItens.ok) throw new Error('Erro ao atualizar itens');
-
-      alert('Ordem de Compra atualizada com sucesso!');
-      router.push('/ordem-compra/detalhes/' + id_ordem_compra);
+      alert("Ordem de compra atualizada com sucesso!");
+      router.push("/ordemCompra/visualizar");
     } catch (err) {
       console.error(err);
-      alert('Erro: ' + err.message);
+      alert("Erro: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <p>Carregando dados...</p>;
+    return (
+      <div className={styles.container}>
+        <h1>Editar Ordem de Compra</h1>
+        <p>Carregando dados...</p>
+      </div>
+    );
   }
+
   if (error) {
-    return <p className={styles.error}>Erro: {error}</p>;
+    return (
+      <div className={styles.container}>
+        <h1>Editar Ordem de Compra</h1>
+        <p className={styles.error}>Erro: {error}</p>
+        <button onClick={fetchAll}>Tentar novamente</button>
+      </div>
+    );
   }
 
   return (
     <div className={styles.container}>
       <BoxComponent className={styles.formWrapper}>
         <h1>Editar Ordem de Compra</h1>
+        {/* Exibe itens da ordem antes do formulário */}
+        {ordemData.itens.length > 0 && (
+          <div className={styles.itensWrapper}>
+            <h2>Itens da Ordem</h2>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Quantidade</th>
+                  <th>Preço Unit.</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ordemData.itens.map(item => (
+                  <tr key={item.id}>
+                    <td>{item.nome_produto}</td>
+                    <td>{item.quantidade}</td>
+                    <td>{item.preco_unitario.toFixed(2)}</td>
+                    <td>{(item.quantidade * item.preco_unitario).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <FormPageOrdemCompra
-          data={dataOrdem}
+          data={ordemData}
           fornecedores={fornecedores}
-          produtosOriginais={produtosOriginais}
+          produtosFornecedores={produtosFornecedores}
           mode="edit"
           onSubmit={handleUpdate}
           onCancel={() => router.back()}
