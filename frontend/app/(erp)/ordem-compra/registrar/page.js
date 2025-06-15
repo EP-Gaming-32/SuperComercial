@@ -100,7 +100,7 @@ export default function RegistrarOrdemCompraPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Cadastrar Ordem de Compra</h1>
+      <h1>Ordem de Compra</h1>
       <BoxComponent className={styles.formWrapper}>
         <FormPageOrdemCompra
           fornecedores={fornecedores}

@@ -36,6 +36,9 @@ export default function FormPagePedidoFilial({
     }
   }, [data]);
 
+  // ✅ ALTERAÇÃO AQUI: 1. Constante para a data de hoje
+  const hoje = new Date().toISOString().split('T')[0];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -189,6 +192,8 @@ export default function FormPagePedidoFilial({
               onChange={handleChange}
               className={styles.input}
               required={required}
+              // ✅ ALTERAÇÃO AQUI: 2. Propriedade 'min' adicionada
+              min={type === 'date' ? hoje : undefined}
               {...(type === 'text' && maxLength ? { maxLength } : {})}
             />
           )}
@@ -240,7 +245,7 @@ export default function FormPagePedidoFilial({
           </div>
         </div>
 
-        {/* ✅ ALTERAÇÃO AQUI: Lista de produtos adicionados com novo layout */}
+        {/* Lista de produtos adicionados com novo layout */}
         {produtosPedido.length > 0 && (
           <div className={styles.produtosAdicionadosContainer}>
             <h4 className={styles.listTitle}>Produtos Adicionados:</h4>
