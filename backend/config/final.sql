@@ -214,7 +214,7 @@ CREATE TABLE Estoque (
     quantidade INT NOT NULL CHECK (quantidade >= 0),
     estoque_minimo INT NOT NULL,
     estoque_maximo INT NOT NULL,
-    status_estoque ENUM('normal', 'baixo', 'critico') GENERATED ALWAYS AS (
+    status_estoque ENUM('Normal', 'Baixo', 'Critico') GENERATED ALWAYS AS (
         CASE 
             WHEN quantidade <= estoque_minimo THEN 'critico'
             WHEN quantidade <= estoque_maximo * 0.3 THEN 'baixo'
