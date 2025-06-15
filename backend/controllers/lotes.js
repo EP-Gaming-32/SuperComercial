@@ -144,25 +144,55 @@ export const removerLotes = async (req, res) => {
 
 export const listarLotesByEstoque = async (req, res) => {
   const { id_estoque } = req.query;
-
   if (!id_estoque) {
     return res.status(400).json({ message: 'id_estoque é obrigatório' });
   }
-
+console.log('visualizarLotes, id recebido =', req.params.id);
   try {
-    const [rows] = await pool.query(
-      `SELECT l.id_lote, l.id_produto, p.nome_produto,
-              l.codigo_lote, l.data_expedicao, l.data_validade, l.quantidade
-         FROM Lote l
-         JOIN Produtos p ON l.id_produto = p.id_produto
-         JOIN Estoque e  ON e.id_lote = l.id_lote
-         WHERE e.id_estoque = ?`,
+    // 1. Buscar o registro de Estoque
+    
+    const [estoqueRows] = await pool.query(
+      `SELECT id_lote
+         FROM Estoque
+        WHERE id_estoque = ?`,
       [id_estoque]
     );
+console.log('visualizarLotes, id recebido =', req.params.id);
+    if (!estoqueRows.length) {
+      return res.status(404).json({ message: 'Estoque não encontrado' });
+    }
 
-    res.json({ data: rows });
+    const { id_lote } = estoqueRows[0];
+    if (id_lote == null) {
+      // Não há lote vinculado a esse estoque
+      return res.json({ data: [] });
+    }
+
+    // 2. Buscar dados do lote pelo id_lote obtido
+    const [loteRows] = await pool.query(
+      `SELECT l.id_lote,
+              l.id_produto,
+              p.nome_produto,
+              l.codigo_lote,
+              l.data_expedicao,
+              l.data_validade,
+              l.quantidade
+         FROM Lote l
+         JOIN Produtos p ON l.id_produto = p.id_produto
+        WHERE l.id_lote = ?`,
+      [id_lote]
+    );
+
+    if (!loteRows.length) {
+      // Em princípio não deve ocorrer, visto que fk deveria garantir existência,
+      // mas por precaução:
+      return res.status(404).json({ message: 'Lote vinculado não encontrado' });
+    }
+
+    // Retorna como array (por consistência com outros endpoints que devolvem lista)
+    res.json({ data: loteRows });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Erro interno ao listar lotes por estoque' });
+    res.status(500).json({ error: 'Erro interno ao listar lote por estoque' });
   }
 };

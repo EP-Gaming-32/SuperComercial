@@ -1,7 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+// Se este caminho relativo funcionar, ótimo. Se não, use o caminho com '@/' que já validamos.
 import styles from './FormPageProdutos.module.css';
-import LoteSection from '@/components/searchPage/LoteSection'; // 🔥 Novo componente
+import LoteSection from '@/components/searchPage/LoteSection';
 
 export default function FormPageEstoqueLote({
   data = {},
@@ -28,21 +29,25 @@ export default function FormPageEstoqueLote({
     onSubmit(formData);
   };
 
+  // ✅ Adicionada a propriedade `required: true` nos campos essenciais.
   const campoConfig = [
-    { name: 'id_produto', label: 'Produto', type: 'select', options: produtos, optionKey: 'id_produto', optionLabel: 'nome_produto' },
-    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores, optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
-    { name: 'id_filial', label: 'Filial', type: 'select', options: filiais, optionKey: 'id_filial', optionLabel: 'nome_filial' },
-    { name: 'local_armazenamento', label: 'Local de Armazenamento', type: 'text', maxLength: 255 },
-    { name: 'quantidade', label: 'Quantidade', type: 'number' },
-    { name: 'estoque_minimo', label: 'Estoque Mínimo', type: 'number' },
-    { name: 'estoque_maximo', label: 'Estoque Máximo', type: 'number' },
+    { name: 'id_produto', label: 'Produto', type: 'select', options: produtos, optionKey: 'id_produto', optionLabel: 'nome_produto', required: true },
+    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores, optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor', required: true },
+    { name: 'id_filial', label: 'Filial', type: 'select', options: filiais, optionKey: 'id_filial', optionLabel: 'nome_filial', required: true },
+    { name: 'local_armazenamento', label: 'Local de Armazenamento', type: 'text', maxLength: 255, required: true },
+    { name: 'quantidade', label: 'Quantidade', type: 'number', required: true },
+    { name: 'estoque_minimo', label: 'Estoque Mínimo', type: 'number', required: true },
+    { name: 'estoque_maximo', label: 'Estoque Máximo', type: 'number', required: true },
   ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength }) => (
+      {/* ✅ Adicionado 'required' na desestruturação para ser passado ao input/select */}
+      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength, required }) => (
         <div key={name} className={styles.field}>
-          <label htmlFor={name} className={styles.label}>{label}</label>
+          <label htmlFor={name} className={styles.label}>
+            {label} {required && <span className={styles.required}>*</span>}
+          </label>
           {type === 'select' ? (
             <select
               id={name}
@@ -50,6 +55,7 @@ export default function FormPageEstoqueLote({
               value={formData[name] ?? ''}
               onChange={handleChange}
               className={styles.input}
+              required={required} // Passando a propriedade para o select
             >
               <option value="">Selecione...</option>
               {options.map(opt => (
@@ -66,13 +72,14 @@ export default function FormPageEstoqueLote({
               value={formData[name] ?? ''}
               onChange={handleChange}
               className={styles.input}
+              required={required} // Passando a propriedade para o input
               {...(type === 'text' && maxLength ? { maxLength } : {})}
             />
           )}
         </div>
       ))}
 
-      {/* 🔥 Seção de lotes vinculados */}
+      {/* Seção de lotes vinculados */}
       {mode === 'edit' && data?.id_estoque && (
         <div className={styles.historicoWrapper}>
           <LoteSection id_estoque={data.id_estoque} />

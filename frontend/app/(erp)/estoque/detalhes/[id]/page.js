@@ -35,7 +35,7 @@ export default function DetalhesEstoquePage() {
         .then(r => r.json()).then(j => setProdutos(j.data ?? [])),
       fetch("http://localhost:5000/fornecedores?limit=100")
         .then(r => r.json()).then(j => setFornecedores(j.data ?? [])),
-      fetch("http://localhost:5000/filiais?limit=100")
+      fetch("http://localhost:5000/filial?limit=100")
         .then(r => r.json()).then(j => setFiliais(j.data ?? [])),
     ]).catch(console.error);
   }, []);
