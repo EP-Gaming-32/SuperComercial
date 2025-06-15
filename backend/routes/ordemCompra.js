@@ -13,6 +13,7 @@ router.delete('/:id', ocCtrl.cancelarOrdemCompra);
 
 // Vincular PedidoFilial → OrdemCompra
 router.post('/vincularPedido', ocCtrl.vincularOrdemPedido);
+router.post('/complete', ocCtrl.criarOrdemCompra);
 
 // Itens de OrdemCompra
 router.post('/itens', ocCtrl.criarItemOrdemCompra);

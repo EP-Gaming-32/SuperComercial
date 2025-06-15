@@ -147,3 +147,4 @@ export const listarHistoricoStatusOrdemCompra = async (req, res) => {
     res.status(500).json({ message: 'Erro ao listar histórico da ordem de compra' });
   }
 };
+

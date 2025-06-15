@@ -1,69 +1,131 @@
-"use client";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import styles from "./detalhes.module.css";
-import BoxComponent from "@/components/BoxComponent";
-import FormPagePedido from "@/components/form/FormPagePedido";
+'use client';
 
-export default function DetalhesPedidosPage() {
-  const { id } = useParams();
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import BoxComponent from '@/components/BoxComponent';
+import FormPageOrdemCompra from '@/components/form/FormPageOrdemCompra';
+import styles from './detalhes.module.css';
+
+export default function EditarOrdemCompraPage() {
   const router = useRouter();
+  const { id_ordem_compra } = useParams();
 
-  const [pedidoData, setPedidoData] = useState(null);
-  const [filial, setfilial] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
-  const [statusPedido, setStatusPedido] = useState([]);
+  const [dataOrdem, setDataOrdem] = useState(null);
+  const [produtosOriginais, setProdutosOriginais] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetch(`http://localhost:5000/pedido/detalhes/${id}`)
-      .then(r => r.json())
-      .then(setPedidoData)
-      .catch(console.error);
-  }, [id]);
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    setError('');
 
-  useEffect(() => {
-    fetch("http://localhost:5000/filial")
-      .then(r => r.json())
-      .then(json => setfilial(json.data)) 
-      .catch(console.error);
-
-    fetch("http://localhost:5000/fornecedores")
-      .then(r => r.json())
-      .then(json => setFornecedores(json.data))
-      .catch(console.error);
-
-    fetch("http://localhost:5000/statuspedido")
-      .then(r => r.json())
-      .then(json => setStatusPedido(json.data))
-      .catch(console.error);
-  }, []);
-
-  const handleUpdate = async (updatedData) => {
     try {
-      const res = await fetch(`http://localhost:5000/pedido/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
-      });
-      if (!res.ok) throw new Error((await res.json()).message);
-      alert("Pedido atualizado com sucesso!");
-      router.push("/pedido/visualizar");
+      // Paralelizar fetch de fornecedores, dados da ordem e itens
+      const [resFor, resOrdem, resItens] = await Promise.all([
+        fetch('http://localhost:5000/fornecedores'),
+        fetch(`http://localhost:5000/ordemCompra/${id_ordem_compra}`),
+        fetch(`http://localhost:5000/ordemCompra/itens?id_ordem_compra=${id_ordem_compra}`)
+      ]);
+
+      if (!resFor.ok)   throw new Error('Falha ao carregar fornecedores');
+      if (!resOrdem.ok) throw new Error('Falha ao carregar ordem de compra');
+      if (!resItens.ok) throw new Error('Falha ao carregar itens da ordem');
+
+      const [jsonFor, jsonOrdem, jsonItens] = await Promise.all([
+        resFor.json(),
+        resOrdem.json(),
+        resItens.json()
+      ]);
+
+      // Fornecedores
+      setFornecedores(jsonFor.data || []);
+
+      // Dados da ordem
+      const ordemRaw = jsonOrdem.data || jsonOrdem;
+      const normalizedOrdem = {
+        id_fornecedor: ordemRaw.id_fornecedor,
+        data_ordem: ordemRaw.data_ordem,
+        data_entrega_prevista: ordemRaw.data_entrega_prevista,
+        observacao: ordemRaw.observacao,
+        itens: Array.isArray(jsonItens.data)
+          ? jsonItens.data.map(item => ({
+              id_produto: item.id_produto,
+              nome_produto: item.nome_produto,
+              quantidade: item.quantidade,
+              preco_fornecedor: parseFloat(item.preco_unitario) || 0
+            }))
+          : []
+      };
+      setDataOrdem(normalizedOrdem);
+
+      // ProdutosOriginais = itens atuais para edição
+      setProdutosOriginais(normalizedOrdem.itens);
+
     } catch (err) {
-      alert("Erro: " + err.message);
+      console.error(err);
+      setError(err.message || 'Erro inesperado');
+    } finally {
+      setLoading(false);
+    }
+  }, [id_ordem_compra]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  const handleUpdate = async (updated) => {
+    setLoading(true);
+    try {
+      // 1) Atualizar ordem
+      const res = await fetch(`http://localhost:5000/ordemCompra/${id_ordem_compra}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_fornecedor: updated.id_fornecedor,
+          data_ordem: updated.data_ordem,
+          data_entrega_prevista: updated.data_entrega_prevista,
+          observacao: updated.observacao
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Erro ao atualizar ordem');
+      }
+
+      // 2) Atualizar itens da ordem (batch replace)
+      const resItens = await fetch(`http://localhost:5000/ordemCompra/${id_ordem_compra}/itens`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated.itens)
+      });
+      if (!resItens.ok) throw new Error('Erro ao atualizar itens');
+
+      alert('Ordem de Compra atualizada com sucesso!');
+      router.push('/ordem-compra/detalhes/' + id_ordem_compra);
+    } catch (err) {
+      console.error(err);
+      alert('Erro: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!pedidoData) return <p>Carregando...</p>;
+  if (loading) {
+    return <p>Carregando dados...</p>;
+  }
+  if (error) {
+    return <p className={styles.error}>Erro: {error}</p>;
+  }
 
   return (
     <div className={styles.container}>
-      <h1>Editar Pedido</h1>
       <BoxComponent className={styles.formWrapper}>
-        <FormPagePedido
-          data={pedidoData}
-          filial={filial}
+        <h1>Editar Ordem de Compra</h1>
+        <FormPageOrdemCompra
+          data={dataOrdem}
           fornecedores={fornecedores}
-          statusPedido={statusPedido}
+          produtosOriginais={produtosOriginais}
           mode="edit"
           onSubmit={handleUpdate}
           onCancel={() => router.back()}

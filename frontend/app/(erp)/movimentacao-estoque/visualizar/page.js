@@ -11,21 +11,25 @@ export default function MovimentacaoEstoqueFormPage() {
   const [selecionado, setSelecionado] = useState("");
   const [mensagem, setMensagem] = useState("");
 
-  useEffect(() => {
-    async function loadEstoques() {
-      try {
-        const resp = await fetch("http://localhost:5000/estoque");
-        const data = await resp.json();
-        setEstoques(data.data || data || []);
-      } catch (err) {
-        console.error(err);
-      }
+  // Função para carregar estoques
+  const loadEstoques = async () => {
+    try {
+      const resp = await fetch("http://localhost:5000/estoque");
+      const data = await resp.json();
+      setEstoques(data.data || data || []);
+    } catch (err) {
+      console.error(err);
+      setMensagem("Erro ao carregar estoques.");
     }
+  };
+
+  useEffect(() => {
     loadEstoques();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMensagem("");
     if (!selecionado || quantidade <= 0) {
       setMensagem("Selecione o estoque e informe quantidade válida.");
       return;
@@ -40,13 +44,15 @@ export default function MovimentacaoEstoqueFormPage() {
           quantidade: Number(quantidade),
         }),
       });
+      const result = await resp.json();
       if (resp.ok) {
-        setMensagem("Movimentação registrada com sucesso.");
+        setMensagem("Movimentação registrada com sucesso. ID: " + result.id_movimentacao);
         setQuantidade(0);
         setSelecionado("");
+        // Recarrega estoques atualizados
+        await loadEstoques();
       } else {
-        const error = await resp.json();
-        setMensagem(error.message || "Erro ao registrar movimentação.");
+        setMensagem(result.error || result.message || "Erro ao registrar movimentação.");
       }
     } catch (err) {
       console.error(err);
@@ -68,7 +74,7 @@ export default function MovimentacaoEstoqueFormPage() {
               <option value="">Selecione</option>
               {estoques.map((e) => (
                 <option key={e.id_estoque} value={e.id_estoque}>
-                  {`${e.nome_produto} (${e.local_armazenamento})`}
+                  {`${e.nome_produto} (${e.local_armazenamento}) — Qtde: ${e.quantidade}`}
                 </option>
               ))}
             </select>
