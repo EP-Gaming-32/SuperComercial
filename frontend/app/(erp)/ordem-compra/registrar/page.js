@@ -68,6 +68,8 @@ export default function RegistrarOrdemCompraPage() {
     <div className={styles.container}>
       <h1>Criar Ordem de Compra</h1>
 
+        
+
       <BoxComponent className={styles.section}>
         <label>Filial *</label>
         <select
@@ -85,10 +87,9 @@ export default function RegistrarOrdemCompraPage() {
             </option>
           ))}
         </select>
-      </BoxComponent>
 
       {pedidosFilial.length > 0 && (
-        <BoxComponent className={styles.section}>
+        <div className={styles.section}>
           <h3>Pedidos Pendentes</h3>
           <ul className={styles.pedidosList}>
             {pedidosFilial.map(p => (
@@ -99,10 +100,8 @@ export default function RegistrarOrdemCompraPage() {
               </li>
             ))}
           </ul>
-        </BoxComponent>
+        </div>
       )}
-
-      <BoxComponent className={styles.section}>
         <FormPageOrdemCompra
           fornecedores={fornecedores}
           produtosOriginais={produtosOriginais}
