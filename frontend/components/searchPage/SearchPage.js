@@ -69,6 +69,7 @@ export default function SearchPage({
               fields={showFields}
               onItemClick={handleDetail}
               endpoint={endpoint} // repassa endpoint para ShowComponent
+              idField={idField}
             />
           ) : (
             <p>Nenhum item encontrado.</p>

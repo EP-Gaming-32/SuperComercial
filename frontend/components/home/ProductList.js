@@ -15,20 +15,18 @@ export default function CriticalStockAlert({ limit = 10 }) {
 
   useEffect(() => {
     async function fetchAlertas() {
-      setLoading(true);
-      setError(null);
+      // ...
       try {
         const params = new URLSearchParams({ page, limit });
-        const res = await fetch(`http://localhost:5000/relatorios/estoque-alerta?${params.toString()}`);
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        const json = await res.json();
-        setAlerts(json.data);
-        setTotalPages(json.totalPages);
+        
+        // APLIQUE A URL CORRETA E FUNCIONAL AQUI
+        const res = await fetch(`http://localhost:5000/relatorios/estoque-alertas?${params.toString()}`);
+        
+        // ...
       } catch (err) {
-        console.error("Erro ao carregar alertas de estoque:", err);
-        setError(err.message);
+        // ...
       } finally {
-        setLoading(false);
+        // ...
       }
     }
     fetchAlertas();
@@ -41,15 +39,12 @@ export default function CriticalStockAlert({ limit = 10 }) {
   return (
     <div className={styles.card}>
       <h2 className={styles.cardTitle}>⚠️ Alertas de Estoque</h2>
-
       <div className={styles.cardContent}>
         {loading && <p>Carregando alertas...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
-
         {!loading && !error && alerts.length === 0 && (
           <p>Nenhum produto em estado crítico ou baixo.</p>
         )}
-
         {!loading && !error && alerts.length > 0 && (
           <>
             <table className={styles.table}>
@@ -63,8 +58,9 @@ export default function CriticalStockAlert({ limit = 10 }) {
                 </tr>
               </thead>
               <tbody>
-                {alerts.map((item, idx) => (
-                  <tr key={idx} className={styles.tableRow}>
+                {alerts.map((item) => (
+                  // 2. CORREÇÃO DA KEY: Usando um ID único do item (ex: id_estoque).
+                  <tr key={item.id_estoque} className={styles.tableRow}>
                     <td className={styles.flex}>
                       <AlertTriangle size={20} color="#f44336" /> {item.nome_produto}
                     </td>
@@ -78,7 +74,6 @@ export default function CriticalStockAlert({ limit = 10 }) {
                 ))}
               </tbody>
             </table>
-
             <PaginationComponent
               currentPage={page}
               totalPages={totalPages}
