@@ -48,6 +48,8 @@
 }
 
 .deleteButton {
+  width: 1000px;
+  height: 60px;
   background-color: #be1e21c2;
   color: white;
   border: none;
@@ -60,7 +62,7 @@
   justify-content: center;
   padding: 1%;
   margin: auto;
-  max-width: 150px;
+  max-width: 200px;
 }
 
 .deleteButton:hover {
