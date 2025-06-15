@@ -92,4 +92,294 @@
   margin: 1.5rem 0;
 }
 
+/* ... (todo o seu CSS existente fica aqui em cima) ... */
+
+/* --- ✅ NOVOS ESTILOS PARA A LISTA DE PRODUTOS DO PEDIDO --- */
+
+/* Contêiner para a seção de 'Adicionar Produto' */
+.adicionarProduto {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.produtoInputGroup {
+  display: grid;
+  grid-template-columns: 1fr auto auto; /* Colunas para select, input e botão */
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.addButton {
+  padding: 0.8rem 1.5rem;
+  background-color: #1b3655;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  height: fit-content;
+}
+
+.addButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Contêiner da grade para os produtos já adicionados */
+.productGrid {
+  display: grid;
+  /* Duas colunas de tamanho igual, com um mínimo de 250px */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem; /* Espaçamento entre os cards */
+}
+
+/* Card individual para cada produto na lista */
+.productCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Espaçamento interno entre os detalhes */
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.productCard .produtoNome {
+  font-weight: 700;
+  color: #1b3655;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.productCard .detailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.productCard .detailRow span:first-child {
+  font-weight: 600;
+  color: #555;
+}
+
+.productCard .quantityInput {
+  width: 70px;
+  text-align: center;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.productCard .removeButton {
+  background-color: #e53935;
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+/* Ajuste para telas menores */
+@media (max-width: 768px) {
+  .produtoInputGroup {
+    grid-template-columns: 1fr; /* Tudo em uma coluna */
+  }
+}
+
+.formWrapper {
+  width: 100%; /* Faz o container ocupar toda a largura do seu pai (.container) */
+  max-width: none; /* ✅ ESSENCIAL: Remove qualquer limite de largura máxima (ex: max-width: 800px) */
+  
+  /* Mantenha outras propriedades de estilo que ele já tenha, como: */
+  padding: 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+}
+
+/* ======================================================================== */
+/* === NOVOS ESTILOS PARA A SEÇÃO DE PRODUTOS DO PEDIDO (GRID E CARDS) === */
+/* ======================================================================== */
+
+/* Contêiner da seção inteira de "Produtos do Pedido" */
+.produtosSection {
+  width: 100%;
+  max-width: 800px; /* ou o valor que quiser */
+  margin: 0 auto; /* centraliza horizontalmente */
+  padding: 2rem;
+}
+
+/* Título principal da seção */
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+/* Caixa para a área de "Adicionar produto" */
+.adicionarProduto {
+  padding: 1.5rem;
+  background-color: #f7f9fc;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+/* Alinha o select, input de quantidade e botão */
+.produtoInputGroup {
+  display: grid;
+  grid-template-columns: 1fr auto auto; /* Colunas flexíveis para o select e automáticas para o resto */
+  gap: 1rem;
+  align-items: flex-end; /* Alinha tudo pela base */
+}
+
+/* Botão "Adicionar" */
+.addButton {
+  padding: 0.8rem 1.5rem;
+  background-color: #1b3655; /* Cor primária escura */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  height: fit-content;
+  transition: background-color 0.2s;
+}
+
+.addButton:hover:not(:disabled) {
+  background-color: #2c5685;
+}
+
+.addButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+/* --- A Lista de Produtos Adicionados --- */
+
+.produtosAdicionadosContainer {
+  margin-top: 2rem;
+}
+
+.listTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+/* A Grade que vai organizar os cards de produto */
+.productGrid {
+  display: grid;
+  /* Cria colunas automáticas com um tamanho mínimo de 320px */
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem; /* Espaçamento entre os cards */
+}
+
+/* Estilo para cada Card de produto na lista */
+.productCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Espaçamento entre os detalhes dentro do card */
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.productCard .produtoNome {
+  font-weight: 700;
+  color: #1b3655;
+  font-size: 1.15rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Linha de detalhe (SKU, Valor, etc.) */
+.productCard .detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.productCard .detailRow span:first-child,
+.productCard .detailRow label {
+  font-weight: 600;
+  color: #555;
+}
+
+.productCard .quantityInput {
+  width: 75px;
+  text-align: center;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.productCard .removeButton {
+  background-color: #e53935; /* Vermelho para perigo/remoção */
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.productCard .removeButton:hover {
+  background-color: #c62828;
+}
+
+/* Rodapé com o valor total */
+.tableFooter {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.totalLabel, .totalValue {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.totalValue {
+  color: #1b3655;
+  margin-left: 1rem;
+}
+
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  /* Em telas menores, os campos para adicionar produtos ficam um embaixo do outro */
+  .produtoInputGroup {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 

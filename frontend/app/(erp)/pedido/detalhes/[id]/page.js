@@ -98,7 +98,7 @@ export default function DetalhesPedidosPage() {
   if (loading) {
     return (
       <div className={styles.container}>
-        <h1>Editar Pedido de Filial</h1>
+        <h1>Editar Pedido de Reposição</h1>
         <p>Carregando dados...</p>
       </div>
     );
@@ -107,7 +107,7 @@ export default function DetalhesPedidosPage() {
   if (error) {
     return (
       <div className={styles.container}>
-        <h1>Editar Pedido de Filial</h1>
+        <h1>Editar Pedido de Reposição</h1>
         <p className={styles.error}>Erro: {error}</p>
         <button onClick={fetchAll}>Tentar novamente</button>
       </div>
@@ -118,7 +118,7 @@ export default function DetalhesPedidosPage() {
     <div className={styles.container}>
       
       <BoxComponent className={styles.formWrapper}>
-        <h1>Editar Pedido de Filial</h1>
+        <h1>Editar Pedido de Reposição</h1>
         <FormPagePedidoFilial
           data={pedidoData}
           filial={filiais}

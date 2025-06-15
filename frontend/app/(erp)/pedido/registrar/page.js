@@ -95,7 +95,7 @@ export default function RegistrarPedidoFilialPage() {
   if (carregando) {
     return (
       <div className={styles.container}>
-        <h1>Cadastrar Pedido de Filial</h1>
+        <h1>Cadastrar Pedido de Reposição</h1>
         <p>Carregando dados...</p>
       </div>
     );
@@ -103,7 +103,7 @@ export default function RegistrarPedidoFilialPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Cadastrar Pedido de Filial</h1>
+      <h1>Cadastrar Pedido de Reposição</h1>
       <BoxComponent className={styles.formWrapper}>
         <FormPagePedidoFilial
           data={pedidoData}

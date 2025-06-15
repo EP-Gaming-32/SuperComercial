@@ -39,7 +39,7 @@ export default function PedidoPage() {
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-          title="Pedidos de Filial"
+          title="Pedidos de Reposição"
           endpoint="pedidoFilial"
           hookParams={{ limit: 10 }}
           filters={[
