@@ -10,10 +10,12 @@ router.get('/produtoFornecedor', ocCtrl.listarProdutoFornecedor);
 router.get('/', ocCtrl.listarOrdensCompra);
 router.post('/', ocCtrl.criarOrdemCompra);
 router.delete('/:id', ocCtrl.cancelarOrdemCompra);
+router.get('/detalhes/:id', ocCtrl.listarDetalhesOrdemCompra);
 
 // Vincular PedidoFilial → OrdemCompra
 router.post('/vincularPedido', ocCtrl.vincularOrdemPedido);
-router.post('/complete', ocCtrl.criarOrdemCompra);
+router.post('/complete', ocCtrl.criarOrdemCompleta);
+
 
 // Itens de OrdemCompra
 router.post('/itens', ocCtrl.criarItemOrdemCompra);

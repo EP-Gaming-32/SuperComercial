@@ -43,7 +43,7 @@ export default function FormPageOrdemCompra({
     }
     setItensOC((prev) => [
       ...prev,
-      { ...produto, quantidade: produto.quantidade || 1, preco_unitario: produto.preco_fornecedor || 0 },
+      { id_produto: produto.id_produto, nome_produto: produto.nome_produto, quantidade: produto.quantidade || 1, preco_unitario: produto.preco_fornecedor || 0 },
     ]);
   };
 
@@ -106,7 +106,7 @@ export default function FormPageOrdemCompra({
             >
               <option value="">Selecione...</option>
               {options.map((opt) => (
-                <option key={opt[optionKey]} value={opt[optionKey]}> 
+                <option key={opt[optionKey]} value={opt[optionKey]}>
                   {opt[optionLabel]}
                 </option>
               ))}

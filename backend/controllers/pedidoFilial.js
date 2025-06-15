@@ -2,86 +2,42 @@ import pool from '../config/db.js';
 
 // Listar pedidos de filial com paginação e filtros
 export const listarPedidoFilial = async (req, res) => {
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 10;
-  const offset = (page - 1) * limit;
-
-  const {
-    id_pedido_filial,
-    id_filial,
-    status,
-    data_pedido
-  } = req.query;
-
-  const conditions = [];
-  const values = [];
-
-  if (id_pedido_filial) {
-    conditions.push('pf.id_pedido_filial = ?');
-    values.push(id_pedido_filial);
-  }
-  if (id_filial) {
-    conditions.push('pf.id_filial = ?');
-    values.push(id_filial);
-  }
-  if (status) {
-    conditions.push('pf.status = ?');
-    values.push(status);
-  }
-  if (data_pedido) {
-    conditions.push('DATE(pf.data_pedido) = ?');
-    values.push(data_pedido);
-  }
-
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const { id_filial, status } = req.query;
 
   try {
-    // Contar total de registros
-    const [countResult] = await pool.query(
-      `SELECT COUNT(*) AS total
-       FROM PedidoFilial pf
-       LEFT JOIN Filial f ON f.id_filial = pf.id_filial
-       ${whereClause}`,
-      values
-    );
-    const totalRecords = countResult[0].total;
+    // Monta a base da query
+    let sql = `
+      SELECT id_pedido_filial,
+             id_filial,
+             data_pedido,
+             status,
+             observacao
+      FROM PedidoFilial
+    `;
+    const params = [];
 
-    // Buscar pedidos com informações agregadas
-    const [rows] = await pool.query(
-      `SELECT 
-         pf.id_pedido_filial,
-         pf.id_filial,
-         f.nome_filial,
-         pf.data_pedido,
-         pf.status,
-         pf.observacao,
-         pf.data_registro,
-         pf.data_atualizacao,
-         COALESCE(SUM(ipf.quantidade * p.valor_produto), 0) AS valor_total,
-         COALESCE(COUNT(ipf.id_produto), 0) AS quantidade_produtos
-       FROM PedidoFilial pf
-       LEFT JOIN Filial f ON f.id_filial = pf.id_filial
-       LEFT JOIN ItensPedidoFilial ipf ON ipf.id_pedido_filial = pf.id_pedido_filial
-       LEFT JOIN Produtos p ON p.id_produto = ipf.id_produto
-       ${whereClause}
-       GROUP BY pf.id_pedido_filial
-       ORDER BY pf.data_pedido DESC
-       LIMIT ? OFFSET ?`,
-      [...values, limit, offset]
-    );
+    // Se algum filtro foi passado, adiciona WHERE dinâmico
+    if (id_filial || status) {
+      const clauses = [];
+      if (status) {
+        clauses.push(`status = ?`);
+        params.push(status);
+      }
+      if (id_filial) {
+        clauses.push(`id_filial = ?`);
+        params.push(id_filial);
+      }
+      sql += ` WHERE ` + clauses.join(' AND ');
+    }
 
-    const totalPages = Math.ceil(totalRecords / limit);
+    // Ordenação padrão
+    sql += ` ORDER BY data_pedido DESC`;
 
-    res.json({ 
-      data: rows, 
-      page, 
-      limit, 
-      totalRecords, 
-      totalPages 
-    });
-  } catch (error) {
-    console.error('Erro ao listar pedidos de filial:', error);
-    res.status(500).json({ error: 'Erro interno ao listar pedidos de filial' });
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao listar pedidos de filial' });
   }
 };
 
