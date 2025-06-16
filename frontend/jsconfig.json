@@ -1,32 +1,7 @@
-// frontend/jsconfig.json (Atualizado)
 {
   "compilerOptions": {
-    "baseUrl": ".", // Diz que caminhos relativos começam a partir da raiz do projeto (onde este arquivo está)
     "paths": {
-      "@/*": ["./*"] // Define que "@/" mapeia para a raiz do projeto (ex: "@/hooks" => "./hooks")
-    },
-    // Configurações adicionais recomendadas para projetos Next.js:
-    "target": "es5", // Compila o código para ES5, compatível com navegadores mais antigos
-    "lib": ["dom", "dom.iterable", "esnext"], // Bibliotecas de ambiente disponíveis (DOM, iteráveis, features ES mais recentes)
-    "allowJs": true, // Permite arquivos JavaScript no projeto
-    "skipLibCheck": true, // Pula a verificação de tipo de arquivos de definição de bibliotecas (acelera o build)
-    "strict": false, // Desabilita o modo estrito do TypeScript (pode ser "true" para projetos mais rigorosos)
-    "forceConsistentCasingInFileNames": true, // Garante que as referências a arquivos tenham a mesma capitalização do sistema de arquivos
-    "noEmit": true, // Não gera arquivos de saída (o Next.js cuida da compilação)
-    "esModuleInterop": true, // Permite importações/exportações de módulos em estilo CommonJS e ES Modules
-    "module": "esnext", // Define o sistema de módulos (ES Modules para Next.js)
-    "moduleResolution": "node", // Como os módulos são resolvidos (usando a estratégia do Node.js)
-    "resolveJsonModule": true, // Permite importar arquivos .json diretamente
-    "isolatedModules": true, // Garante que cada arquivo possa ser compilado isoladamente (melhora a performance)
-    "jsx": "preserve", // Mantém o JSX para o Next.js processar
-    "incremental": true // Habilita builds incrementais para melhor performance
-  },
-  "include": [
-    "next-env.d.ts", // Arquivo de definições de ambiente do Next.js
-    "**/*.js",       // Inclui todos os arquivos .js
-    "**/*.jsx",      // Inclui todos os arquivos .jsx
-    "**/*.ts",       // Inclui todos os arquivos .ts (se você usar TypeScript no futuro)
-    "**/*.tsx"       // Inclui todos os arquivos .tsx (se você usar TypeScript no futuro)
-  ],
-  "exclude": ["node_modules"] // Exclui a pasta node_modules da verificação
+      "@/*": ["./*"]
+    }
+  }
 }
