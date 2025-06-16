@@ -11,6 +11,8 @@ import produtosRoutes from './routes/produtos.js';
 import fornecedoresRoutes from './routes/fornecedores.js';
 import formaPagamentoRoutes from './routes/formaPagamento.js';
 import pedidoRoutes from './routes/pedido.js';
+import pedidoFilialRoutes from './routes/pedidoFilial.js';
+import ordemCompraRoutes from './routes/ordemCompra.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js'; // Roteador de filiais
 import historicoPedidoRoutes from './routes/historicoPedido.js';
@@ -43,6 +45,8 @@ app.use('/grupos', gruposRoutes);
 app.use('/fornecedores', fornecedoresRoutes);
 app.use('/formaPagamento', formaPagamentoRoutes);
 app.use('/pedido', pedidoRoutes);
+app.use('/pedidoFilial', pedidoFilialRoutes);
+app.use('/ordemCompra', ordemCompraRoutes);
 app.use('/statusPedido', statusPedidoRoutes);
 app.use('/historicoPedido', historicoPedidoRoutes);
 app.use('/lotes', lotesRoutes);
