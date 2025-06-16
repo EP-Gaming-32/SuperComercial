@@ -9,10 +9,11 @@
   margin-bottom: 1rem;
 }
 
-/* Linha única de filtros com tamanhos iguais */
+/* --- MUDANÇA PRINCIPAL AQUI: USANDO FLEXBOX PARA ALINHAMENTO --- */
 .searchFields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;         /* 1. Mudado de Grid para Flexbox */
+  flex-wrap: wrap;       /* Permite que os campos quebrem a linha */
+  align-items: flex-end; /* 2. Alinha os campos pela base (a correção principal) */
   gap: 0.75rem;
   width: 100%;
 }
@@ -20,6 +21,7 @@
 .fieldContainer {
   display: flex;
   flex-direction: column;
+  flex: 1 1 150px; /* 3. Faz os campos crescerem e diminuirem de forma responsiva */
 }
 
 .filterLabel {
@@ -35,6 +37,7 @@
   border-radius: 4px;
   box-sizing: border-box;
   transition: border-color 0.2s ease;
+  height: 40px; /* Garante que todos os campos tenham a mesma altura */
 }
 
 .keywordInput:focus,
@@ -43,16 +46,16 @@
   border-color: var(--primary-color, #29b6f6);
 }
 
-/* Linha de botões abaixo dos filtros */
+/* Linha de botões abaixo dos filtros (sem alterações) */
 .buttonRow {
   display: flex;
   justify-content: space-between;
-  align-items: stretch; /* Faz os botões ficarem com mesma altura */
-  gap: 1rem; /* aumenta o espaço entre os botões */
+  align-items: stretch;
+  gap: 1rem;
   margin-top: 0.5rem;
 }
 
-/* Botão de Cadastrar */
+/* Botão de Cadastrar (sem alterações) */
 .addButton {
   padding: 0.6rem 1rem;
   background-color: var(--primary-color, #29b6f6);
@@ -64,14 +67,15 @@
   height: 100%;
   max-width: 21vw;
   min-width: 160px;
-  flex-shrink: 0; /* Não deixa ele diminuir demais */
-  flex-grow: 0;   /* Não expande */
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .addButton:hover {
   background-color: var(--secondary-color, #0288d1);
 }
 
+/* Botão de Buscar (sem alterações) */
 .searchButton {
   padding: 0.6rem 1.5rem;
   background-color: #1b3655;
@@ -90,28 +94,28 @@
   background-color: var(--secondary-color, #0288d1);
 }
 
-/* ======= Pagination Component Styles ======= */
+/* ======= Pagination Component Styles (sem alterações) ======= */
 .paginationContainer {
   display: flex;
-  justify-content: center; /* Center the buttons horizontally */
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem; /* Space between buttons */
-  margin-top: 1rem; /* Add some space above the pagination */
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .paginationContainer button {
-  width: 32px; /* Fixed width for square shape */
-  height: 32px; /* Fixed height for square shape */
-  padding: 0; /* Remove default padding */
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: 1px solid #ccc;
-  border-radius: 4px; /* Slightly rounded corners, set to 0 for sharp squares */
+  border-radius: 4px;
   background-color: #fff;
   color: var(--primary-color, #29b6f6);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
-  display: flex; /* Use flex to center content */
-  align-items: center; /* Center vertically */
-  justify-content: center; /* Center horizontally */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.9rem;
 }
 
@@ -130,4 +134,3 @@
   background-color: var(--secondary-color, #0288d1);
   border-color: var(--secondary-color, #0288d1);
 }
-
