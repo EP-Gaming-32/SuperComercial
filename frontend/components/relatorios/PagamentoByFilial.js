@@ -18,12 +18,9 @@ export default function PagamentoByFilial() {
 
   // Usa o hook useChartData para buscar os dados de pagamentos por filial
   // Endpoint: /api/relatorios/pagamentos-por-filial
-  // Nota: A query do backend (relatorioPagamentosPorFilial) não filtra por id_filial.
-  // Ela retorna todos os pagamentos agregados por filial.
-  // Se quiser filtrar por filial no backend, a query precisaria ser ajustada.
   const { data, loading, error } = useChartData(
     '/relatorios/pagamentos-por-filial', // Endpoint correto
-    {} // Não passamos id_filial aqui, pois a API não filtra por ele (conforme seu controller atual)
+    {} // Não passamos id_filial aqui, pois a API do backend não filtra por ele (conforme seu controller atual)
   );
 
   // Carrega a lista de filiais usando a função compartilhada do hook
@@ -51,7 +48,7 @@ export default function PagamentoByFilial() {
   // O backend relatorioPagamentosPorFilial retorna: { nome_filial, total_pago, total_pagamentos }
   // Para este gráfico, vamos filtrar no frontend se uma filial específica for selecionada
   const processedData = React.useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!data || !Array.isArray(data) || data.length === 0) return [];
 
     if (selectedFilialId) {
       // Se uma filial específica for selecionada, filtra o array de dados
@@ -115,8 +112,6 @@ export default function PagamentoByFilial() {
             <Tooltip formatter={(value, name) => [`R$ ${value.toFixed(2)}`, "Valor Pago"]} />
             <Legend />
             <Bar dataKey="total_pago" fill="#8884d8" name="Total Pago" />
-            {/* Opcional: Adicionar Bar para total_pagamentos se quiser ambos */}
-            {/* <Bar dataKey="total_pagamentos" fill="#82ca9d" name="Total de Pagamentos" /> */}
           </BarChart>
         </ResponsiveContainer>
       )}

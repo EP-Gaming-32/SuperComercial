@@ -12,13 +12,13 @@ export const relatorioPedidosPorFilial = async (req, res) => {
           DATE_FORMAT(p.data_pedido, '%Y-%m') AS mes,
           f.id_filial, -- Adicionado ao SELECT para ser usado no GROUP BY/ORDER BY
           f.nome_filial,
-          COUNT(p.id_pedido) AS total_pedidos,
+          COUNT(p.id_pedido_filial) AS total_pedidos, -- Corrigido para p.id_pedido_filial
           SUM(p.valor_total) AS valor_total_pedidos
         FROM PedidoFilial p
         LEFT JOIN Filial f ON p.id_filial = f.id_filial
         ${id_filial ? 'WHERE p.id_filial = ?' : ''}
-        GROUP BY mes, f.id_filial, f.nome_filial -- Ajustado para incluir id_filial
-        ORDER BY mes, f.id_filial`, // Ajustado para ordenar por id_filial
+        GROUP BY mes, f.id_filial, f.nome_filial
+        ORDER BY mes, f.id_filial`,
       id_filial ? [id_filial] : []
     );
 
@@ -88,7 +88,6 @@ export const relatorioFornecedoresPorFilial = async (req, res) => {
     res.status(500).json({ error: 'Erro interno ao gerar relatório de fornecedores por filial' });
   }
 };
-
 
 // RELATÓRIO: Pagamentos por filial
 export const relatorioPagamentosPorFilial = async (req, res) => {

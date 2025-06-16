@@ -9,8 +9,15 @@ import { Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, Typog
 import Card from './Card'; // Importa seu componente Card
 import useChartData, { fetchFiliais } from '@/hooks/useChartData'; // Importa o hook e a função de buscar filiais
 
-// Cores para as fatias do gráfico de pizza
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8B008B', '#00CED1', '#FF4500'];
+// Cores mais profissionais para as fatias do gráfico de pizza
+const COLORS = [
+  '#4CAF50', // Verde para 'normal'
+  '#FFC107', // Amarelo para 'baixo'
+  '#F44336', // Vermelho para 'critico'
+  '#2196F3', // Azul (se houver outros status)
+  '#9C27B0', // Roxo
+  '#795548', // Marrom
+];
 
 export default function EstoqueVisual() {
   const [filiais, setFiliais] = useState([]);
@@ -50,7 +57,15 @@ export default function EstoqueVisual() {
 
   // Processa os dados para o formato esperado pelo PieChart
   // O backend relatorioStatusPorEstoque retorna: { name: "status_estoque", value: COUNT }
-  const processedData = data || [];
+  const processedData = React.useMemo(() => {
+    if (!data || !Array.isArray(data) || data.length === 0) return [];
+    
+    // Mapeia para garantir que 'name' e 'value' existem e para padronizar.
+    // Garante que o status 'normal', 'baixo', 'critico' tenham cores consistentes.
+    const order = ['normal', 'baixo', 'critico'];
+    return data.sort((a,b) => order.indexOf(a.name) - order.indexOf(b.name));
+
+  }, [data]);
 
   // Gerencia a mensagem de erro para exibição no Alert
   const errorMessage = (error || filiaisError) ?
@@ -104,16 +119,25 @@ export default function EstoqueVisual() {
               data={processedData}
               cx="50%"
               cy="50%"
-              outerRadius="80%" // Tamanho do Pie
+              outerRadius="80%"
               fill="#8884d8"
               dataKey="value" // A propriedade 'value' do backend (COUNT)
               nameKey="name" // A propriedade 'name' do backend (status_estoque)
-              labelLine={false} // Não mostra as linhas para labels
+              labelLine={false}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} // Label formatado
             >
               {
                 processedData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    // Associa cores a status específicos para consistência visual
+                    fill={
+                      entry.name === 'normal' ? COLORS[0] :
+                      entry.name === 'baixo' ? COLORS[1] :
+                      entry.name === 'critico' ? COLORS[2] :
+                      COLORS[index % COLORS.length] // Fallback para outros status
+                    }
+                  />
                 ))
               }
             </Pie>
