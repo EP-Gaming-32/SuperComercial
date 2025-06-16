@@ -147,9 +147,17 @@ export const listarHistoricoStatusOrdemCompra = async (req, res) => {
 export const listarDetalhesOrdemCompra = async (req, res) => {
   const { id } = req.params;
   try {
+    // 1) Busco a própria ordem
     const [ordemRows] = await pool.query(
-      `SELECT id_ordem_compra, data_ordem, data_entrega_prevista, valor_total, status, observacao
-       FROM OrdemCompra WHERE id_ordem_compra = ?`,
+      `SELECT 
+         id_ordem_compra, 
+         data_ordem, 
+         data_entrega_prevista, 
+         valor_total, 
+         status, 
+         observacao
+       FROM OrdemCompra
+       WHERE id_ordem_compra = ?`,
       [id]
     );
     if (ordemRows.length === 0) {
@@ -157,14 +165,25 @@ export const listarDetalhesOrdemCompra = async (req, res) => {
     }
     const ordem = ordemRows[0];
 
+    // 2) Busco os itens usando id_fornecedor em vez de id_produto_fornecedor
     const [itensRows] = await pool.query(
-      `SELECT ioc.id_item_oc AS id, ioc.id_produto, p.nome_produto,
-              ioc.id_produto_fornecedor, pf.id_fornecedor, f.nome_fornecedor,
-              ioc.quantidade, ioc.preco_unitario
-       FROM ItensOrdemCompra ioc
-       JOIN Produtos p USING(id_produto)
-       JOIN ProdutoFornecedor pf ON pf.id_produtoFornecedor = ioc.id_produto_fornecedor
-       JOIN Fornecedor f ON f.id_fornecedor = pf.id_fornecedor
+      `SELECT 
+         ioc.id_item_oc    AS id,
+         ioc.id_produto,
+         p.nome_produto,
+         ioc.id_fornecedor AS id_fornecedor,
+         f.nome_fornecedor,
+         pf.id_produtoFornecedor AS produto_fornecedor_id,
+         ioc.quantidade,
+         ioc.preco_unitario
+       FROM ItensOrdemCompra AS ioc
+       JOIN Produtos AS p 
+         ON p.id_produto = ioc.id_produto
+       JOIN Fornecedor AS f 
+         ON f.id_fornecedor = ioc.id_fornecedor
+       LEFT JOIN ProdutoFornecedor AS pf 
+         ON pf.id_produto     = ioc.id_produto
+        AND pf.id_fornecedor  = ioc.id_fornecedor
        WHERE ioc.id_ordem_compra = ?`,
       [id]
     );
@@ -239,81 +258,48 @@ export const criarOrdemCompleta = async (req, res) => {
 };
 
 export const atualizarOrdemCompleta = async (req, res) => {
-  const id = req.params.id;
-  const { data_ordem, data_entrega_prevista, observacao, status, itens } = req.body;
-
-  if (!Array.isArray(itens)) {
-    return res.status(400).json({ error: 'Itens precisam ser um array' });
-  }
-
+  const { id_ordem_compra, itens } = req.body;
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // Atualiza dados da ordem de compra
+    // 1) Atualiza dados da ordem (ex.: status, data_entrega, valor_total…)
     await conn.query(
-      `UPDATE OrdemCompra SET data_ordem = ?, data_entrega_prevista = ?, observacao = ?, status = ? WHERE id_ordem_compra = ?`,
-      [data_ordem, data_entrega_prevista, observacao, status, id]
+      `UPDATE OrdemCompra
+         SET status = ?, 
+             data_entrega_prevista = ?, 
+             valor_total = ?
+       WHERE id_ordem_compra = ?`,
+      [req.body.status, req.body.data_entrega_prevista, req.body.valor_total, id_ordem_compra]
     );
 
-    // Atualiza ou insere itens da ordem de compra
+    // 2) Para cada item, atualiza usando a coluna correta id_fornecedor:
     for (const item of itens) {
-      // 1. Verifica se existe ProdutoFornecedor para o produto + fornecedor
-      const [pfRows] = await conn.query(
-        `SELECT id_produtoFornecedor FROM ProdutoFornecedor WHERE id_produto = ? AND id_fornecedor = ? AND ativo = TRUE`,
-        [item.id_produto, item.id_fornecedor]
+      await conn.query(
+        `UPDATE ItensOrdemCompra
+            SET id_fornecedor   = ?,   -- em vez de id_produto_fornecedor
+                quantidade      = ?,
+                preco_unitario  = ?
+          WHERE id_ordem_compra = ?
+            AND id_produto      = ?`,
+        [
+          item.id_fornecedor,
+          item.quantidade,
+          item.preco_unitario,
+          id_ordem_compra,
+          item.id_produto
+        ]
       );
-
-      let id_produto_fornecedor;
-
-      if (pfRows.length > 0) {
-        id_produto_fornecedor = pfRows[0].id_produtoFornecedor;
-
-        // Opcional: atualiza preço do ProdutoFornecedor caso tenha mudado
-        await conn.query(
-          `UPDATE ProdutoFornecedor SET preco = ? WHERE id_produtoFornecedor = ?`,
-          [item.preco_unitario, id_produto_fornecedor]
-        );
-      } else {
-        // Insere novo ProdutoFornecedor
-        const [pfInsert] = await conn.query(
-          `INSERT INTO ProdutoFornecedor (id_produto, id_fornecedor, preco, ativo)
-           VALUES (?, ?, ?, TRUE)`,
-          [item.id_produto, item.id_fornecedor, item.preco_unitario]
-        );
-        id_produto_fornecedor = pfInsert.insertId;
-      }
-
-      // 2. Verifica se o item já existe na ordem de compra
-      const [itemRows] = await conn.query(
-        `SELECT id_item_oc FROM ItensOrdemCompra WHERE id_ordem_compra = ? AND id_produto = ?`,
-        [id, item.id_produto]
-      );
-
-      if (itemRows.length > 0) {
-        // Atualiza item existente com id_produto_fornecedor, quantidade e preço
-        await conn.query(
-          `UPDATE ItensOrdemCompra
-           SET id_produto_fornecedor = ?, quantidade = ?, preco_unitario = ?
-           WHERE id_ordem_compra = ? AND id_produto = ?`,
-          [id_produto_fornecedor, item.quantidade, item.preco_unitario, id, item.id_produto]
-        );
-      } else {
-        // Insere item novo
-        await conn.query(
-          `INSERT INTO ItensOrdemCompra (id_ordem_compra, id_produto, id_produto_fornecedor, quantidade, preco_unitario)
-           VALUES (?, ?, ?, ?, ?)`,
-          [id, item.id_produto, id_produto_fornecedor, item.quantidade, item.preco_unitario]
-        );
-      }
     }
 
+    // 3) (opcional) insere novos itens, deleta removidos, etc.
+
     await conn.commit();
-    res.json({ message: 'Ordem completa atualizada com sucesso' });
+    res.json({ message: 'Ordem de compra atualizada com sucesso' });
   } catch (err) {
     await conn.rollback();
     console.error(err);
-    res.status(500).json({ error: 'Erro ao atualizar ordem completa', details: err.message });
+    res.status(500).json({ message: 'Erro ao atualizar ordem de compra' });
   } finally {
     conn.release();
   }

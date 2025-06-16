@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
 
@@ -104,64 +105,17 @@ export default function FormPageOrdemCompra({
   const calcularValorTotal = () =>
     itensOC.reduce((sum, item) => sum + item.quantidade * item.preco_unitario, 0);
 
-  const submit = async e => {
+  const submit = e => {
     e.preventDefault();
     if (itensOC.some(item => !item.id_fornecedor)) {
       alert('Selecione o fornecedor para todos os itens.');
       return;
     }
-
-    try {
-      if (mode === 'edit') {
-        // Atualiza tudo de uma vez no novo endpoint PATCH
-        const res = await fetch(`http://localhost:5000/ordemCompra/complete/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...formData, itens: itensOC })
-        });
-
-        if (!res.ok) throw new Error('Erro ao atualizar ordem completa');
-      } else {
-        // Criação antiga: POST da ordem, depois POST dos itens
-        const resOrdem = await fetch('http://localhost:5000/ordemCompra', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data_ordem: formData.data_ordem,
-            data_entrega_prevista: formData.data_entrega_prevista,
-            observacao: formData.observacao,
-            status: formData.status
-          })
-        });
-
-        if (!resOrdem.ok) throw new Error('Erro ao criar ordem');
-
-        const dataOrdem = await resOrdem.json();
-        const ordemId = dataOrdem.id; // Assumindo que o backend retorne o id criado
-
-        // Cria os itens em paralelo (pode ser otimizado)
-        await Promise.all(
-          itensOC.map(item =>
-            fetch('http://localhost:5000/ordemCompra/itens', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ...item, id_ordem_compra: ordemId })
-            })
-          )
-        );
-      }
-
-      alert('Ordem salva com sucesso!');
-      onSubmit();
-    } catch (error) {
-      console.error(error);
-      alert('Erro ao salvar a ordem');
-    }
+    onSubmit({ ...formData, itens: itensOC });
   };
 
   return (
     <form onSubmit={submit} className={styles.form}>
-      {/* Campos principais e status */}
       <div className={styles.fieldGroup}>
         <label>Data da Ordem*</label>
         <input
@@ -200,7 +154,6 @@ export default function FormPageOrdemCompra({
         />
       </div>
 
-      {/* Itens da ordem */}
       <div className={styles.itensSection}>
         <h3>Itens da Ordem</h3>
         {itensOC.length === 0 && <p>Nenhum item adicionado.</p>}
@@ -249,7 +202,6 @@ export default function FormPageOrdemCompra({
         <div className={styles.total}>Total: R$ {calcularValorTotal().toFixed(2)}</div>
       </div>
 
-      {/* Botões */}
       <div className={styles.buttonGroup}>
         <button type="button" onClick={onCancel}>
           Voltar
