@@ -51,20 +51,20 @@ app.post('/reset-password/:token', resetPassword);
 // Montagem dos Roteadores Modulares
 // CADA ROTEADOR É MONTADO COM O PREFIXO '/api/'
 // Isso garante que as URLs do frontend (que incluem /api/) encontrem suas rotas no backend.
-app.use('/api/produtos', produtosRoutes);
-app.use('/api/grupos', gruposRoutes);
-app.use('/api/fornecedores', fornecedoresRoutes);
-app.use('/api/formaPagamento', formaPagamentoRoutes);
-app.use('/api/pedido', pedidoRoutes);
-app.use('/api/statusPedido', statusPedidoRoutes);
-app.use('/api/historicoPedido', historicoPedidoRoutes);
-app.use('/api/lotes', lotesRoutes);
-app.use('/api/estoque', estoqueRoutes);
-app.use('/api/movimentacaoEstoque', movimentacaoEstoqueRoutes);
+app.use('/produtos', produtosRoutes);
+app.use('/grupos', gruposRoutes);
+app.use('/fornecedores', fornecedoresRoutes);
+app.use('/formaPagamento', formaPagamentoRoutes);
+app.use('/pedido', pedidoRoutes);
+app.use('/statusPedido', statusPedidoRoutes);
+app.use('/historicoPedido', historicoPedidoRoutes);
+app.use('/lotes', lotesRoutes);
+app.use('/estoque', estoqueRoutes);
+app.use('/movimentacaoEstoque', movimentacaoEstoqueRoutes);
 
 // ROTAS DE RELATÓRIOS E FILIAIS - CRUCIAIS PARA SEU DASHBOARD
-app.use('/api/filial', filialRoutes);       // Montagem do roteador de filiais
-app.use('/api/relatorios', relatoriosRoutes); // Montagem do roteador de relatórios
+app.use('/filial', filialRoutes);       // Montagem do roteador de filiais
+app.use('/relatorios', relatoriosRoutes); // Montagem do roteador de relatórios
 
 // Rota de Teste (opcional, apenas para verificar se o servidor está no ar)
 app.get('/', (req, res) => {
