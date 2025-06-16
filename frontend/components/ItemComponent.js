@@ -6,27 +6,21 @@ import styles from "./ItemComponent.module.css";
 
 // Função para formatar a data
 const formatarData = (dataString) => {
-    // Adicione um console.log para ver o que está chegando aqui
-    console.log("formatarData recebido:", dataString);
-
     if (!dataString) return '';
 
-    // Tente remover tags HTML se a string já vier com elas (solução paliativa)
+    // Tenta remover tags HTML se a string já vier com elas (para evitar problemas como o "math-inline")
     const cleanDataString = typeof dataString === 'string' 
                             ? dataString.replace(/<[^>]*>?/gm, '') 
                             : dataString;
     
-    // Agora tente criar o objeto Date
     const dataObjeto = new Date(cleanDataString);
 
-    // Se for uma data inválida, retorne "Data Inválida"
     if (isNaN(dataObjeto.getTime())) {
-        console.warn("Data inválida após limpeza:", cleanDataString);
         return 'Data Inválida';
     }
 
     const dia = String(dataObjeto.getUTCDate()).padStart(2, '0');
-    const mes = String(dataObjeto.getUTCMonth() + 1).padStart(2, '0');
+    const mes = String(dataObjeto.getUTCMonth() + 1).padStart(2, '0'); 
     const ano = dataObjeto.getUTCFullYear();
 
     return `${dia}/${mes}/${ano}`;
@@ -61,8 +55,6 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
                 alert(
                     `${endpoint.charAt(0).toUpperCase() + endpoint.slice(1)} inativado com sucesso!`
                 );
-                // Considerar um state update ou callback para recarregar dados sem window.location.reload()
-                // Para simplificar, mantemos o reload por enquanto.
                 window.location.reload(); 
             } else {
                 const errorText = await res.text();
@@ -96,10 +88,10 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
                     >
                         <span className={styles.fieldLabel}>{label}:</span>
                         <span className={styles.fieldValue}>
-                            {/* AQUI É ONDE A FORMATAÇÃO É APLICADA E O CONTEÚDO É RENDERIZADO */}
-                            {key === 'data_pedido'
-                                ? formatarData(fieldValue) // Tenta formatar
-                                : fieldValue} {/* Exibe o valor normal */}
+                            {/* ATUALIZADO: Inclui 'data_pedido' E 'data_ordem' para formatação */}
+                            {(key === 'data_pedido' || key === 'data_ordem') // <--- CONDIÇÃO ATUALIZADA AQUI!
+                                ? formatarData(fieldValue) // Se for um dos campos de data, formata
+                                : fieldValue} {/* Caso contrário, exibe o valor normal */}
                         </span>
                     </div>
                 );
