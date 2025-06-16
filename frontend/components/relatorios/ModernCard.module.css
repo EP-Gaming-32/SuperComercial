@@ -1,0 +1,207 @@
+/* Card Moderno - SuperComercial */
+
+.modernCard {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modernCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 25%, #4facfe 50%, #43e97b 75%, #fa709a 100%);
+}
+
+.modernCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 1rem;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cardSubtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+.cardContent {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .modernCard {
+    border-radius: 12px;
+  }
+  
+  .cardHeader {
+    padding: 1rem 1rem 0 1rem;
+  }
+  
+  .cardContent {
+    padding: 0 1rem 1rem 1rem;
+  }
+  
+  .titleSection {
+    gap: 0.75rem;
+  }
+  
+  .cardIcon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .cardTitle {
+    font-size: 1.125rem;
+  }
+  
+  .cardSubtitle {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleSection {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .cardTitle {
+    font-size: 1rem;
+  }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modernCard {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Estados especiais */
+.modernCard.loading {
+  pointer-events: none;
+}
+
+.modernCard.error {
+  border-color: #fca5a5;
+}
+
+.modernCard.error::before {
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+}
+
+.modernCard.success {
+  border-color: #86efac;
+}
+
+.modernCard.success::before {
+  background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
+}
+
+/* Compatibilidade com Material-UI */
+.cardContent :global(.MuiFormControl-root) {
+  margin-bottom: 1rem;
+}
+
+.cardContent :global(.MuiSelect-root) {
+  border-radius: 8px;
+}
+
+.cardContent :global(.MuiInputLabel-root) {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.cardContent :global(.MuiOutlinedInput-root) {
+  border-radius: 8px;
+}
+
+.cardContent :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
+  border-color: #667eea;
+}
+
+.cardContent :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Estilos para gráficos dentro do card */
+.cardContent .recharts-wrapper {
+  margin: 0 !important;
+}
+
+.cardContent .recharts-surface {
+  border-radius: 8px;
+}
+
+/* Estilos para alertas dentro do card */
+.cardContent :global(.MuiAlert-root) {
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* Estilos para loading dentro do card */
+.cardContent :global(.MuiCircularProgress-root) {
+  color: #667eea;
+}
+

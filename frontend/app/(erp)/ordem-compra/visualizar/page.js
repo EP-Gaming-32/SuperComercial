@@ -67,9 +67,9 @@ export default function SearchPageOrdemCompra() {
           detailRoute="/ordem-compra/detalhes"
           idField="id_ordem_compra"
           showFields={[
-            { value: "nome_fornecedor", label: "Fornecedor" },
             { value: "status", label: "Status" },
             { value: "data_ordem", label: "Data da Ordem" },
+            { value: "data_entrega_prevista", label: "Data de Entrega" },
             { value: "valor_total", label: "Valor Total" },
           ]}
           addButtonUrl="/ordem-compra/registrar"

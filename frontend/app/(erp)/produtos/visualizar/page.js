@@ -72,9 +72,9 @@ export default function ProdutosPage() {
               placeholder: "Digite nome do produto",
             },
             {
-              name: "unidade_medida",
-              label: "Unidade de Medida",
-              placeholder: "Ex: kg, un, pct",
+              name: "sku",
+              label: "SKU",
+              placeholder: "Store Keeping Unit",
             },
           ]}
           keywordName={null}
@@ -84,7 +84,7 @@ export default function ProdutosPage() {
           showFields={[
             { value: "nome_produto", label: "Produto"},
             { value: "nome_grupo", label: "Grupo"},
-            { value: "valor_produto", label: "Valor"},
+            { value: "sku", label: "SKU"},
             { value: "nome_fornecedor", label: "Fornecedor"},
           ]}
           addButtonUrl="/produtos/registrar"
