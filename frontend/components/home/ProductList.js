@@ -20,7 +20,7 @@ export default function CriticalStockAlert({ limit = 10 }) {
         const params = new URLSearchParams({ page, limit });
         
         // APLIQUE A URL CORRETA E FUNCIONAL AQUI
-        const res = await fetch(`http://localhost:5000/relatorios/estoque-alertas?${params.toString()}`);
+        const res = await fetch(`http://localhost:5000/relatorios/estoque-alertas`);
         
         // ...
       } catch (err) {

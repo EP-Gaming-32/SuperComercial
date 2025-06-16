@@ -237,3 +237,84 @@ export const criarOrdemCompleta = async (req, res) => {
     conn.release();
   }
 };
+
+export const atualizarOrdemCompleta = async (req, res) => {
+  const id = req.params.id;
+  const { data_ordem, data_entrega_prevista, observacao, status, itens } = req.body;
+
+  if (!Array.isArray(itens)) {
+    return res.status(400).json({ error: 'Itens precisam ser um array' });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Atualiza dados da ordem de compra
+    await conn.query(
+      `UPDATE OrdemCompra SET data_ordem = ?, data_entrega_prevista = ?, observacao = ?, status = ? WHERE id_ordem_compra = ?`,
+      [data_ordem, data_entrega_prevista, observacao, status, id]
+    );
+
+    // Atualiza ou insere itens da ordem de compra
+    for (const item of itens) {
+      // 1. Verifica se existe ProdutoFornecedor para o produto + fornecedor
+      const [pfRows] = await conn.query(
+        `SELECT id_produtoFornecedor FROM ProdutoFornecedor WHERE id_produto = ? AND id_fornecedor = ? AND ativo = TRUE`,
+        [item.id_produto, item.id_fornecedor]
+      );
+
+      let id_produto_fornecedor;
+
+      if (pfRows.length > 0) {
+        id_produto_fornecedor = pfRows[0].id_produtoFornecedor;
+
+        // Opcional: atualiza preço do ProdutoFornecedor caso tenha mudado
+        await conn.query(
+          `UPDATE ProdutoFornecedor SET preco = ? WHERE id_produtoFornecedor = ?`,
+          [item.preco_unitario, id_produto_fornecedor]
+        );
+      } else {
+        // Insere novo ProdutoFornecedor
+        const [pfInsert] = await conn.query(
+          `INSERT INTO ProdutoFornecedor (id_produto, id_fornecedor, preco, ativo)
+           VALUES (?, ?, ?, TRUE)`,
+          [item.id_produto, item.id_fornecedor, item.preco_unitario]
+        );
+        id_produto_fornecedor = pfInsert.insertId;
+      }
+
+      // 2. Verifica se o item já existe na ordem de compra
+      const [itemRows] = await conn.query(
+        `SELECT id_item_oc FROM ItensOrdemCompra WHERE id_ordem_compra = ? AND id_produto = ?`,
+        [id, item.id_produto]
+      );
+
+      if (itemRows.length > 0) {
+        // Atualiza item existente com id_produto_fornecedor, quantidade e preço
+        await conn.query(
+          `UPDATE ItensOrdemCompra
+           SET id_produto_fornecedor = ?, quantidade = ?, preco_unitario = ?
+           WHERE id_ordem_compra = ? AND id_produto = ?`,
+          [id_produto_fornecedor, item.quantidade, item.preco_unitario, id, item.id_produto]
+        );
+      } else {
+        // Insere item novo
+        await conn.query(
+          `INSERT INTO ItensOrdemCompra (id_ordem_compra, id_produto, id_produto_fornecedor, quantidade, preco_unitario)
+           VALUES (?, ?, ?, ?, ?)`,
+          [id, item.id_produto, id_produto_fornecedor, item.quantidade, item.preco_unitario]
+        );
+      }
+    }
+
+    await conn.commit();
+    res.json({ message: 'Ordem completa atualizada com sucesso' });
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar ordem completa', details: err.message });
+  } finally {
+    conn.release();
+  }
+};
