@@ -18,7 +18,7 @@ export default function CriticalStockAlert({ limit = 10 }) {
       setError(null);
       try {
         const params = new URLSearchParams({ page, limit });
-        const res = await fetch(`http://localhost:5000/relatorios/estoque-alerta?${params.toString()}`);
+        const res = await fetch(`http://localhost:5000/relatorios/estoque-alertas?${params.toString()}`);
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const json = await res.json();
         setAlerts(json.data);
