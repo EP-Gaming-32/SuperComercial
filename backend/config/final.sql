@@ -229,6 +229,15 @@ CREATE TABLE Estoque (
     FOREIGN KEY (id_lote) REFERENCES Lote(id_lote) ON DELETE SET NULL
 );
 
+CREATE TABLE OrdemCompraEstoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_ordem_compra INT NOT NULL,
+    id_estoque INT NOT NULL,
+    FOREIGN KEY (id_ordem_compra) REFERENCES OrdemCompra(id_ordem_compra) ON DELETE CASCADE,
+    FOREIGN KEY (id_estoque) REFERENCES Estoque(id_estoque) ON DELETE CASCADE,
+    UNIQUE (id_ordem_compra, id_estoque)
+);
+
 -- Feedback das Ordens de Compra
 CREATE TABLE Feedback (
     id_feedback INT AUTO_INCREMENT PRIMARY KEY,

@@ -35,6 +35,7 @@ export default function DetalhesOrdemCompraPage() {
         data_entrega_prevista: raw.data_entrega_prevista,
         observacao: raw.observacao,
         status: raw.status,
+        id_filial: raw.id_filial,
         itens: Array.isArray(raw.itens)
           ? raw.itens.map(item => ({
               id_produto: item.id_produto,
@@ -64,6 +65,7 @@ export default function DetalhesOrdemCompraPage() {
       const body = {
         id_ordem_compra: id,
         status: updatedData.status,
+        id_filial: updatedData.id_filial,
         data_entrega_prevista: updatedData.data_entrega_prevista,
         valor_total,
         itens: updatedData.itens
@@ -78,7 +80,7 @@ export default function DetalhesOrdemCompraPage() {
         throw new Error(message || 'Erro ao atualizar ordem');
       }
       alert('Ordem de compra atualizada com sucesso!');
-      router.push('/ordemCompra/visualizar');
+      router.push('/ordem-compra/visualizar');
     } catch (err) {
       console.error(err);
       alert('Erro: ' + err.message);

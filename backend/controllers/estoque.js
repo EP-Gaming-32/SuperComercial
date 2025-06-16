@@ -116,12 +116,29 @@ export const criarEstoque = async (req, res) => {
     return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
   }
   try {
-    const [r] = await pool.query(
-      `INSERT INTO Estoque (id_produto,id_fornecedor,id_filial,id_lote,local_armazenamento,quantidade,estoque_minimo,estoque_maximo)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [id_produto, id_fornecedor, id_filial, id_lote||null, local_armazenamento||null, quantidade, estoque_minimo, estoque_maximo]
+    // Calcula estoque mínimo e máximo
+    const estoque_minimo = Math.ceil(quantidade * 0.2);
+    const estoque_maximo = quantidade * 2;
+
+    const [result] = await pool.query(
+      `INSERT INTO Estoque
+         (id_produto, id_fornecedor, id_filial, local_armazenamento,
+          quantidade, estoque_minimo, estoque_maximo)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id_produto,
+        id_fornecedor,
+        id_filial,
+        local_armazenamento,
+        quantidade,
+        estoque_minimo,
+        estoque_maximo
+      ]
     );
-    res.status(201).json({ id_estoque: r.insertId });
+    res.status(201).json({
+      message: 'Estoque criado com sucesso.',
+      data: { id_estoque: result.insertId }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro interno ao criar estoque' });

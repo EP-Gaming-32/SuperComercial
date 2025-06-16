@@ -108,18 +108,35 @@ export const listarOrdensCompra = async (req, res) => {
 // DELETE /ordemCompra/:id — marca a ordem como Cancelado
 export const cancelarOrdemCompra = async (req, res) => {
   const { id } = req.params;
+  const conn = await pool.getConnection();
   try {
-    await pool.query(
+    await conn.beginTransaction();
+
+    // Atualiza o status da ordem
+    await conn.query(
       `UPDATE OrdemCompra
          SET status = 'Cancelado',
              data_atualizacao = CURRENT_TIMESTAMP
        WHERE id_ordem_compra = ?`,
       [id]
     );
-    res.json({ message: 'Ordem de compra cancelada' });
+
+    // 🔥 Remove os vínculos da ordem com os estoques
+    await conn.query(
+      `DELETE FROM OrdemCompraEstoque
+       WHERE id_ordem_compra = ?`,
+      [id]
+    );
+
+    await conn.commit();
+    res.json({ message: 'Ordem de compra cancelada e vínculo removido' });
+
   } catch (err) {
+    await conn.rollback();
     console.error(err);
     res.status(500).json({ message: 'Erro ao cancelar ordem de compra' });
+  } finally {
+    conn.release();
   }
 };
 
@@ -147,48 +164,46 @@ export const listarHistoricoStatusOrdemCompra = async (req, res) => {
 export const listarDetalhesOrdemCompra = async (req, res) => {
   const { id } = req.params;
   try {
-    // 1) Busco a própria ordem
+    // 1) Buscar dados da ordem
     const [ordemRows] = await pool.query(
-      `SELECT 
-         id_ordem_compra, 
-         data_ordem, 
-         data_entrega_prevista, 
-         valor_total, 
-         status, 
-         observacao
+      `SELECT id_ordem_compra, data_ordem, data_entrega_prevista,
+              valor_total, status, observacao
        FROM OrdemCompra
        WHERE id_ordem_compra = ?`,
       [id]
     );
-    if (ordemRows.length === 0) {
-      return res.status(404).json({ message: 'Ordem de compra não encontrada' });
-    }
+    if (!ordemRows.length) return res.status(404).json({ message: 'Ordem não encontrada' });
     const ordem = ordemRows[0];
 
-    // 2) Busco os itens usando id_fornecedor em vez de id_produto_fornecedor
+    // 2) Buscar itens da ordem
     const [itensRows] = await pool.query(
-      `SELECT 
-         ioc.id_item_oc    AS id,
-         ioc.id_produto,
-         p.nome_produto,
-         ioc.id_fornecedor AS id_fornecedor,
-         f.nome_fornecedor,
-         pf.id_produtoFornecedor AS produto_fornecedor_id,
-         ioc.quantidade,
-         ioc.preco_unitario
-       FROM ItensOrdemCompra AS ioc
-       JOIN Produtos AS p 
-         ON p.id_produto = ioc.id_produto
-       JOIN Fornecedor AS f 
-         ON f.id_fornecedor = ioc.id_fornecedor
-       LEFT JOIN ProdutoFornecedor AS pf 
-         ON pf.id_produto     = ioc.id_produto
-        AND pf.id_fornecedor  = ioc.id_fornecedor
+      `SELECT ioc.id_item_oc AS id, ioc.id_produto, p.nome_produto,
+              ioc.id_fornecedor, f.nome_fornecedor,
+              ioc.quantidade, ioc.preco_unitario
+       FROM ItensOrdemCompra ioc
+       JOIN Produtos p ON p.id_produto = ioc.id_produto
+       JOIN Fornecedor f ON f.id_fornecedor = ioc.id_fornecedor
        WHERE ioc.id_ordem_compra = ?`,
       [id]
     );
 
-    res.json({ data: { ...ordem, itens: itensRows } });
+    // 3) Buscar estoques vinculados
+    const [estoquesRows] = await pool.query(
+      `SELECT oce.id_estoque, e.id_filial, e.quantidade, e.id_produto
+       FROM OrdemCompraEstoque oce
+       JOIN Estoque e ON e.id_estoque = oce.id_estoque
+       WHERE oce.id_ordem_compra = ?`,
+      [id]
+    );
+
+    // 4) Montar e enviar resposta
+    res.json({
+      data: {
+        ...ordem,
+        itens: itensRows,
+        estoques_vinculados: estoquesRows
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Erro ao buscar detalhes da ordem' });
@@ -258,30 +273,78 @@ export const criarOrdemCompleta = async (req, res) => {
 };
 
 export const atualizarOrdemCompleta = async (req, res) => {
-  const { id_ordem_compra, itens } = req.body;
+  const id_ordem_compra = parseInt(req.params.id, 10);
+  const { status, data_entrega_prevista, id_filial = null, itens = [] } = req.body;
+
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // 1) Atualiza dados da ordem (ex.: status, data_entrega, valor_total…)
+    // 1) Atualiza status e previsão
     await conn.query(
       `UPDATE OrdemCompra
-         SET status = ?, 
-             data_entrega_prevista = ?, 
-             valor_total = ?
+         SET status = ?, data_entrega_prevista = ?
        WHERE id_ordem_compra = ?`,
-      [req.body.status, req.body.data_entrega_prevista, req.body.valor_total, id_ordem_compra]
+      [status, data_entrega_prevista, id_ordem_compra]
     );
 
-    // 2) Para cada item, atualiza usando a coluna correta id_fornecedor:
+    // 2) Se “Em Separação no CD”: cria Estoque na filial 1 (CD)
+    if (status === 'Em Separação no CD') {
+      for (const item of itens) {
+        const estoque_minimo = Math.ceil(item.quantidade * 0.2);
+        const estoque_maximo = item.quantidade * 2;
+
+        const [estoqueRes] = await conn.query(
+          `INSERT INTO Estoque
+            (id_produto, id_fornecedor, id_filial,
+              local_armazenamento, quantidade, estoque_minimo, estoque_maximo)
+          VALUES (?, ?, 1, ?, ?, ?, ?)`,
+          [
+            item.id_produto,
+            item.id_fornecedor,
+            item.local_armazenamento,
+            item.quantidade,
+            estoque_minimo,
+            estoque_maximo
+          ]
+        );
+        const id_estoque = estoqueRes.insertId;
+
+        // 🔗 Cria vínculo com a ordem
+        await conn.query(
+          `INSERT INTO OrdemCompraEstoque (id_ordem_compra, id_estoque)
+          VALUES (?, ?)`,
+          [id_ordem_compra, id_estoque]
+        );
+      }
+    }
+
+    // 3) Se “Recebido na Filial”: move o estoque da filial 1 para a filial de destino
+    if (status === 'Recebido na Filial' && id_filial) {
+      const [estoques] = await conn.query(
+        `SELECT e.id_estoque
+        FROM Estoque e
+        JOIN OrdemCompraEstoque oce ON oce.id_estoque = e.id_estoque
+        WHERE oce.id_ordem_compra = ?`,
+        [id_ordem_compra]
+      );
+
+      for (const estoque of estoques) {
+        await conn.query(
+          `UPDATE Estoque
+          SET id_filial = ?
+          WHERE id_estoque = ?`,
+          [id_filial, estoque.id_estoque]
+        );
+      }
+    }
+
+    // 4) Atualiza cada item da ordem (fornecedor, quantidade e preço)
     for (const item of itens) {
       await conn.query(
         `UPDATE ItensOrdemCompra
-            SET id_fornecedor   = ?,   -- em vez de id_produto_fornecedor
-                quantidade      = ?,
-                preco_unitario  = ?
-          WHERE id_ordem_compra = ?
-            AND id_produto      = ?`,
+           SET id_fornecedor = ?, quantidade = ?, preco_unitario = ?
+         WHERE id_ordem_compra = ? AND id_produto = ?`,
         [
           item.id_fornecedor,
           item.quantidade,
@@ -292,14 +355,12 @@ export const atualizarOrdemCompleta = async (req, res) => {
       );
     }
 
-    // 3) (opcional) insere novos itens, deleta removidos, etc.
-
     await conn.commit();
-    res.json({ message: 'Ordem de compra atualizada com sucesso' });
+    res.json({ message: 'Ordem de compra atualizada com sucesso.' });
   } catch (err) {
     await conn.rollback();
     console.error(err);
-    res.status(500).json({ message: 'Erro ao atualizar ordem de compra' });
+    res.status(500).json({ message: 'Erro ao atualizar ordem: ' + err.message });
   } finally {
     conn.release();
   }
