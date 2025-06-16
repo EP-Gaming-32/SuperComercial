@@ -9,11 +9,13 @@
 .navLink {
   text-decoration: none;
   font-size: 1rem;
-  transition: background-color 0.2s ease, color 0.2s ease, font-weight 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
   display: block;
-  padding: 8px 12px;
+  padding: 8px 12px 8px 8px;
   border-radius: 4px;
   color: white;
+  border-left: 4px solid transparent;
+  transform: translateZ(0); /* <-- Adicione este "truque" */
 }
 
 .navLink:hover {
@@ -37,7 +39,6 @@
   color: white;
   font-size: 20px;
   font-weight: bold;
-  /* margin-bottom foi removido daqui */
   cursor: pointer;
   width: 100%;
   text-align: left;
@@ -45,9 +46,8 @@
   text-decoration: none;
 }
 
-/* ===== NOVA CLASSE PARA CONTROLAR O ESPAÇAMENTO ===== */
 .brandContainer {
-  margin-bottom: 20px; /* Coloque o espaço desejado aqui */
+  margin-bottom: 60px;
 }
 
 .navItem {
@@ -58,8 +58,7 @@
   background-color: #33334d;
   color: #a0a0ff;
   font-weight: bold;
-  border-left: 4px solid #00eeff;
-  padding-left: 8px;
+  border-left-color: #00eeff;
 }
 
 /* SubMenu Styles (Dropdown) */
@@ -79,6 +78,7 @@
   padding: 6px 10px;
   font-size: 0.9em;
   color: #d0d0d0;
+  border-left: 4px solid transparent;
 }
 
 .subMenu .navLink:hover {
@@ -90,9 +90,9 @@
   background-color: #444466;
   color: #2678c9;
   font-weight: bold;
-  border-left: 4px solid #00aaff;
-  padding-left: 6px;
+  border-left-color: #00aaff;
 }
+
 
 .horizontalNavbar {
   padding-left: 4vw;
