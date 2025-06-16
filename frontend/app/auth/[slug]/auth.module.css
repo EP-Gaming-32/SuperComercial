@@ -1,0 +1,172 @@
+/* Reset default margins and set full height */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Segoe UI", sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-color);
+}
+
+/* Central wrapper */
+.wrapper {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* Título com sombra e destaque */
+.title {
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 1rem;
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Container padrão */
+.container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* Caixa de login */
+.loginBox {
+  background: var(--secondary-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.header {
+  background: var(--primary-color);
+  color: white;
+  padding: 1rem;
+  font-size: 1.125rem;
+  border-radius: 12px 12px 0 0;
+  margin: -1.5rem -1.5rem 1rem -1.5rem;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form input {
+  margin: 0;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #999;
+  font-size: 1rem;
+  box-sizing: border-box;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.form input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.25);
+}
+
+/* Link minimalista para "Esqueci a Senha" */
+.forgotPasswordLink {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: auto; 
+  width: auto; 
+  color: #f0f0f0; 
+  font-size: 0.85rem;
+  font-weight: normal;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 0;
+}
+
+.button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1b3655;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Botão secundário */
+.buttonSecondary {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background-color: #1b3655;
+  color: #ffffff;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 1.5rem 1rem;
+    justify-content: flex-start;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    padding: 0.75rem;
+  }
+
+  .loginBox {
+    margin: 0;
+  }
+
+  .header {
+    padding: 0.75rem;
+    font-size: 1rem;
+    margin: -1rem -1rem 1rem -1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .wrapper {
+    height: auto;
+    min-height: 100vh;
+    padding: 1rem 0.75rem;
+  }
+
+  .header {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+}

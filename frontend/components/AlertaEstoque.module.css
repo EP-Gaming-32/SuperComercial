@@ -1,0 +1,42 @@
+.alertContainer {
+    border: 1px solid #f5c6cb;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 8px;
+    max-height: 300px; /* Limits the height */
+    overflow-y: auto;  /* Enables vertical scrolling if content overflows */
+  }
+  
+  .title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .alertList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .alertItem {
+    background-color: #f5c6cb;
+    padding: 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .productName {
+    font-weight: bold;
+  }
+  
+  .stockInfo {
+    font-size: 0.9rem;
+  }
+  
+  .noAlerts {
+    font-style: italic;
+    text-align: center;
+  }
+  
