@@ -106,7 +106,11 @@ export default function EstoqueVisual() {
 
   // Usa o hook useChartData para buscar os dados de status de estoque
   const chartParams = React.useMemo(() => {
-    return selectedFilialId ? { id_filial: selectedFilialId } : {};
+    const params = {};
+    if (selectedFilialId && selectedFilialId !== '') {
+      params.id_filial = selectedFilialId;
+    }
+    return params;
   }, [selectedFilialId]);
   
   const { data, loading, error, refetch } = useChartData(
@@ -368,3 +372,4 @@ export default function EstoqueVisual() {
     </Card>
   );
 }
+

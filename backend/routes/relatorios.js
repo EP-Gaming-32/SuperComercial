@@ -11,7 +11,9 @@ import {
   relatorioEstoquePorProduto,
   relatorioComprasPorMes,
   relatorioEstoqueAlertas,
-  relatorioProdutosVencidosDanificados
+  relatorioProdutosVencidosDanificados,
+  relatorioProdutosMaisVendidos,
+  relatorioGiroEstoque
 } from '../controllers/relatorios.js'; // Ajuste o caminho se seu controllers/relatorios.js estiver em outro lugar
 
 const router = Router();
@@ -55,5 +57,8 @@ router.get('/estoque-alertas', relatorioEstoqueAlertas);
 // NOVO RELATÓRIO: Produtos Vencidos/Danificados
 // Frontend espera: GET /api/relatorios/produtos/vencidos-danificados
 router.get('/produtos/vencidos-danificados', relatorioProdutosVencidosDanificados);
+
+router.get('/produtos-mais-vendidos', relatorioProdutosMaisVendidos);
+router.get('/giro-estoque', relatorioGiroEstoque);
 
 export default router;

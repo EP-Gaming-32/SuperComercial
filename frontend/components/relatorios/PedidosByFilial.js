@@ -1,19 +1,10 @@
-// frontend/components/relatorios/PedidosByFilial.js
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from "recharts";
-import { Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, Typography, Alert } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, CircularProgress, Typography } from '@mui/material';
 import Card from './Card';
 import useChartData, { fetchFiliais } from '@/hooks/useChartData';
 import styles from "./ModernVisuals.module.css";
@@ -29,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         </p>
         {payload[0].payload.valor_total_pedidos && (
           <p style={{ margin: 0, color: '#43e97b', fontSize: '0.75rem' }}>
-            {`Valor: R$ ${payload[0].payload.valor_total_pedidos.toFixed(2)}`}
+            {`Valor: R$ ${Number(payload[0].payload.valor_total_pedidos).toFixed(2)}`}
           </p>
         )}
       </div>
@@ -38,9 +29,8 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-// Cores modernas para as barras
 const MODERN_COLORS = [
-  '#667eea', '#764ba2', '#f093fb', '#4facfe', 
+  '#667eea', '#764ba2', '#f093fb', '#4facfe',
   '#43e97b', '#fa709a', '#38f9d7', '#fee140'
 ];
 
@@ -50,24 +40,21 @@ export default function PedidosByFilial() {
   const [filiaisError, setFiliaisError] = useState(null);
   const [selectedFilialId, setSelectedFilialId] = useState('');
 
-  // Usa o hook useChartData para buscar os dados de pedidos por filial
   const chartParams = React.useMemo(() => {
     return selectedFilialId ? { id_filial: selectedFilialId } : {};
   }, [selectedFilialId]);
-  
+
   const { data, loading, error, refetch } = useChartData(
     '/relatorios/pedidos-por-filial',
     chartParams
   );
 
-  // Recarrega dados quando a filial selecionada muda
   useEffect(() => {
     if (refetch) {
       refetch();
     }
   }, [selectedFilialId, refetch]);
 
-  // Carrega a lista de filiais usando a função compartilhada do hook
   useEffect(() => {
     const getFiliais = async () => {
       setFiliaisLoading(true);
@@ -88,7 +75,6 @@ export default function PedidosByFilial() {
     setSelectedFilialId(e.target.value);
   }, []);
 
-  // Processa os dados para o formato esperado pelo BarChart
   const processedData = React.useMemo(() => {
     if (!data || !Array.isArray(data) || data.length === 0) return [];
 
@@ -102,7 +88,7 @@ export default function PedidosByFilial() {
         };
       }
       acc[item.id_filial].total_pedidos += item.total_pedidos;
-      acc[item.id_filial].valor_total_pedidos += item.valor_total_pedidos;
+      acc[item.id_filial].valor_total_pedidos += Number(item.valor_total_pedidos) || 0;
       return acc;
     }, {});
 
@@ -114,20 +100,18 @@ export default function PedidosByFilial() {
     }
   }, [data, selectedFilialId]);
 
-  // Gerencia a mensagem de erro para exibição no Alert
-  const errorMessage = (error || filiaisError) ?
-    (error ? (error.message || "Erro desconhecido ao carregar dados.") : (filiaisError.message || "Erro desconhecido ao carregar filiais."))
+  const errorMessage = (error || filiaisError)
+    ? (error ? (error.message || "Erro desconhecido ao carregar dados.") : (filiaisError.message || "Erro desconhecido ao carregar filiais."))
     : null;
 
-  // Calcular estatísticas para o resumo
   const summaryStats = React.useMemo(() => {
     if (!processedData || processedData.length === 0) return null;
-    
+
     const totalPedidos = processedData.reduce((sum, item) => sum + item.total_pedidos, 0);
-    const totalValor = processedData.reduce((sum, item) => sum + item.valor_total_pedidos, 0);
+    const totalValor = processedData.reduce((sum, item) => sum + Number(item.valor_total_pedidos || 0), 0);
     const mediaPedidos = Math.round(totalPedidos / processedData.length);
     const mediaValor = totalValor / processedData.length;
-    
+
     return {
       totalPedidos,
       totalValor,
@@ -170,11 +154,11 @@ export default function PedidosByFilial() {
       <div className={styles.modernContainer}>
         <h3 className={styles.modernTitle}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 3h18v18H3zM9 9h6v6H9z"/>
+            <path d="M3 3h18v18H3zM9 9h6v6H9z" />
           </svg>
           Pedidos por Filial
         </h3>
-        
+
         <p className={styles.modernSubtitle}>
           Visualização dos pedidos realizados por filial selecionada
         </p>
@@ -209,56 +193,29 @@ export default function PedidosByFilial() {
           {processedData.length === 0 ? (
             <div className={styles.modernEmpty}>
               <svg className={styles.modernEmptyIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 17H7A5 5 0 0 1 7 7h2m8 10h2a5 5 0 0 0 0-10h-2m-8 6h8"/>
+                <path d="M9 17H7A5 5 0 0 1 7 7h2m8 10h2a5 5 0 0 0 0-10h-2m-8 6h8" />
               </svg>
               <span>Nenhum dado de pedidos disponível para os filtros selecionados</span>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={processedData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-              >
+              <BarChart data={processedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <defs>
                   {MODERN_COLORS.map((color, index) => (
                     <linearGradient key={index} id={`gradient${index}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={color} stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor={color} stopOpacity={0.3}/>
+                      <stop offset="0%" stopColor={color} stopOpacity={0.8} />
+                      <stop offset="100%" stopColor={color} stopOpacity={0.3} />
                     </linearGradient>
                   ))}
                 </defs>
-                <CartesianGrid 
-                  strokeDasharray="3 3" 
-                  stroke="#e2e8f0" 
-                  strokeOpacity={0.5}
-                />
-                <XAxis 
-                  dataKey="nome_filial" 
-                  tick={{ fontSize: 12, fill: '#64748b' }}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                  tickLine={{ stroke: '#e2e8f0' }}
-                />
-                <YAxis 
-                  label={{ value: "Total de Pedidos", angle: -90, position: "insideLeft", fontSize: 10 }} 
-                  allowDecimals={false}
-                  tick={{ fontSize: 12, fill: '#64748b' }}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                  tickLine={{ stroke: '#e2e8f0' }}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
+                <XAxis dataKey="nome_filial" tick={{ fontSize: 12, fill: '#64748b' }} />
+                <YAxis label={{ value: "Total de Pedidos", angle: -90, position: "insideLeft", fontSize: 10 }} allowDecimals={false} tick={{ fontSize: 12, fill: '#64748b' }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Bar 
-                  dataKey="total_pedidos" 
-                  name="Total de Pedidos"
-                  radius={[8, 8, 0, 0]}
-                  stroke="#667eea"
-                  strokeWidth={2}
-                >
+                <Bar dataKey="total_pedidos" name="Total de Pedidos" radius={[8, 8, 0, 0]} stroke="#667eea" strokeWidth={2}>
                   {processedData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={`url(#gradient${index % MODERN_COLORS.length})`}
-                    />
+                    <Cell key={`cell-${index}`} fill={`url(#gradient${index % MODERN_COLORS.length})`} />
                   ))}
                 </Bar>
               </BarChart>
@@ -279,7 +236,7 @@ export default function PedidosByFilial() {
               <div className={styles.modernSummaryItem}>
                 <span className={styles.modernSummaryLabel}>Valor Total:</span>
                 <span className={styles.modernSummaryValue} style={{ color: '#43e97b' }}>
-                  R$ {summaryStats.totalValor.toFixed(2)}
+                  R$ {Number(summaryStats.totalValor || 0).toFixed(2)}
                 </span>
               </div>
               <div className={styles.modernSummaryItem}>
@@ -291,7 +248,7 @@ export default function PedidosByFilial() {
               <div className={styles.modernSummaryItem}>
                 <span className={styles.modernSummaryLabel}>Valor Médio:</span>
                 <span className={styles.modernSummaryValue} style={{ color: '#fa709a' }}>
-                  R$ {summaryStats.mediaValor.toFixed(2)}
+                  R$ {Number(summaryStats.mediaValor || 0).toFixed(2)}
                 </span>
               </div>
             </div>

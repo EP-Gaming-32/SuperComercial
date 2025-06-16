@@ -5,7 +5,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from "recharts";
-import { Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, Typography, Alert } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, Typography } from '@mui/material';
 import Card from './Card';
 import useChartData, { fetchFiliais } from '@/hooks/useChartData';
 import styles from "./ModernVisuals.module.css";
@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 // Cores modernas para as barras
 const MODERN_COLORS = [
-  '#667eea', '#764ba2', '#f093fb', '#4facfe', 
+  '#667eea', '#764ba2', '#f093fb', '#4facfe',
   '#43e97b', '#fa709a', '#38f9d7', '#fee140'
 ];
 
@@ -39,24 +39,21 @@ export default function FilialVisual() {
   const [filiaisError, setFiliaisError] = useState(null);
   const [selectedFilialId, setSelectedFilialId] = useState('');
 
-  // Endpoint para este visual
   const chartParams = React.useMemo(() => {
     return selectedFilialId ? { id_filial: selectedFilialId } : {};
   }, [selectedFilialId]);
-  
+
   const { data, loading, error, refetch } = useChartData(
     '/relatorios/pedidos-por-filial',
     chartParams
   );
 
-  // Recarrega dados quando a filial selecionada muda
   useEffect(() => {
     if (refetch) {
       refetch();
     }
   }, [selectedFilialId, refetch]);
 
-  // Carrega a lista de filiais
   useEffect(() => {
     const getFiliais = async () => {
       setFiliaisLoading(true);
@@ -77,42 +74,41 @@ export default function FilialVisual() {
     setSelectedFilialId(event.target.value);
   }, []);
 
-  // Processa os dados para o formato do gráfico
   const processedData = React.useMemo(() => {
     if (!data || !Array.isArray(data) || data.length === 0) return [];
 
-    // Agrupa por filial
     const aggregatedData = data.reduce((acc, item) => {
-      if (!acc[item.id_filial]) {
-        acc[item.id_filial] = {
-          id_filial: item.id_filial,
+      const id = item.id_filial;
+      if (!acc[id]) {
+        acc[id] = {
+          id_filial: id,
           nome_filial: item.nome_filial,
           total_pedidos: 0,
           valor_total_pedidos: 0
         };
       }
-      acc[item.id_filial].total_pedidos += item.total_pedidos;
-      acc[item.id_filial].valor_total_pedidos += item.valor_total_pedidos;
+
+      acc[id].total_pedidos += Number(item.total_pedidos);
+      acc[id].valor_total_pedidos += Number(item.valor_total_pedidos);
+
       return acc;
     }, {});
 
     return Object.values(aggregatedData);
   }, [data]);
 
-  // Gerencia a mensagem de erro
   const errorMessage = (error || filiaisError) ?
     (error ? (error.message || "Erro desconhecido ao carregar dados.") : (filiaisError.message || "Erro desconhecido ao carregar filiais."))
     : null;
 
-  // Calcular estatísticas para o resumo
   const summaryStats = React.useMemo(() => {
     if (!processedData || processedData.length === 0) return null;
-    
-    const totalPedidos = processedData.reduce((sum, item) => sum + item.total_pedidos, 0);
-    const totalValor = processedData.reduce((sum, item) => sum + item.valor_total_pedidos, 0);
+
+    const totalPedidos = processedData.reduce((sum, item) => sum + Number(item.total_pedidos), 0);
+    const totalValor = processedData.reduce((sum, item) => sum + Number(item.valor_total_pedidos), 0);
     const mediaValor = totalValor / processedData.length;
     const mediaPedidos = Math.round(totalPedidos / processedData.length);
-    
+
     return {
       totalPedidos,
       totalValor,
@@ -155,8 +151,8 @@ export default function FilialVisual() {
       <div className={styles.modernContainer}>
         <h2 className={styles.modernTitle}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
           </svg>
           Performance das Filiais
         </h2>
@@ -195,37 +191,37 @@ export default function FilialVisual() {
           {processedData.length === 0 ? (
             <div className={styles.modernEmpty}>
               <svg className={styles.modernEmptyIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
               </svg>
               <span>Nenhum dado de performance disponível</span>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart 
+              <BarChart
                 data={processedData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
                 <defs>
                   {MODERN_COLORS.map((color, index) => (
                     <linearGradient key={index} id={`filialGradient${index}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={color} stopOpacity={0.8}/>
-                      <stop offset="100%" stopColor={color} stopOpacity={0.3}/>
+                      <stop offset="0%" stopColor={color} stopOpacity={0.8} />
+                      <stop offset="100%" stopColor={color} stopOpacity={0.3} />
                     </linearGradient>
                   ))}
                 </defs>
-                <CartesianGrid 
-                  strokeDasharray="3 3" 
-                  stroke="#e2e8f0" 
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#e2e8f0"
                   strokeOpacity={0.5}
                 />
-                <XAxis 
-                  dataKey="nome_filial" 
+                <XAxis
+                  dataKey="nome_filial"
                   tick={{ fontSize: 12, fill: '#64748b' }}
                   axisLine={{ stroke: '#e2e8f0' }}
                   tickLine={{ stroke: '#e2e8f0' }}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12, fill: '#64748b' }}
                   axisLine={{ stroke: '#e2e8f0' }}
                   tickLine={{ stroke: '#e2e8f0' }}
@@ -238,16 +234,16 @@ export default function FilialVisual() {
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Bar 
-                  dataKey="total_pedidos" 
+                <Bar
+                  dataKey="total_pedidos"
                   name="Total de Pedidos"
                   radius={[8, 8, 0, 0]}
                   stroke="#667eea"
                   strokeWidth={2}
                 >
                   {processedData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
+                    <Cell
+                      key={`cell-${index}`}
                       fill={`url(#filialGradient${index % MODERN_COLORS.length})`}
                     />
                   ))}

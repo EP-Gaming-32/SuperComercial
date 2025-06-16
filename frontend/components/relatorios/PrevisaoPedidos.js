@@ -1,3 +1,4 @@
+// frontend/components/relatorios/PrevisaoPedidos.js
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -321,3 +322,4 @@ export default function PrevisaoPedidos() {
     </Card>
   );
 }
+

@@ -385,3 +385,4 @@ export default function EstoqueTreemap() {
     </Card>
   );
 }
+
