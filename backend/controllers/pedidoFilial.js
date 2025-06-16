@@ -2,41 +2,75 @@ import pool from '../config/db.js';
 
 // Listar pedidos de filial com paginação e filtros
 export const listarPedidoFilial = async (req, res) => {
-  const { id_filial, status } = req.query;
+  const { id_filial, status, page = 1, limit = 10 } = req.query;
+  const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
   try {
-    // Monta a base da query
+    // Monta a base da query já com JOIN em Filial
     let sql = `
-      SELECT id_pedido_filial,
-             id_filial,
-             data_pedido,
-             status,
-             observacao
-      FROM PedidoFilial
+      SELECT 
+        pf.id_pedido_filial,
+        pf.id_filial,
+        f.nome_filial,
+        pf.data_pedido,
+        pf.status,
+        pf.observacao
+      FROM PedidoFilial pf
+      LEFT JOIN Filial f 
+        ON f.id_filial = pf.id_filial
     `;
     const params = [];
 
-    // Se algum filtro foi passado, adiciona WHERE dinâmico
-    if (id_filial || status) {
+    // WHERE dinâmico
+    if (status || id_filial) {
       const clauses = [];
       if (status) {
-        clauses.push(`status = ?`);
+        clauses.push(`pf.status = ?`);
         params.push(status);
       }
       if (id_filial) {
-        clauses.push(`id_filial = ?`);
+        clauses.push(`pf.id_filial = ?`);
         params.push(id_filial);
       }
       sql += ` WHERE ` + clauses.join(' AND ');
     }
 
-    // Ordenação padrão
-    sql += ` ORDER BY data_pedido DESC`;
+    // Ordenação e paginação
+    sql += ` ORDER BY pf.data_pedido DESC
+             LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit, 10), offset);
 
+    // Executa
     const [rows] = await pool.query(sql, params);
-    res.json({ data: rows });
+
+    // Contagem total (para paginação)
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM PedidoFilial pf
+      ${ (status || id_filial) 
+          ? 'WHERE ' + (
+              [ status? 'pf.status = ?' : null, id_filial? 'pf.id_filial = ?' : null ]
+                .filter(Boolean).join(' AND ')
+            )
+          : ''
+      }
+    `;
+    const [countResult] = await pool.query(
+      countSql,
+      [ ...(status ? [status] : []), ...(id_filial ? [id_filial] : []) ]
+    );
+    const totalRecords = countResult[0].total;
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    res.json({
+      data: rows,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      totalRecords,
+      totalPages
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao listar pedidos de filial:', err);
     res.status(500).json({ message: 'Erro ao listar pedidos de filial' });
   }
 };

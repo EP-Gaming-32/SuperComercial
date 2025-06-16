@@ -16,6 +16,7 @@ import ordemCompraRoutes from './routes/ordemCompra.js';
 import statusPedidoRoutes from './routes/statusPedido.js';
 import filialRoutes from './routes/filial.js'; // Roteador de filiais
 import historicoPedidoRoutes from './routes/historicoPedido.js';
+import historicoPedidoFilialRoutes from './routes/historicoPedidoFilial.js';
 import lotesRoutes from './routes/lotes.js';
 import estoqueRoutes from './routes/estoque.js';
 import movimentacaoEstoqueRoutes from './routes/movimentacaoEstoque.js';
@@ -49,6 +50,7 @@ app.use('/pedidoFilial', pedidoFilialRoutes);
 app.use('/ordemCompra', ordemCompraRoutes);
 app.use('/statusPedido', statusPedidoRoutes);
 app.use('/historicoPedido', historicoPedidoRoutes);
+app.use('/historicoPedidoFilial', historicoPedidoFilialRoutes);
 app.use('/lotes', lotesRoutes);
 app.use('/estoque', estoqueRoutes);
 app.use('/movimentacaoEstoque', movimentacaoEstoqueRoutes);

@@ -8,10 +8,9 @@ export const listarHistoricoStatusPedidoFilial = async (req, res) => {
 
   // Filtro por id_pedido_filial (obrigatório para este endpoint)
   const { id_pedido_filial } = req.query;
-  
   if (!id_pedido_filial) {
-    return res.status(400).json({ 
-      message: 'id_pedido_filial é obrigatório para consultar o histórico' 
+    return res.status(400).json({
+      message: 'id_pedido_filial é obrigatório para consultar o histórico'
     });
   }
 
@@ -25,7 +24,7 @@ export const listarHistoricoStatusPedidoFilial = async (req, res) => {
     );
     const totalRecords = countResult[0].total;
 
-    // Buscar histórico com informações do usuário (se disponível)
+    // Buscar histórico com informações do usuário e da filial
     const [rows] = await pool.query(
       `SELECT 
          h.id_historico_pf,
@@ -33,11 +32,18 @@ export const listarHistoricoStatusPedidoFilial = async (req, res) => {
          h.status_antigo,
          h.status_novo,
          h.usuario_id,
-         u.Nome AS nome_usuario,
+         u.Nome        AS nome_usuario,
+         p.id_filial,
+         f.nome_filial,
          h.motivo,
          h.data_alteracao
        FROM HistoricoStatusPedidoFilial h
-       LEFT JOIN Usuarios u ON u.UsuarioID = h.usuario_id
+       LEFT JOIN Usuarios u
+         ON u.UsuarioID = h.usuario_id
+       INNER JOIN PedidoFilial p
+         ON p.id_pedido_filial = h.id_pedido_filial
+       LEFT JOIN Filial f
+         ON f.id_filial = p.id_filial
        WHERE h.id_pedido_filial = ?
        ORDER BY h.data_alteracao DESC
        LIMIT ? OFFSET ?`,
@@ -46,12 +52,12 @@ export const listarHistoricoStatusPedidoFilial = async (req, res) => {
 
     const totalPages = Math.ceil(totalRecords / limit);
 
-    res.json({ 
-      data: rows, 
-      page, 
-      limit, 
-      totalRecords, 
-      totalPages 
+    res.json({
+      data: rows,
+      page,
+      limit,
+      totalRecords,
+      totalPages
     });
   } catch (error) {
     console.error('Erro ao listar histórico de status do pedido de filial:', error);
