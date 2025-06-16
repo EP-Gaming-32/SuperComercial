@@ -14,6 +14,7 @@
   border-radius: 4px;
   color: white;
   border-left: 4px solid transparent;
+  transform: translateZ(0); 
 }
 
 .navLink:hover {
@@ -43,22 +44,23 @@
   cursor: pointer;
   width: 100%;
   text-align: left;
-  padding-left: 20px; /* <-- Adicionado para mover o texto para a direita */
+  padding-left: 20px;
   text-decoration: none;
   display: block; 
-  margin-top: 25px;    /* Espaço ACIMA da marca */
-  margin-bottom: 30px; /* Espaço ABAIXO da marca */
+  margin-top: 25px;
+  margin-bottom: 30px;
 }
 
 .navItem {
   margin-bottom: 10px;
 }
 
+/* ===== CLASSE .activeNavLink ALTERADA ===== */
 .activeNavLink {
   background-color: #33334d;
-  color: #a0a0ff;
+  color: rgb(0, 149, 255); /* <-- COR ALTERADA CONFORME SOLICITADO */
   font-weight: bold;
-  border-left-color: #00eeff;
+  border-left-color: rgb(0, 149, 255);
 }
 
 .subMenu {
