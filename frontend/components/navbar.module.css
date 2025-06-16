@@ -5,7 +5,6 @@
   padding: 0;
 }
 
-/* Base styles for all nav links */
 .navLink {
   text-decoration: none;
   font-size: 1rem;
@@ -15,14 +14,13 @@
   border-radius: 4px;
   color: white;
   border-left: 4px solid transparent;
-  transform: translateZ(0); /* <-- Adicione este "truque" */
 }
 
 .navLink:hover {
   background-color: #33334d;
 }
 
-/* Vertical Navbar Specific Styles */
+/* Vertical Navbar agora é um container flexível */
 .verticalNavbar {
   width: 250px;
   background-color: #1e1e2f;
@@ -31,8 +29,11 @@
   color: white;
   box-sizing: border-box;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
+/* A classe .brand agora controla o seu próprio espaçamento */
 .brand {
   background: none;
   border: none;
@@ -42,12 +43,11 @@
   cursor: pointer;
   width: 100%;
   text-align: left;
-  padding: 0;
+  padding-left: 20px; /* <-- Adicionado para mover o texto para a direita */
   text-decoration: none;
-}
-
-.brandContainer {
-  margin-bottom: 60px;
+  display: block; 
+  margin-top: 25px;    /* Espaço ACIMA da marca */
+  margin-bottom: 30px; /* Espaço ABAIXO da marca */
 }
 
 .navItem {
@@ -61,7 +61,6 @@
   border-left-color: #00eeff;
 }
 
-/* SubMenu Styles (Dropdown) */
 .subMenu {
   list-style: none;
   padding-left: 15px;
@@ -121,5 +120,5 @@
   color: rgb(0, 149, 255);
   text-shadow: 0 0 1px rgb(0, 149, 255), 
                0 0 1px rgb(0, 149, 255), 
-               0 0 1px rgb(0, 149, 255);
+               0 0 2px rgb(0, 149, 255);
 }

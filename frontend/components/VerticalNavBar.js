@@ -39,15 +39,15 @@ export default function VerticalNavBar() {
   };
 
   return (
+    // A navbar agora é um container flexível
     <nav className={styles.verticalNavbar}>
+      {/* A marca é o primeiro item do container flexível */}
+      <Link href="/home" className={styles.brand}>
+        Super<span className={styles.brandHighlight}>Comercial</span>
+      </Link>
+      
+      {/* A lista de navegação é o segundo item */}
       <ul className={styles.navList}>
-        {/* ===== ESTRUTURA CORRIGIDA ===== */}
-        <li className={styles.brandContainer}>
-          <Link href="/home" className={styles.brand}>
-            Super<span className={styles.brandHighlight}>Comercial</span>
-          </Link>
-        </li>
-
         {/* Dropdown Cadastros */}
         <li className={styles.navItem}>
           <div
