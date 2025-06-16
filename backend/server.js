@@ -26,31 +26,18 @@ dotenv.config(); // Carregar variáveis de ambiente do arquivo .env
 
 const app = express(); // Cria a instância do aplicativo Express
 
-// MIDDLEWARES GLOBAIS
-// CORS: Permite que o frontend acesse o backend de domínios/portas diferentes
 app.use(cors({
-    origin: '*', // Permite todas as origens para desenvolvimento. Em produção, você definiria domínios específicos.
+    origin: '*',
 }));
 
-// bodyParser: Para parsear o corpo das requisições como JSON
+
 app.use(bodyParser.json());
-// Se você usa formulários HTML tradicionais (application/x-www-form-urlencoded), adicione também:
-// app.use(bodyParser.urlencoded({ extended: true }));
 
-
-// DEFINIÇÃO DAS ROTAS DA API
-// -------------------------
-
-// Rotas de Autenticação (definidas diretamente no server.js, sem um arquivo de rotas dedicado)
-// Estas rotas NÃO TÊM o prefixo '/api/' no server.js, pois o frontend as chama diretamente.
 app.post('/auth/cadastro', cadastroUser);
 app.post('/auth/login', loginUser);
 app.post('/forgot-password', forgotPassword);
 app.post('/reset-password/:token', resetPassword);
 
-// Montagem dos Roteadores Modulares
-// CADA ROTEADOR É MONTADO COM O PREFIXO '/api/'
-// Isso garante que as URLs do frontend (que incluem /api/) encontrem suas rotas no backend.
 app.use('/produtos', produtosRoutes);
 app.use('/grupos', gruposRoutes);
 app.use('/fornecedores', fornecedoresRoutes);
