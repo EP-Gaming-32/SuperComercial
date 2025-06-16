@@ -114,22 +114,20 @@ DELIMITER ;
 -- Ordem de Compra (CD → Fornecedor)
 CREATE TABLE OrdemCompra (
     id_ordem_compra INT AUTO_INCREMENT PRIMARY KEY,
-    id_fornecedor INT NOT NULL,
     data_ordem DATETIME DEFAULT CURRENT_TIMESTAMP,
     data_entrega_prevista DATE,
     valor_total DECIMAL(10,2) NOT NULL DEFAULT 0,
-    status ENUM('Pendente','Recebido','Cancelado') NOT NULL DEFAULT 'Pendente',
+    status ENUM('Pendente','Atendido','Cancelado', 'Em Separação no CD', 'Enviado para Filial', 'Recebido na Filial') NOT NULL DEFAULT 'Pendente',
     observacao TEXT,
     data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id_fornecedor)
+    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE HistoricoStatusOrdemCompra (
     id_historico_oc INT AUTO_INCREMENT PRIMARY KEY,
     id_ordem_compra INT NOT NULL,
-    status_antigo ENUM('Pendente','Recebido','Cancelado') NOT NULL,
-    status_novo ENUM('Pendente','Recebido','Cancelado') NOT NULL,
+    status_antigo ENUM('Pendente','Atendido','Cancelado', 'Em Separação no CD', 'Enviado para Filial', 'Recebido na Filial') NOT NULL,
+    status_novo ENUM('Pendente','Atendido','Cancelado', 'Em Separação no CD', 'Enviado para Filial', 'Recebido na Filial') NOT NULL,
     usuario_id INT NULL,
     motivo TEXT NULL,
     data_alteracao DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -160,9 +158,11 @@ CREATE TABLE ItensOrdemCompra (
     id_item_oc INT AUTO_INCREMENT PRIMARY KEY,
     id_ordem_compra INT NOT NULL,
     id_produto INT NOT NULL,
+    id_fornecedor INT NOT NULL,
     quantidade INT NOT NULL CHECK (quantidade > 0),
     preco_unitario DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (id_ordem_compra) REFERENCES OrdemCompra(id_ordem_compra) ON DELETE CASCADE,
+    FOREIGN KEY (id_fornecedor) REFERENCES fornecedor(id_fornecedor),
     FOREIGN KEY (id_produto) REFERENCES Produtos(id_produto)
 );
 
@@ -268,7 +268,7 @@ CREATE TABLE Pagamentos (
 CREATE TABLE MovimentacaoEstoque (
     id_movimentacao INT AUTO_INCREMENT PRIMARY KEY,
     id_estoque INT NOT NULL,
-    tipo_movimentacao ENUM('entrada', 'saida') NOT NULL,
+    tipo_movimentacao ENUM('Vendido', 'Quebrado', 'Vencido', 'Reposição', 'Entrada') NOT NULL,
     quantidade INT NOT NULL CHECK (quantidade >= 0),
     data_movimentacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_estoque) REFERENCES Estoque(id_estoque) ON DELETE CASCADE

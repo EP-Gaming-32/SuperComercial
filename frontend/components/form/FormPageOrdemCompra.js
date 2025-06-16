@@ -8,7 +8,7 @@ const STATUS_OPTIONS = [
   { value: 'Em Separação no CD', label: 'Em Separação no CD' },
   { value: 'Enviado para Filial', label: 'Enviado para Filial' },
   { value: 'Recebido na Filial', label: 'Recebido na Filial' },
-  { value: 'Cancelada', label: 'Cancelada' }
+  { value: 'Cancelado', label: 'Cancelado' }
 ];
 
 export default function FormPageOrdemCompra({
