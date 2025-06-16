@@ -1,4 +1,5 @@
 /* Common styles for navigation lists and links */
+/* Essas regras são genéricas e podem ser aplicadas a qualquer navbar se você tiver várias */
 
 .navList {
   list-style: none;
@@ -6,44 +7,96 @@
   padding: 0;
 }
 
-.navItem {
-  margin: 0.5rem 0;
-}
-
+/* Base styles for all nav links */
 .navLink {
   text-decoration: none;
-  color: inherit;
   font-size: 1rem;
-  transition: color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, font-weight 0.2s ease;
+  display: block; /* Garante que o padding ocupe toda a área */
+  padding: 8px 12px; /* Padding padrão para os links */
+  border-radius: 4px; /* Borda arredondada */
+  color: white; /* Cor padrão do texto do link na nav vertical */
 }
 
+/* Hover effect for all nav links */
 .navLink:hover {
-  text-decoration: underline;
+  background-color: #33334d; /* Cor de fundo ao passar o mouse */
 }
 
-/* Vertical Navbar Styles */
+
+/* Vertical Navbar Specific Styles */
 .verticalNavbar {
-  box-sizing: border-box;
-  height: 100vh;
-  background-color: #333;
-  color: #fff;
-  padding: 1rem;
-  overflow-y: auto;
+  width: 250px; /* Largura fixa da navbar vertical */
+  background-color: #1e1e2f; /* Cor de fundo escura */
+  height: 100vh; /* Ocupa a altura total da viewport */
+  padding: 20px; /* Espaçamento interno */
+  color: white; /* Cor do texto padrão */
+  box-sizing: border-box; /* Inclui padding na largura/altura */
+  overflow-y: auto; /* Permite scroll se o conteúdo for muito longo */
 }
 
-.verticalNavbar .navList {
-  display: block;
+.brand {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  font-weight: bold; /* Para o texto "SuperComercial" */
+  margin-bottom: 20px;
+  cursor: pointer;
+  width: 100%; /* Garante que o botão ocupe a largura total */
+  text-align: left; /* Alinha o texto à esquerda */
+  padding: 0; /* Remove padding padrão de botão */
 }
 
-.verticalNavbar .navItem {
-  margin-bottom: 1rem;
+.navItem {
+  margin-bottom: 10px; /* Espaçamento entre os itens da lista principal */
 }
 
-.verticalNavbar .navLink {
-  color: #fff;
+/* --- NOVOS ESTILOS PARA DESTAQUE DO ITEM ATIVO --- */
+.activeNavLink {
+  background-color: #33334d; /* Cor de fundo para o link ativo (pode ser a mesma do hover ou diferente) */
+  color: #a0a0ff;           /* Cor do texto para o link ativo (um azul claro para contraste) */
+  font-weight: bold;          /* Negrito para destaque visual */
+  /* Adicione um indicador visual, como uma borda ou sombra */
+  border-left: 4px solid #00eeff; /* Exemplo: uma barra azul à esquerda */
+  padding-left: 8px; /* Ajusta o padding para compensar a borda, mantendo o alinhamento visual */
 }
 
-/* Horizontal Navbar Styles */
+/* SubMenu Styles (Dropdown) */
+.subMenu {
+  list-style: none;
+  padding-left: 15px; /* Indentação para os itens do submenu */
+  margin-top: 5px;
+  background-color: #2a2a40; /* Um tom um pouco mais claro que a navbar para o submenu */
+  border-radius: 4px;
+}
+
+.subMenu li {
+  margin-bottom: 5px; /* Espaçamento entre os itens do submenu */
+}
+
+/* Ajustes para links dentro do submenu */
+.subMenu .navLink {
+  padding: 6px 10px; /* Um pouco menos de padding para itens de submenu */
+  font-size: 0.9em; /* Tamanho da fonte ligeiramente menor */
+  color: #d0d0d0; /* Cor padrão do texto do link do submenu */
+}
+
+.subMenu .navLink:hover {
+  background-color: #444466; /* Cor de fundo ao passar o mouse no submenu */
+  color: #ffffff;
+}
+
+/* Estilo para o link ativo dentro do submenu */
+.subMenu .activeNavLink {
+  background-color: #444466; /* Fundo ativo no submenu (pode ser o mesmo do hover) */
+  color: #2678c9;             /* Cor do texto do link ativo no submenu (azul um pouco diferente) */
+  font-weight: bold;
+  border-left: 4px solid #00aaff; /* Outra cor de borda para sub-itens ativos */
+  padding-left: 6px; /* Ajusta o padding para compensar a borda */
+}
+
+
 .horizontalNavbar {
   padding-left: 4vw;
   width: 100%;
@@ -65,53 +118,4 @@
 
 .horizontalNavbar .navLink {
   color:white;
-}
-
-.verticalNavbar {
-  width: 250px;
-  background-color: #1e1e2f;
-  height: 100vh;
-  padding: 20px;
-  color: white;
-}
-
-.brand {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  margin-bottom: 20px;
-  cursor: pointer;
-}
-
-.navList {
-  list-style: none;
-  padding: 0;
-}
-
-.navItem {
-  margin-bottom: 10px;
-}
-
-.navLink {
-  color: white;
-  text-decoration: none;
-  display: block;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background 0.3s;
-}
-
-.navLink:hover {
-  background-color: #33334d;
-}
-
-.subMenu {
-  list-style: none;
-  padding-left: 15px;
-  margin-top: 5px;
-}
-
-.subMenu li {
-  margin-bottom: 5px;
 }
