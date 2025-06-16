@@ -10,14 +10,15 @@ export const relatorioPedidosPorFilial = async (req, res) => {
     const [rows] = await pool.query(
       `SELECT
           DATE_FORMAT(p.data_pedido, '%Y-%m') AS mes,
+          f.id_filial, -- Adicionado ao SELECT para ser usado no GROUP BY/ORDER BY
           f.nome_filial,
           COUNT(p.id_pedido) AS total_pedidos,
           SUM(p.valor_total) AS valor_total_pedidos
         FROM PedidoFilial p
         LEFT JOIN Filial f ON p.id_filial = f.id_filial
         ${id_filial ? 'WHERE p.id_filial = ?' : ''}
-        GROUP BY mes, f.nome_filial
-        ORDER BY mes`,
+        GROUP BY mes, f.id_filial, f.nome_filial -- Ajustado para incluir id_filial
+        ORDER BY mes, f.id_filial`, // Ajustado para ordenar por id_filial
       id_filial ? [id_filial] : []
     );
 
@@ -35,7 +36,9 @@ export const relatorioEstoquePorFilial = async (req, res) => {
   try {
     let query = `
       SELECT
+        f.id_filial, -- Adicionado para GROUP BY/ORDER BY
         f.nome_filial,
+        p.id_produto, -- Adicionado para GROUP BY/ORDER BY
         p.nome_produto,
         e.quantidade
       FROM Estoque e
@@ -50,7 +53,7 @@ export const relatorioEstoquePorFilial = async (req, res) => {
       params.push(id_filial);
     }
 
-    query += ` ORDER BY f.nome_filial, p.nome_produto`;
+    query += ` ORDER BY f.nome_filial, p.nome_produto`; // Não tem GROUP BY, então OK
 
     const [rows] = await pool.query(query, params);
 
@@ -66,13 +69,17 @@ export const relatorioFornecedoresPorFilial = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT DISTINCT
+          f.id_filial,
           f.nome_filial,
+          fo.id_fornecedor,
           fo.nome_fornecedor
-        FROM PedidoFilial p
-        LEFT JOIN Filial f ON p.id_filial = f.id_filial
-        LEFT JOIN OrdemCompra oc ON p.id_pedido_filial = oc.id_pedido_filial
-        LEFT JOIN Fornecedor fo ON oc.id_fornecedor = fo.id_fornecedor
+        FROM Filial f
+        JOIN PedidoFilial pf ON f.id_filial = pf.id_filial
+        JOIN OrdemCompraPedidoFilial ocpf ON pf.id_pedido_filial = ocpf.id_pedido_filial
+        JOIN OrdemCompra oc ON ocpf.id_ordem_compra = oc.id_ordem_compra
+        JOIN Fornecedor fo ON oc.id_fornecedor = fo.id_fornecedor
         WHERE f.nome_filial IS NOT NULL AND fo.nome_fornecedor IS NOT NULL
+        GROUP BY f.id_filial, f.nome_filial, fo.id_fornecedor, fo.nome_fornecedor
         ORDER BY f.nome_filial, fo.nome_fornecedor`
     );
     res.json(rows);
@@ -82,11 +89,13 @@ export const relatorioFornecedoresPorFilial = async (req, res) => {
   }
 };
 
+
 // RELATÓRIO: Pagamentos por filial
 export const relatorioPagamentosPorFilial = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT
+            f.id_filial,
             f.nome_filial,
             SUM(pg.valor_pagamento) AS total_pago,
             COUNT(pg.id_pagamento) AS total_pagamentos
@@ -173,7 +182,7 @@ export const relatorioStatusPorEstoque = async (req, res) => {
       params.push(id_filial);
     }
 
-    query += ` GROUP BY status_estoque`;
+    query += ` GROUP BY status_estoque`; // Não tem ORDER BY, então OK
 
     const [rows] = await pool.query(query, params);
     res.json(rows);
@@ -195,14 +204,12 @@ export const relatorioEstoquePorProduto = async (req, res) => {
     `;
     const params = [];
 
-    // Removido o 'if (!id_filial) { return res.status(400).json({ error: ... }); }'
-    // Agora, se id_filial não for fornecido, a condição WHERE não é adicionada, e a query busca todos.
     if (id_filial) {
       query += ` WHERE Estoque.id_filial = ?`;
       params.push(id_filial);
     }
 
-    query += `;`; // Finaliza a query
+    query += `;`; // Não tem GROUP BY, então OK
 
     const [rows] = await pool.query(query, params);
 
@@ -234,7 +241,7 @@ export const relatorioComprasPorMes = async (req, res) => {
       params.push(id_filial);
     }
 
-    query += ` GROUP BY mes, month_abbr ORDER BY mes;`; // Agrupa e ordena os resultados
+    query += ` GROUP BY mes, month_abbr ORDER BY mes;`; // Ajustado para incluir month_abbr no GROUP BY
 
     const [rows] = await pool.query(query, params);
 
@@ -331,6 +338,7 @@ export const relatorioProdutosVencidosDanificados = async (req, res) => {
   try {
     let query = `
       SELECT
+        F.id_filial, -- Adicionado para o GROUP BY
         F.nome_filial,
         SUM(L.quantidade) AS vencidos_quantidade_total
       FROM Lote L
@@ -346,7 +354,7 @@ export const relatorioProdutosVencidosDanificados = async (req, res) => {
       params.push(id_filial);
     }
 
-    query += ` GROUP BY F.nome_filial ORDER BY F.nome_filial`;
+    query += ` GROUP BY F.id_filial, F.nome_filial ORDER BY F.nome_filial`; // Ajustado para incluir id_filial
 
     const [rows] = await pool.query(query, params);
 

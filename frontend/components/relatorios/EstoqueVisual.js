@@ -1,86 +1,127 @@
+// frontend/components/relatorios/EstoqueVisual.js
 "use client";
-import React, { useEffect, useState } from "react";
-import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import styles from "./Visuals.module.css";
+
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  PieChart, Pie, Tooltip, Legend, Cell, ResponsiveContainer
+} from "recharts";
+import { Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, Typography, Alert } from '@mui/material';
+import Card from './Card'; // Importa seu componente Card
+import useChartData, { fetchFiliais } from '@/hooks/useChartData'; // Importa o hook e a função de buscar filiais
+
+// Cores para as fatias do gráfico de pizza
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8B008B', '#00CED1', '#FF4500'];
 
 export default function EstoqueVisual() {
-  const [data, setData] = useState([]);
   const [filiais, setFiliais] = useState([]);
-  const [filialSelecionada, setFilialSelecionada] = useState("");
+  const [filiaisLoading, setFiliaisLoading] = useState(true);
+  const [filiaisError, setFiliaisError] = useState(null);
 
-  const COLORS = ["#29b6f6", "#ffcc00", "#ff4d4d"];
+  const [selectedFilialId, setSelectedFilialId] = useState(''); // Estado para o filtro de filial
 
-  // Carrega as filiais
+  // Usa o hook useChartData para buscar os dados de status de estoque
+  // Endpoint: /api/relatorios/status-por-estoque
+  const chartParams = selectedFilialId ? { id_filial: selectedFilialId } : {};
+  const { data, loading, error } = useChartData(
+    '/relatorios/status-por-estoque', // Endpoint correto para status de estoque
+    chartParams
+  );
+
+  // Carrega a lista de filiais usando a função compartilhada do hook
   useEffect(() => {
-    fetch("http://localhost:5000/filial?page=1&limit=100")
-      .then((res) => res.json())
-      .then((resposta) => {
-        const lista = resposta.data.map((f) => ({
-          id: f.id_filial.toString(),
-          nome: f.nome_filial,
-        }));
-        setFiliais(lista);
-        if (lista.length > 0) {
-          setFilialSelecionada(lista[0].id);
-        }
-      })
-      .catch((err) => console.error("Erro ao buscar filiais:", err));
+    const getFiliais = async () => {
+      setFiliaisLoading(true);
+      setFiliaisError(null);
+      try {
+        const result = await fetchFiliais();
+        setFiliais(result);
+      } catch (err) {
+        setFiliaisError(err);
+      } finally {
+        setFiliaisLoading(false);
+      }
+    };
+    getFiliais();
   }, []);
 
-  // Carrega os dados do gráfico quando a filial muda
-  useEffect(() => {
-    if (!filialSelecionada) return;
+  const handleFilialChange = useCallback((event) => {
+    setSelectedFilialId(event.target.value);
+  }, []);
 
-    fetch(`http://localhost:5000/relatorios/estoque-status?id_filial=${filialSelecionada}`)
-      .then((res) => res.json())
-      .then((dados) => {
-        const formatado = dados.map((item) => ({
-          name: item.name.charAt(0).toUpperCase() + item.name.slice(1),
-          value: item.value,
-        }));
-        setData(formatado);
-      })
-      .catch((err) => console.error("Erro ao buscar dados de estoque:", err));
-  }, [filialSelecionada]);
+  // Processa os dados para o formato esperado pelo PieChart
+  // O backend relatorioStatusPorEstoque retorna: { name: "status_estoque", value: COUNT }
+  const processedData = data || [];
+
+  // Gerencia a mensagem de erro para exibição no Alert
+  const errorMessage = (error || filiaisError) ?
+    (error ? (error.message || "Erro desconhecido ao carregar dados.") : (filiaisError.message || "Erro desconhecido ao carregar filiais."))
+    : null;
 
   return (
-    <div className={styles.visualContainer}>
-      <h2 className={styles.visualTitle}>Estoque - Status por Filial</h2>
-
-      <div className={styles.visualControl}>
-        <label htmlFor="filialSelect">Filial:</label>
-        <select
-          id="filialSelect"
-          value={filialSelecionada}
-          onChange={(e) => setFilialSelecionada(e.target.value)}
+    <Card title="Estoque - Status por Filial">
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel id="filial-select-label">Filial</InputLabel>
+        <Select
+          labelId="filial-select-label"
+          id="filial-select"
+          value={selectedFilialId}
+          label="Filial"
+          onChange={handleFilialChange}
         >
-          {filiais.map((filial) => (
-            <option key={filial.id} value={filial.id}>
-              {filial.nome}
-            </option>
-          ))}
-        </select>
-      </div>
+          <MenuItem value="">
+            <em>Todas as Filiais</em>
+          </MenuItem>
+          {filiaisLoading ? (
+            <MenuItem disabled><CircularProgress size={20} /></MenuItem>
+          ) : filiaisError ? (
+            <MenuItem disabled><Typography color="error">{filiaisError.message || "Erro"}</Typography></MenuItem>
+          ) : (
+            filiais.map((filial) => (
+              <MenuItem key={filial.id} value={filial.id}>
+                {filial.nome}
+              </MenuItem>
+            ))
+          )}
+        </Select>
+      </FormControl>
 
-      <div className={styles.visualContent}>
-        <ResponsiveContainer width="100%" height={300}>
+      {(loading || filiaisLoading) ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+          <CircularProgress />
+        </Box>
+      ) : errorMessage ? (
+        <Alert severity="error">{errorMessage}</Alert>
+      ) : processedData.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+          <Typography variant="body1" color="text.secondary">
+            Nenhum dado de status de estoque disponível para os filtros selecionados.
+          </Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={90}
-              label
+              data={processedData}
+              cx="50%"
+              cy="50%"
+              outerRadius="80%" // Tamanho do Pie
+              fill="#8884d8"
+              dataKey="value" // A propriedade 'value' do backend (COUNT)
+              nameKey="name" // A propriedade 'name' do backend (status_estoque)
+              labelLine={false} // Não mostra as linhas para labels
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} // Label formatado
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {
+                processedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))
+              }
             </Pie>
             <Tooltip />
             <Legend />
           </PieChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+      )}
+    </Card>
   );
 }

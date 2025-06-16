@@ -39,8 +39,9 @@ export const listarFilial = async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT * FROM Filial
-       ${whereClause}
-       LIMIT ? OFFSET ?`,
+        ${whereClause}
+        ORDER BY id_filial ASC
+        LIMIT ? OFFSET ?`,
       [...values, limit, offset]
     );
 
@@ -74,7 +75,7 @@ export const visualizarFilial = async (req, res) => {
 
 export const criarFilial = async (req, res) => {
   const { nome_filial, endereco_filial, telefone_filial, email_filial, gestor_filial, observacao } = req.body;
-  
+
   if (!nome_filial) return res.status(400).json({ message: 'Nome obrigatório' });
   if (!endereco_filial) return res.status(400).json({ message: 'Endereço obrigatório' });
 
@@ -137,9 +138,9 @@ export const removerFilial = async (req, res) => {
   try {
     const [result] = await pool.query(
       `UPDATE Filial
-         SET ativo = FALSE,
-             data_atualizacao = CURRENT_TIMESTAMP
-       WHERE id_filial = ? AND ativo = TRUE`,
+          SET ativo = FALSE,
+              data_atualizacao = CURRENT_TIMESTAMP
+        WHERE id_filial = ? AND ativo = TRUE`,
       [id]
     );
 

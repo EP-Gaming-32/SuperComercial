@@ -1,108 +1,22 @@
+// frontend/components/relatorios/EstoqueTreemap.js
 "use client";
-import React, { useEffect, useState } from "react";
-import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 
-export default function EstoqueTreemap() {
-  const [data, setData] = useState([]);
-  const [filiais, setFiliais] = useState([]);
-  const [filialSelecionada, setFilialSelecionada] = useState("");
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  Treemap, // Treemap para visualização hierárquica
+  Cell // Para customizar cores das células do Treemap
+} from "recharts";
+import { Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, Typography, Alert } from '@mui/material';
+import Card from './Card';
+import useChartData, { fetchFiliais } from '@/hooks/useChartData'; // Importa o hook e a função de buscar filiais
+import styles from "./Visuals.module.css"; // Se você ainda precisar de estilos específicos do módulo
 
-  // Buscar lista de filiais
-  useEffect(() => {
-    fetch("http://localhost:5000/filial?page=1&limit=100")
-      .then((res) => res.json())
-      .then((resposta) => {
-        const lista = resposta.data.map((f) => ({
-          id: f.id_filial.toString(),
-          nome: f.nome_filial,
-        }));
-        setFiliais(lista);
-        if (lista.length > 0) {
-          setFilialSelecionada(lista[0].nome); // usamos nome_filial como chave
-        }
-      })
-      .catch((err) => console.error("Erro ao buscar filiais:", err));
-  }, []);
-
-  // Buscar dados do relatório de estoque
-  useEffect(() => {
-    async function fetchEstoque() {
-      try {
-        const response = await fetch("http://localhost:5000/relatorios/estoque-filial");
-        const rawData = await response.json();
-
-        // Agrupar por nome_filial
-        const agrupado = rawData.reduce((acc, item) => {
-          const { nome_filial, nome_produto, quantidade } = item;
-
-          let filial = acc.find((f) => f.name === nome_filial);
-          if (!filial) {
-            filial = { name: nome_filial, children: [] };
-            acc.push(filial);
-          }
-
-          filial.children.push({
-            name: nome_produto,
-            stock: quantidade,
-          });
-
-          return acc;
-        }, []);
-
-        setData(agrupado);
-      } catch (error) {
-        console.error("Erro ao buscar dados de estoque:", error);
-      }
-    }
-
-    fetchEstoque();
-  }, []);
-
-  // Dados filtrados por filial selecionada
-  const dadosFiltrados = data.find((f) => f.name === filialSelecionada)?.children || [];
-
-  return (
-    <div>
-      <h3 className="text-lg font-bold mb-4">Relatório de Estoque por Loja</h3>
-
-      <div className="mb-4">
-        <label className="mr-2 font-semibold" htmlFor="filialSelect">Filial:</label>
-        <select
-          id="filialSelect"
-          value={filialSelecionada}
-          onChange={(e) => setFilialSelecionada(e.target.value)}
-          className="border px-2 py-1 rounded"
-        >
-          {filiais.map((filial) => (
-            <option key={filial.id} value={filial.nome}>
-              {filial.nome}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <ResponsiveContainer width="100%" height={500}>
-        <Treemap
-          data={dadosFiltrados}
-          dataKey="stock"
-          nameKey="name"
-          stroke="#fff"
-          fill="#82ca9d"
-          content={<CustomTreemapContent />}
-          isAnimationActive={false}
-        >
-          <Tooltip />
-        </Treemap>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-// Treemap personalizado
-const CustomTreemapContent = (props) => {
-  const { depth, x, y, width, height, name, payload } = props;
-  const stock = payload?.stock;
-
+// Customização de conteúdo para o Treemap
+const CustomizedContent = (props) => {
+  const { depth, x, y, width, height, index, name, value, colors } = props;
   return (
     <g>
       <rect
@@ -110,20 +24,191 @@ const CustomTreemapContent = (props) => {
         y={y}
         width={width}
         height={height}
-        fill={depth === 0 ? "#82ca9d" : "#8dd1e1"}
-        stroke="#fff"
+        style={{
+          fill: colors[index % colors.length], // Usa cores baseadas no índice
+          stroke: '#fff',
+          strokeWidth: 2 / (depth + 1),
+          strokeOpacity: 1,
+        }}
       />
-      {width > 60 && height > 20 && (
+      {width > 30 && height > 20 ? ( // Renderiza texto apenas se o retângulo for grande o suficiente
         <text
           x={x + width / 2}
-          y={y + height / 2}
+          y={y + height / 2 + 7} // Centraliza verticalmente
           textAnchor="middle"
           fill="#fff"
-          fontSize={12}
+          fontSize={depth === 1 ? 16 : 12} // Fonte maior para níveis mais altos
         >
-          {name} {stock !== undefined ? `(${stock})` : ""}
+          {name}
         </text>
-      )}
+      ) : null}
+      {width > 30 && height > 20 && depth === 1 ? ( // Exibe o valor para o primeiro nível
+        <text
+          x={x + width / 2}
+          y={y + height / 2 - 10} // Acima do nome
+          textAnchor="middle"
+          fill="#fff"
+          fontSize={10}
+        >
+          ({value})
+        </text>
+      ) : null}
     </g>
   );
 };
+
+
+export default function EstoqueTreemap() {
+  const [filiais, setFiliais] = useState([]);
+  const [filiaisLoading, setFiliaisLoading] = useState(true);
+  const [filiaisError, setFiliaisError] = useState(null);
+
+  const [selectedFilialId, setSelectedFilialId] = useState(''); // Estado para o filtro de filial
+
+  // Usa o hook useChartData para buscar os dados de estoque por filial (detalhado por produto)
+  // O endpoint é /api/relatorios/estoque-por-filial
+  const chartParams = selectedFilialId ? { id_filial: selectedFilialId } : {};
+  const { data, loading, error } = useChartData(
+    '/relatorios/estoque-por-filial', // Endpoint correto para estoque detalhado por filial
+    chartParams
+  );
+
+  // Cores para o Treemap (ajuste conforme sua paleta)
+  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#FF8042', '#AF19FF', '#FF0000', '#00FFFF', '#0000FF'];
+
+  // Carrega a lista de filiais usando a função compartilhada do hook
+  useEffect(() => {
+    const getFiliais = async () => {
+      setFiliaisLoading(true);
+      setFiliaisError(null);
+      try {
+        const result = await fetchFiliais();
+        setFiliais(result);
+        // Opcional: pré-selecionar a primeira filial se houver dados
+        // if (result.length > 0) {
+        //   setSelectedFilialId(result[0].id);
+        // }
+      } catch (err) {
+        setFiliaisError(err);
+      } finally {
+        setFiliaisLoading(false);
+      }
+    };
+    getFiliais();
+  }, []);
+
+  const handleFilialChange = useCallback((event) => {
+    setSelectedFilialId(event.target.value);
+  }, []);
+
+  // Prepara os dados para o Treemap
+  // O backend relatorioEstoquePorFilial retorna: { nome_filial, nome_produto, quantidade }
+  // O Treemap precisa de uma estrutura hierárquica: { name, children: [{ name, size }] } ou { name, value }
+  const processedData = React.useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    // Agrupa por filial primeiro (se não estiver filtrado por uma única filial)
+    const groupedByFilial = data.reduce((acc, item) => {
+      const filialName = item.nome_filial;
+      if (!acc[filialName]) {
+        acc[filialName] = { name: filialName, children: [] };
+      }
+      // Adiciona produtos como filhos
+      acc[filialName].children.push({ name: item.nome_produto, size: item.quantidade });
+      return acc;
+    }, {});
+
+    // Se uma filial foi selecionada, mostra apenas os produtos dessa filial
+    // Se 'Todas as Filiais' está selecionado, o Treemap terá um nível de 'Filial' e depois 'Produtos'
+    const treemapData = Object.values(groupedByFilial).map(filial => {
+        // Se há apenas uma filial ou se o filtro está ativo, mostre os produtos diretamente
+        if (selectedFilialId && Object.keys(groupedByFilial).length === 1) {
+            return {
+                name: filial.name, // Nome da filial como root
+                children: filial.children, // Produtos como filhos diretos
+            };
+        } else {
+            // Se 'Todas as Filiais', agrupa tudo em um único root para visualizar
+            return filial; // Mantém a estrutura com children
+        }
+    });
+
+    // Se não há filtro de filial ou se o objetivo é um Treemap global
+    // O Treemap funciona melhor com uma hierarquia raiz -> filhos
+    // Vamos criar uma raiz "Estoque Total" se não houver filtro de filial.
+    if (!selectedFilialId && treemapData.length > 1) {
+        return [{
+            name: "Estoque Total",
+            children: treemapData.map(filial => ({
+                name: filial.name,
+                children: filial.children,
+            }))
+        }];
+    } else {
+        return treemapData;
+    }
+
+  }, [data, selectedFilialId]); // Recalcula se 'data' ou 'selectedFilialId' mudar
+
+  // Gerencia a mensagem de erro para exibição no Alert
+  const errorMessage = (error || filiaisError) ?
+    (error ? (error.message || "Erro desconhecido ao carregar dados.") : (filiaisError.message || "Erro desconhecido ao carregar filiais."))
+    : null;
+
+  return (
+    <Card title="Estoque por Filial (Detalhado)">
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel id="filial-select-label">Filial</InputLabel>
+        <Select
+          labelId="filial-select-label"
+          id="filial-select"
+          value={selectedFilialId}
+          label="Filial"
+          onChange={handleFilialChange}
+        >
+          <MenuItem value="">
+            <em>Todas as Filiais</em>
+          </MenuItem>
+          {filiaisLoading ? (
+            <MenuItem disabled><CircularProgress size={20} /></MenuItem>
+          ) : filiaisError ? (
+            <MenuItem disabled><Typography color="error">{filiaisError.message || "Erro"}</Typography></MenuItem>
+          ) : (
+            filiais.map((filial) => (
+              <MenuItem key={filial.id} value={filial.id}>
+                {filial.nome}
+              </MenuItem>
+            ))
+          )}
+        </Select>
+      </FormControl>
+
+      {(loading || filiaisLoading) ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+          <CircularProgress />
+        </Box>
+      ) : errorMessage ? (
+        <Alert severity="error">{errorMessage}</Alert>
+      ) : processedData.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+          <Typography variant="body1" color="text.secondary">
+            Nenhum dado disponível para este relatório.
+          </Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <Treemap
+            data={processedData}
+            dataKey="size" // O valor para determinar o tamanho do retângulo
+            aspectRatio={4 / 3}
+            stroke="#fff"
+            fill="#8884d8"
+            content={<CustomizedContent colors={COLORS} />}
+          >
+            <Tooltip />
+          </Treemap>
+        </ResponsiveContainer>
+      )}
+    </Card>
+  );
+}

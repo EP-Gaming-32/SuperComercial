@@ -4,23 +4,23 @@ import { useState, useEffect, useCallback } from "react";
 // Função auxiliar para buscar filiais
 export const fetchFiliais = async () => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000';
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api';
     // O endpoint /api/filial espera page e limit, mesmo que queiramos todos
-    // Vamos solicitar um limite grande o suficiente para pegar todas ou a maioria das filiais.
-    // Ou, se houver um endpoint /api/filial/all sem paginação, seria melhor usar ele.
-    const url = `${baseUrl}/filial?page=1&limit=100`; // Solicitando 100 filiais na primeira página
+    const url = `${baseUrl}/filial?page=1&limit=100`; // Solicitando um limite alto para pegar todas as filiais
 
     console.log(`[fetchFiliais] Buscando lista de filiais de: ${url}`);
 
     const response = await fetch(url);
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-      throw new Error(errorData.error || `Erro ao carregar filiais: ${response.statusText} (${response.status})`);
+      // Tenta parsear o erro JSON, mas não quebra se não for JSON válido (ex: 404 HTML)
+      const errorData = await response.json().catch(() => null); // Retorna null se não for JSON
+      throw new Error(errorData?.error || `Erro ao carregar filiais: ${response.statusText} (${response.status})`);
     }
-    const result = await response.json(); // result agora é { data: [filiais], page, limit, ... }
+    const result = await response.json(); // result é { data: [filiais], page, limit, ... }
 
     // Corrigido: Acessar a propriedade 'data' do objeto retornado pelo backend
     if (!result.data || !Array.isArray(result.data)) {
+        console.error("[fetchFiliais] Formato de dados de filiais inválido do backend:", result);
         throw new Error("Formato de dados de filiais inválido do backend.");
     }
 
@@ -28,6 +28,7 @@ export const fetchFiliais = async () => {
 
   } catch (error) {
     console.error("Erro ao buscar lista de filiais:", error);
+    // Retorna o erro original para ser tratado pelo componente
     throw error;
   }
 };
@@ -36,14 +37,14 @@ export const fetchFiliais = async () => {
 const useChartData = (endpoint, initialParams = {}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // Armazena o objeto Error
   const [params, setParams] = useState(initialParams);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setError(null); // Limpa o erro anterior
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000';
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api';
       let url = `${baseUrl}${endpoint}`;
 
       const queryParams = new URLSearchParams();
@@ -60,8 +61,8 @@ const useChartData = (endpoint, initialParams = {}) => {
 
       const response = await fetch(url);
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-        throw new Error(errorData.error || `Erro na requisição: ${response.statusText} (${response.status})`);
+        const errorData = await response.json().catch(() => null); // Retorna null se não for JSON
+        throw new Error(errorData?.error || `Erro na requisição: ${response.statusText} (${response.status})`);
       }
       const result = await response.json();
       setData(result);
@@ -70,7 +71,7 @@ const useChartData = (endpoint, initialParams = {}) => {
       console.log("[useChartData] É array (do backend)?", Array.isArray(result));
 
     } catch (err) {
-      setError(err);
+      setError(err); // Armazena o objeto Error diretamente
       setData(null);
       console.error("[useChartData] Erro ao buscar dados:", err);
     } finally {
@@ -86,4 +87,3 @@ const useChartData = (endpoint, initialParams = {}) => {
 };
 
 export default useChartData;
-  
