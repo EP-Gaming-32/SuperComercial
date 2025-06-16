@@ -51,7 +51,10 @@ export default function VerticalNavBar() {
   return (
     <nav className={styles.verticalNavbar}>
       <ul className={styles.navList}>
-        <button className={styles.brand}>SuperComercial</button>
+        {/* ===== LINHA ALTERADA ===== */}
+        <button className={styles.brand}>
+          Super<span className={styles.brandHighlight}>Comercial</span>
+        </button>
 
         <li className={styles.navItem}>
           <Link

@@ -61,7 +61,7 @@ export default function EstoquePage() {
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-          title=""
+          title="Estoque"
           endpoint="estoque"
           hookParams={{ limit: 10}}
           filters={[

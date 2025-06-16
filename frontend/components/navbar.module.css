@@ -1,6 +1,6 @@
-/* Common styles for navigation lists and links */
-/* Essas regras são genéricas e podem ser aplicadas a qualquer navbar se você tiver várias */
+/* components/VerticalNavBar/navbar.module.css */
 
+/* Common styles for navigation lists and links */
 .navList {
   list-style: none;
   margin: 0;
@@ -12,27 +12,26 @@
   text-decoration: none;
   font-size: 1rem;
   transition: background-color 0.2s ease, color 0.2s ease, font-weight 0.2s ease;
-  display: block; /* Garante que o padding ocupe toda a área */
-  padding: 8px 12px; /* Padding padrão para os links */
-  border-radius: 4px; /* Borda arredondada */
-  color: white; /* Cor padrão do texto do link na nav vertical */
+  display: block;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
 }
 
-/* Hover effect for all nav links */
 .navLink:hover {
-  background-color: #33334d; /* Cor de fundo ao passar o mouse */
+  background-color: #33334d;
 }
 
 
 /* Vertical Navbar Specific Styles */
 .verticalNavbar {
-  width: 250px; /* Largura fixa da navbar vertical */
-  background-color: #1e1e2f; /* Cor de fundo escura */
-  height: 100vh; /* Ocupa a altura total da viewport */
-  padding: 20px; /* Espaçamento interno */
-  color: white; /* Cor do texto padrão */
-  box-sizing: border-box; /* Inclui padding na largura/altura */
-  overflow-y: auto; /* Permite scroll se o conteúdo for muito longo */
+  width: 250px;
+  background-color: #1e1e2f;
+  height: 100vh;
+  padding: 20px;
+  color: white;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .brand {
@@ -40,60 +39,56 @@
   border: none;
   color: white;
   font-size: 20px;
-  font-weight: bold; /* Para o texto "SuperComercial" */
+  font-weight: bold;
   margin-bottom: 20px;
   cursor: pointer;
-  width: 100%; /* Garante que o botão ocupe a largura total */
-  text-align: left; /* Alinha o texto à esquerda */
-  padding: 0; /* Remove padding padrão de botão */
+  width: 100%;
+  text-align: left;
+  padding: 0;
 }
 
 .navItem {
-  margin-bottom: 10px; /* Espaçamento entre os itens da lista principal */
+  margin-bottom: 10px;
 }
 
-/* --- NOVOS ESTILOS PARA DESTAQUE DO ITEM ATIVO --- */
 .activeNavLink {
-  background-color: #33334d; /* Cor de fundo para o link ativo (pode ser a mesma do hover ou diferente) */
-  color: #a0a0ff;           /* Cor do texto para o link ativo (um azul claro para contraste) */
-  font-weight: bold;          /* Negrito para destaque visual */
-  /* Adicione um indicador visual, como uma borda ou sombra */
-  border-left: 4px solid #00eeff; /* Exemplo: uma barra azul à esquerda */
-  padding-left: 8px; /* Ajusta o padding para compensar a borda, mantendo o alinhamento visual */
+  background-color: #33334d;
+  color: #a0a0ff;
+  font-weight: bold;
+  border-left: 4px solid #00eeff;
+  padding-left: 8px;
 }
 
 /* SubMenu Styles (Dropdown) */
 .subMenu {
   list-style: none;
-  padding-left: 15px; /* Indentação para os itens do submenu */
+  padding-left: 15px;
   margin-top: 5px;
-  background-color: #2a2a40; /* Um tom um pouco mais claro que a navbar para o submenu */
+  background-color: #2a2a40;
   border-radius: 4px;
 }
 
 .subMenu li {
-  margin-bottom: 5px; /* Espaçamento entre os itens do submenu */
+  margin-bottom: 5px;
 }
 
-/* Ajustes para links dentro do submenu */
 .subMenu .navLink {
-  padding: 6px 10px; /* Um pouco menos de padding para itens de submenu */
-  font-size: 0.9em; /* Tamanho da fonte ligeiramente menor */
-  color: #d0d0d0; /* Cor padrão do texto do link do submenu */
+  padding: 6px 10px;
+  font-size: 0.9em;
+  color: #d0d0d0;
 }
 
 .subMenu .navLink:hover {
-  background-color: #444466; /* Cor de fundo ao passar o mouse no submenu */
+  background-color: #444466;
   color: #ffffff;
 }
 
-/* Estilo para o link ativo dentro do submenu */
 .subMenu .activeNavLink {
-  background-color: #444466; /* Fundo ativo no submenu (pode ser o mesmo do hover) */
-  color: #2678c9;             /* Cor do texto do link ativo no submenu (azul um pouco diferente) */
+  background-color: #444466;
+  color: #2678c9;
   font-weight: bold;
-  border-left: 4px solid #00aaff; /* Outra cor de borda para sub-itens ativos */
-  padding-left: 6px; /* Ajusta o padding para compensar a borda */
+  border-left: 4px solid #00aaff;
+  padding-left: 6px;
 }
 
 
@@ -118,4 +113,13 @@
 
 .horizontalNavbar .navLink {
   color:white;
+}
+
+/* ===== CLASSE ALTERADA ===== */
+.brandHighlight {
+  color: rgb(0, 149, 255);
+  /* Adicionando o efeito de brilho (glow) */
+  text-shadow: 0 0 1px rgb(0, 149, 255), 
+               0 0 1px rgb(0, 149, 255), 
+               0 0 1px rgb(0, 149, 255);
 }
