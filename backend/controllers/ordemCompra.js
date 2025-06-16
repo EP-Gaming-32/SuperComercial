@@ -32,15 +32,15 @@ export const listarProdutoFornecedor = async (req, res) => {
   }
 };
 
-// POST /ordemCompra
+// POST /ordemCompra — criação básica de ordem (sem id_fornecedor)
 export const criarOrdemCompra = async (req, res) => {
-  const { id_fornecedor, data_ordem, data_entrega_prevista, valor_total, observacao } = req.body;
+  const { data_ordem, data_entrega_prevista, valor_total, observacao } = req.body;
   try {
     const [result] = await pool.query(
       `INSERT INTO OrdemCompra
-       (id_fornecedor, data_ordem, data_entrega_prevista, valor_total, status, observacao)
-       VALUES (?, ?, ?, ?, 'Pendente', ?)`,
-      [id_fornecedor, data_ordem, data_entrega_prevista, valor_total, observacao]
+       (data_ordem, data_entrega_prevista, valor_total, status, observacao)
+       VALUES (?, ?, ?, 'Pendente', ?)`,
+      [data_ordem, data_entrega_prevista, valor_total, observacao]
     );
     res.status(201).json({ data: { id_ordem_compra: result.insertId } });
   } catch (err) {
@@ -65,15 +65,24 @@ export const vincularOrdemPedido = async (req, res) => {
   }
 };
 
-// POST /ordemCompra/itens
+// POST /ordemCompra/itens — agora popula ProdutoFornecedor e cria item
 export const criarItemOrdemCompra = async (req, res) => {
-  const { id_ordem_compra, id_produto, quantidade, preco_unitario } = req.body;
+  const { id_ordem_compra, id_produto, id_fornecedor, quantidade, preco_unitario } = req.body;
   try {
-    await pool.query(
-      `INSERT INTO ItensOrdemCompra (id_ordem_compra, id_produto, quantidade, preco_unitario)
-       VALUES (?, ?, ?, ?)`,
-      [id_ordem_compra, id_produto, quantidade, preco_unitario]
+    const [pfRes] = await pool.query(
+      `INSERT INTO ProdutoFornecedor (id_produto, id_fornecedor, preco, prazo_entrega, ativo)
+       VALUES (?, ?, ?, NULL, TRUE)`,
+      [id_produto, id_fornecedor, preco_unitario]
     );
+    const id_produto_fornecedor = pfRes.insertId;
+
+    await pool.query(
+      `INSERT INTO ItensOrdemCompra
+         (id_ordem_compra, id_produto, id_produto_fornecedor, quantidade, preco_unitario)
+       VALUES (?, ?, ?, ?, ?)`,
+      [id_ordem_compra, id_produto, id_produto_fornecedor, quantidade, preco_unitario]
+    );
+
     res.status(201).json({ message: 'Item da ordem criado' });
   } catch (err) {
     console.error(err);
@@ -81,21 +90,13 @@ export const criarItemOrdemCompra = async (req, res) => {
   }
 };
 
-// GET /ordemCompra           — lista todas as ordens
+// GET /ordemCompra — lista todas as ordens (sem fornecedor)
 export const listarOrdensCompra = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT oc.id_ordem_compra,
-              oc.id_fornecedor,
-              f.nome_fornecedor,
-              oc.data_ordem,
-              oc.data_entrega_prevista,
-              oc.valor_total,
-              oc.status,
-              oc.observacao
-       FROM OrdemCompra oc
-       JOIN Fornecedor f ON f.id_fornecedor = oc.id_fornecedor
-       ORDER BY oc.data_ordem DESC`
+      `SELECT id_ordem_compra, data_ordem, data_entrega_prevista, valor_total, status, observacao
+       FROM OrdemCompra
+       ORDER BY data_ordem DESC`
     );
     res.json({ data: rows });
   } catch (err) {
@@ -104,7 +105,7 @@ export const listarOrdensCompra = async (req, res) => {
   }
 };
 
-// DELETE /ordemCompra/:id    — marca a ordem como Cancelado
+// DELETE /ordemCompra/:id — marca a ordem como Cancelado
 export const cancelarOrdemCompra = async (req, res) => {
   const { id } = req.params;
   try {
@@ -122,19 +123,13 @@ export const cancelarOrdemCompra = async (req, res) => {
   }
 };
 
-// GET /ordemCompra/historico?id_ordem_compra=...  — histórico de status
+// GET /ordemCompra/historico?id_ordem_compra=...
 export const listarHistoricoStatusOrdemCompra = async (req, res) => {
   const { id_ordem_compra } = req.query;
   try {
     const [rows] = await pool.query(
-      `SELECT h.id_historico_oc,
-              h.id_ordem_compra,
-              h.status_antigo,
-              h.status_novo,
-              h.usuario_id,
-              u.Nome AS nome_usuario,
-              h.motivo,
-              h.data_alteracao
+      `SELECT h.id_historico_oc, h.id_ordem_compra, h.status_antigo, h.status_novo,
+              h.usuario_id, u.Nome AS nome_usuario, h.motivo, h.data_alteracao
        FROM HistoricoStatusOrdemCompra h
        LEFT JOIN Usuarios u ON u.UsuarioID = h.usuario_id
        WHERE h.id_ordem_compra = ?
@@ -148,22 +143,13 @@ export const listarHistoricoStatusOrdemCompra = async (req, res) => {
   }
 };
 
+// GET /ordemCompra/:id — detalhes da ordem, incluindo fornecedores por item
 export const listarDetalhesOrdemCompra = async (req, res) => {
   const { id } = req.params;
   try {
-    // 1) Dados da ordem
     const [ordemRows] = await pool.query(
-      `SELECT oc.id_ordem_compra,
-              oc.id_fornecedor,
-              f.nome_fornecedor,
-              oc.data_ordem,
-              oc.data_entrega_prevista,
-              oc.valor_total,
-              oc.status,
-              oc.observacao
-       FROM OrdemCompra oc
-       JOIN Fornecedor f USING(id_fornecedor)
-       WHERE oc.id_ordem_compra = ?`,
+      `SELECT id_ordem_compra, data_ordem, data_entrega_prevista, valor_total, status, observacao
+       FROM OrdemCompra WHERE id_ordem_compra = ?`,
       [id]
     );
     if (ordemRows.length === 0) {
@@ -171,20 +157,18 @@ export const listarDetalhesOrdemCompra = async (req, res) => {
     }
     const ordem = ordemRows[0];
 
-    // 2) Itens da ordem — use id_item_oc (não id_item_ordem)
     const [itensRows] = await pool.query(
-      `SELECT ioc.id_item_oc       AS id,
-              ioc.id_produto,
-              p.nome_produto,
-              ioc.quantidade,
-              ioc.preco_unitario
+      `SELECT ioc.id_item_oc AS id, ioc.id_produto, p.nome_produto,
+              ioc.id_produto_fornecedor, pf.id_fornecedor, f.nome_fornecedor,
+              ioc.quantidade, ioc.preco_unitario
        FROM ItensOrdemCompra ioc
        JOIN Produtos p USING(id_produto)
+       JOIN ProdutoFornecedor pf ON pf.id_produtoFornecedor = ioc.id_produto_fornecedor
+       JOIN Fornecedor f ON f.id_fornecedor = pf.id_fornecedor
        WHERE ioc.id_ordem_compra = ?`,
       [id]
     );
 
-    // 3) Retorna tudo junto
     res.json({ data: { ...ordem, itens: itensRows } });
   } catch (err) {
     console.error(err);
@@ -192,36 +176,33 @@ export const listarDetalhesOrdemCompra = async (req, res) => {
   }
 };
 
+// POST /ordemCompra/complete — cria ordem com múltiplos itens e fornecedores
 export const criarOrdemCompleta = async (req, res) => {
   const {
-    id_fornecedor,
     data_ordem,
     data_entrega_prevista,
     observacao,
-    pedidos_filial = [],  // ids
-    itens = []            // { id_produto, quantidade, preco_unitario }
+    pedidos_filial = [],
+    itens = []
   } = req.body;
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
-    // calcula o total
     const valor_total = itens.reduce(
       (sum, i) => sum + i.preco_unitario * i.quantidade,
       0
     );
 
-    // insere ordem com o total
     const [ordemResult] = await conn.query(
       `INSERT INTO OrdemCompra
-         (id_fornecedor, data_ordem, data_entrega_prevista, valor_total, status, observacao)
-       VALUES (?, ?, ?, ?, 'Pendente', ?)`,
-      [id_fornecedor, data_ordem, data_entrega_prevista, valor_total, observacao]
+        (data_ordem, data_entrega_prevista, valor_total, status, observacao)
+      VALUES (?, ?, ?, 'Pendente', ?)`,
+      [data_ordem, data_entrega_prevista, valor_total, observacao]
     );
     const id_ordem = ordemResult.insertId;
 
-    // vincula pedidos
     for (const id_ped of pedidos_filial) {
       await conn.query(
         `INSERT INTO OrdemCompraPedidoFilial (id_ordem_compra, id_pedido_filial)
@@ -230,13 +211,19 @@ export const criarOrdemCompleta = async (req, res) => {
       );
     }
 
-    // insere itens com preço unitário
-    for (const { id_produto, quantidade, preco_unitario } of itens) {
+    for (const { id_produto, id_fornecedor: itemFornecedor, quantidade, preco_unitario } of itens) {
+      const [pfRes] = await conn.query(
+        `INSERT INTO ProdutoFornecedor (id_produto, id_fornecedor, preco, ativo)
+         VALUES (?, ?, ?, TRUE)`,
+        [id_produto, itemFornecedor, preco_unitario]
+      );
+      const id_pf = pfRes.insertId;
+
       await conn.query(
         `INSERT INTO ItensOrdemCompra
-           (id_ordem_compra, id_produto, quantidade, preco_unitario)
-         VALUES (?, ?, ?, ?)`,
-        [id_ordem, id_produto, quantidade, preco_unitario]
+           (id_ordem_compra, id_produto, id_produto_fornecedor, quantidade, preco_unitario)
+         VALUES (?, ?, ?, ?, ?)`,
+        [id_ordem, id_produto, id_pf, quantidade, preco_unitario]
       );
     }
 

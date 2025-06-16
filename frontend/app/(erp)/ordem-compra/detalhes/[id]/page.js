@@ -11,7 +11,6 @@ export default function DetalhesOrdemCompraPage() {
   const router = useRouter();
 
   const [ordemData, setOrdemData] = useState(null);
-  const [fornecedores, setFornecedores] = useState([]);
   const [produtosFornecedores, setProdutosFornecedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,19 +20,16 @@ export default function DetalhesOrdemCompraPage() {
     setError("");
 
     try {
-      const [resOrdem, resFornecedores, resProdFor] = await Promise.all([
+      const [resOrdem, resProdFor] = await Promise.all([
         fetch(`http://localhost:5000/ordemCompra/detalhes/${id}`),
-        fetch("http://localhost:5000/fornecedores"),
         fetch("http://localhost:5000/ordemCompra/produtoFornecedor")
       ]);
 
       if (!resOrdem.ok) throw new Error("Falha ao carregar dados da ordem");
-      if (!resFornecedores.ok) throw new Error("Falha ao carregar fornecedores");
       if (!resProdFor.ok) throw new Error("Falha ao carregar produtos-fornecedor");
 
-      const [ordemJson, fornecJson, prodForJson] = await Promise.all([
+      const [ordemJson, prodForJson] = await Promise.all([
         resOrdem.json(),
-        resFornecedores.json(),
         resProdFor.json()
       ]);
 
@@ -47,18 +43,21 @@ export default function DetalhesOrdemCompraPage() {
       // Normaliza dados da ordem e itens
       const raw = ordemJson.data;
       const norm = {
-        ...raw,
+        id_ordem: raw.id_ordem_compra,
+        data_ordem: raw.data_ordem,
+        data_entrega_prevista: raw.data_entrega_prevista,
+        observacao: raw.observacao,
         itens: Array.isArray(raw.itens)
           ? raw.itens.map(item => ({
-              ...item,
+              id_produto: item.id_produto,
+              nome_produto: item.nome_produto,
+              quantidade: item.quantidade,
               preco_unitario: parseFloat(item.preco_unitario) || 0
             }))
           : []
       };
       setOrdemData(norm);
 
-      // Fornecedores
-      setFornecedores(fornecJson.data || []);
     } catch (err) {
       console.error(err);
       setError(err.message || "Erro inesperado");
@@ -68,8 +67,8 @@ export default function DetalhesOrdemCompraPage() {
   }, [id]);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    if (id) fetchAll();
+  }, [fetchAll, id]);
 
   const handleUpdate = async updatedData => {
     setLoading(true);
@@ -93,6 +92,10 @@ export default function DetalhesOrdemCompraPage() {
     }
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -112,43 +115,25 @@ export default function DetalhesOrdemCompraPage() {
     );
   }
 
+  // Prepara produtosOriginais para o formulário
+  const produtosOriginais = ordemData.itens.map(item => ({
+    id_produto: item.id_produto,
+    nome_produto: item.nome_produto,
+    quantidade: item.quantidade,
+    preco_unitario: item.preco_unitario
+  }));
+
   return (
     <div className={styles.container}>
       <BoxComponent className={styles.formWrapper}>
         <h1>Editar Ordem de Compra</h1>
-        {/* Exibe itens da ordem antes do formulário */}
-        {ordemData.itens.length > 0 && (
-          <div className={styles.itensWrapper}>
-            <h2>Itens da Ordem</h2>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Produto</th>
-                  <th>Quantidade</th>
-                  <th>Preço Unit.</th>
-                  <th>Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ordemData.itens.map(item => (
-                  <tr key={item.id}>
-                    <td>{item.nome_produto}</td>
-                    <td>{item.quantidade}</td>
-                    <td>{item.preco_unitario.toFixed(2)}</td>
-                    <td>{(item.quantidade * item.preco_unitario).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
         <FormPageOrdemCompra
-          data={ordemData}
-          fornecedores={fornecedores}
+          id={id}
+          produtosOriginais={produtosOriginais}
           produtosFornecedores={produtosFornecedores}
           mode="edit"
           onSubmit={handleUpdate}
-          onCancel={() => router.back()}
+          onCancel={handleCancel}
         />
       </BoxComponent>
     </div>
