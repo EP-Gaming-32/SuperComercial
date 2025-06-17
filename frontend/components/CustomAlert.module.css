@@ -29,7 +29,7 @@
 }
 
 .okButton {
-  background-color: #007bff; /* Cor primária */
+  background-color: #1b3655; /* Cor primária */
   color: white;
   border: none;
   padding: 10px 20px;
@@ -37,8 +37,4 @@
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s ease;
-}
-
-.okButton:hover {
-  background-color: #0056b3;
 }
