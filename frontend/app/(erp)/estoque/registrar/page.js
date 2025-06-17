@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./detalhes.module.css";
+import styles from "./detalhes.module.css"; // Se este CSS for de 'detalhes', considere ter um CSS específico para 'registrar'
 import BoxComponent from "@/components/BoxComponent";
 import FormPageEstoqueLote from "@/components/form/FormPageEstoqueLote";
+import CustomAlert from "@/components/CustomAlert"; // <<--- Importe o componente CustomAlert
 
 export default function RegistrarEstoquePage() {
   const router = useRouter();
+
   const initial = {
     id_produto: "",
     id_fornecedor: "",
@@ -22,6 +24,12 @@ export default function RegistrarEstoquePage() {
   const [fornecedores, setFornecedores] = useState([]);
   const [filiais, setFiliais] = useState([]);
 
+  // <<--- NOVOS ESTADOS PARA O MODAL DE ALERTA ---
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSuccess, setAlertSuccess] = useState(false); // Para saber se é sucesso ou erro
+  // <<---------------------------------------------
+
   useEffect(() => {
     Promise.all([
       fetch("http://localhost:5000/produtos?limit=100")
@@ -35,7 +43,7 @@ export default function RegistrarEstoquePage() {
       fetch("http://localhost:5000/filial?limit=100")
         .then((r) => r.json())
         .then((j) => setFiliais(j.data ?? [])),
-    ]).catch(console.error);
+    ]).catch(console.error); // Este catch genérico pode ser melhorado para setar um estado de erro
   }, []);
 
   const handleSubmit = async (data) => {
@@ -46,11 +54,27 @@ export default function RegistrarEstoquePage() {
     });
     if (!res.ok) {
       const err = await res.json();
-      return alert("Erro: " + err.message);
+      // <<--- SUBSTITUIÇÃO DO alert() para erro ---
+      setAlertMessage("Erro: " + err.message);
+      setAlertSuccess(false); // Marca como erro
+      setShowAlert(true);
+      return; // Retorna para não continuar após o erro
     }
-    alert("Estoque cadastrado com sucesso!");
-    router.push("/estoque/visualizar");
+    // <<--- SUBSTITUIÇÃO do alert() para sucesso ---
+    setAlertMessage("Estoque cadastrado com sucesso!");
+    setAlertSuccess(true); // Marca como sucesso
+    setShowAlert(true);
+    // router.push("/estoque/visualizar"); // <<--- REMOVIDO DAQUI, SERÁ FEITO APÓS FECHAR O MODAL
   };
+
+  // <<--- NOVA FUNÇÃO PARA FECHAR O MODAL E REDIRECIONAR ---
+  const handleCloseAlert = () => {
+    setShowAlert(false); // Fecha o modal
+    if (alertSuccess) { // Se o alerta foi de sucesso, então redireciona
+      router.push('/estoque/visualizar');
+    }
+  };
+  // <<----------------------------------------------------
 
   return (
     <div className={styles.container}>
@@ -67,6 +91,15 @@ export default function RegistrarEstoquePage() {
           onCancel={() => router.back()}
         />
       </BoxComponent>
+
+      {/* <<--- RENDERIZAÇÃO CONDICIONAL DO MODAL CUSTOMIZADO --- */}
+      {showAlert && (
+        <CustomAlert 
+          message={alertMessage} 
+          onClose={handleCloseAlert} 
+        />
+      )}
+      {/* <<---------------------------------------------------- */}
     </div>
   );
 }
