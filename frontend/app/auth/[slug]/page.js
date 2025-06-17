@@ -34,11 +34,20 @@ export default function AuthPage() {
         body: JSON.stringify(formData),
       });
       const data = await response.json();
-      setMessage(data.message);
+      setMessage(data.message); // Exibe a mensagem de sucesso ou erro
 
+      // Bloco de código para o login (já existente)
       if (slug === "login" && data.token) {
         localStorage.setItem("token", data.token);
         router.push("/home");
+      }
+
+      // Verifica se o cadastro foi bem-sucedido (slug é 'cadastro' e a resposta da API foi 'ok')
+      if (slug === "cadastro" && response.ok) {
+        // Adiciona um pequeno atraso para o usuário poder ler a mensagem de sucesso
+        setTimeout(() => {
+          router.push("/auth/login"); // Redireciona para a tela de login
+        }, 2000); // Atraso de 2000ms = 2 segundos
       }
     } catch (error) {
       console.error("Submission error:", error);
@@ -113,12 +122,11 @@ export default function AuthPage() {
                   />
                 </>
               )}
-              
-              {/* ALTERAÇÃO 1: MOVIDO PARA CIMA E CLASSE ALTERADA */}
+
               {slug === "login" && (
                 <button
                   type="button"
-                  className={styles.forgotPasswordLink} // CLASSE NOVA E MINIMALISTA
+                  className={styles.forgotPasswordLink}
                   onClick={() => router.push("/forgot-password")}
                 >
                   Esqueci a senha

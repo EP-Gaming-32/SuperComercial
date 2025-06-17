@@ -170,3 +170,19 @@ body {
     padding: 0.75rem;
   }
 }
+
+/* auth.module.css */
+
+/* Estilo para as mensagens de feedback (sucesso ou erro) */
+.message {
+  width: 90%;
+  padding: 0.8rem;
+  margin-top: 1rem; /* Espaço acima da mensagem */
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  background-color: rgba(0, 0, 0, 0.15); /* Um fundo neutro que funciona com o tema */
+  color: #f0f0f0; /* Cor do texto */
+  border: 1px solid #1b3655;
+}

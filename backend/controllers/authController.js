@@ -13,7 +13,7 @@ const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-// Cadastro de usuario
+// Cadastro de usuario (VERSÃO ATUALIZADA)
 export const cadastroUser = async (req, res) => {
   const { nome, email, senha } = req.body;
 
@@ -22,7 +22,20 @@ export const cadastroUser = async (req, res) => {
   }
 
   try {
-    const hashedPasswordHex = hashPassword(senha); 
+    // 1. Primeiro, vamos verificar se o e-mail já existe no banco de dados
+    const [usuariosExistentes] = await pool.query(
+      'SELECT Email FROM Usuarios WHERE Email = ?',
+      [email]
+    );
+
+    // 2. Se a busca retornar um ou mais resultados, significa que o e-mail já está em uso.
+    if (usuariosExistentes.length > 0) {
+      // Retornamos um erro 409 (Conflict) com a mensagem específica
+      return res.status(409).json({ message: 'Este e-mail já está cadastrado.' });
+    }
+
+    // 3. Se o e-mail não foi encontrado, o código continua normalmente para criar o novo usuário
+    const hashedPasswordHex = hashPassword(senha);
     const hashedPasswordBuffer = Buffer.from(hashedPasswordHex, 'hex');
 
     await pool.query(
@@ -31,11 +44,14 @@ export const cadastroUser = async (req, res) => {
     );
 
     res.status(201).json({ message: 'Usuário registrado com sucesso' });
+    
   } catch (error) {
     console.error('Erro ao cadastrar usuário:', error);
+    // O erro genérico agora só será acionado por falhas inesperadas (ex: o banco de dados caiu)
     res.status(500).json({ message: 'Erro no registro' });
   }
 };
+
 
 // Login
 export const loginUser = async (req, res) => {
@@ -57,7 +73,7 @@ export const loginUser = async (req, res) => {
 
     const user = users[0];
 
-    const storedHashHex = user.Senha.toString('hex'); 
+    const storedHashHex = user.Senha.toString('hex');
     const hashedInput = hashPassword(senha);
 
     if (hashedInput !== storedHashHex) {
