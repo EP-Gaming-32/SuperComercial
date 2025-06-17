@@ -1,6 +1,6 @@
 import pool from '../config/db.js';
 
-// Helper para construir cláusulas WHERE dinâmicas (já existente)
+// Helper para construir cláusulas WHERE dinâmicas
 const buildWhereClause = (filters, params) => {
     const clauses = ['p.ativo = TRUE'];
 
@@ -13,10 +13,15 @@ const buildWhereClause = (filters, params) => {
         params.push(`%${filters.nome_produto}%`);
     }
     if (filters.id_fornecedor) {
-        // Assume que id_fornecedor aqui se refere a ProdutoFornecedor
         clauses.push('pf.id_fornecedor = ? AND pf.ativo = TRUE'); 
         params.push(filters.id_fornecedor);
     }
+    // <<--- ADIÇÃO AQUI: FILTRO PARA CODIGO_BARRAS ---
+    if (filters.codigo_barras) {
+        clauses.push('p.codigo_barras LIKE ?');
+        params.push(`%${filters.codigo_barras}%`);
+    }
+    // <<------------------------------------------------
 
     return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
 };
@@ -59,7 +64,7 @@ const generateSku = async (nomeProduto, idGrupo) => {
 
     const generateUniqueSuffix = () => Math.random().toString(36).substring(2, 6).toUpperCase();
 
-    let newSku = `${groupPrefix}-${productInitials}-${generateUniqueSuffix()}`;
+    let newSku = `<span class="math-inline">\{groupPrefix\}\-</span>{productInitials}-${generateUniqueSuffix()}`;
 
     let isUnique = false;
     let counter = 0;
@@ -71,7 +76,7 @@ const generateSku = async (nomeProduto, idGrupo) => {
             if (existingSkuRows.length === 0) {
                 isUnique = true;
             } else {
-                newSku = `${groupPrefix}-${productInitials}-${generateUniqueSuffix()}`;
+                newSku = `<span class="math-inline">\{groupPrefix\}\-</span>{productInitials}-${generateUniqueSuffix()}`;
                 counter++;
             }
         } catch (dbError) {
@@ -81,7 +86,7 @@ const generateSku = async (nomeProduto, idGrupo) => {
     }
 
     if (!isUnique) {
-        newSku = `${groupPrefix}-${productInitials}-${Date.now().toString().slice(-6)}`;
+        newSku = `<span class="math-inline">\{groupPrefix\}\-</span>{productInitials}-${Date.now().toString().slice(-6)}`;
         console.warn(`SKU gerado após múltiplas colisões: ${newSku}`);
     }
 
@@ -93,9 +98,11 @@ export const listarProdutos = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
 
-    const { nome_produto, id_grupo, id_fornecedor } = req.query;
+    // <<--- MUDANÇA AQUI: EXTRAINDO codigo_barras DO req.query ---
+    const { nome_produto, id_grupo, id_fornecedor, codigo_barras } = req.query;
     const values = [];
-    const whereClause = buildWhereClause({ nome_produto, id_grupo, id_fornecedor }, values);
+    // <<--- MUDANÇA AQUI: PASSANDO codigo_barras PARA buildWhereClause ---
+    const whereClause = buildWhereClause({ nome_produto, id_grupo, id_fornecedor, codigo_barras }, values);
 
     try {
         const [countResult] = await pool.query(
@@ -137,7 +144,7 @@ export const listarProdutosUnicos = async (req, res) => {
 
     const { nome_produto, id_grupo } = req.query;
     const values = [];
-    const whereClause = buildWhereClause({ nome_produto, id_grupo }, values);
+    const whereClause = buildWhereClause({ nome_produto, id_grupo }, values); // Note: this buildWhereClause is local, not the general one above.
 
     try {
         const [countResult] = await pool.query(

@@ -11,44 +11,52 @@ export default function FornecedorPage() {
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-          title=""
+          title="Fornecedores"
           endpoint="fornecedores"
           hookParams={{ limit: 10}}
+          // <<--- AQUI ESTÁ A ALTERAÇÃO DOS FILTROS ---
           filters={[
             {
-              name: "id_fornecedor",
-              label: "ID",
-              type: "text"
-            },
-            {
-              name: "nome_fornecedor",
+              name: "nome_fornecedor", // 1º - Nome do Fornecedor
               label: "Fornecedor",
               type: "text"
             },
             {
-              name: "tipo_pessoa",
+              name: "cnpj_cpf", // 2º - CNPJ/CPF
+              label: "CNPJ/CPF",
+              type: "text",
+            },
+            {
+              name: "email_fornecedor", // NOVO - Email
+              label: "Email",
+              type: "text"
+            },
+            {
+              name: "telefone_fornecedor", // NOVO - Telefone
+              label: "Telefone",
+              type: "text"
+            },
+            {
+              name: "tipo_pessoa", // Mantido - Tipo
               label: "Tipo",
               type: "select",
               options: [
-                { value: "fisica", label: "Física"},
-                { value: "juridica", label: "Jurídica"},
+                { value: "Fisica", label: "Física"},
+                { value: "Juridica", label: "Jurídica"},
               ]
             },
-            {
-              name: "cnpj_cpf",
-              label: "CNPJ/CPF",
-              type: "text",
-            }
+            // <<--- REMOVIDO: O FILTRO DE ID ---
           ]}
+          // <<------------------------------------------
           keywordName={null}
           keywordPlaceholder="buscar fornecedor"
           detailRoute="/fornecedores/detalhes"
           idField="id_fornecedor"
           showFields={[
-            { value: "id_fornecedor", label: "ID"},
             { value: "nome_fornecedor", label: "Fornecedor"},
-            { value: "tipo_pessoa", label: "Tipo"},
             { value: "cnpj_cpf", label: "CNPJ/CPF"},
+            { value: "email_fornecedor", label: "Email"},
+            { value: "telefone_fornecedor", label: "Telefone"},
           ]}
           addButtonUrl="/fornecedores/registrar"
           addButtonLabel="Registrar Fornecedor"

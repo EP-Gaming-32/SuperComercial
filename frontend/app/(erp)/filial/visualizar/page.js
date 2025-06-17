@@ -31,18 +31,23 @@ export default function FilialPage() {
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-        title=""
+        title="Filiais" // <<--- COMENTÁRIO REMOVIDO DAQUI
         endpoint="filial"
         hookParams={{ limit: 10 }}
         filters={[
           {
-            name: "id_filial",
-            label: "ID",
+            name: "nome_filial",
+            label: "Filial",
             type: "text"
           },
           {
-            name: "nome_filial",
-            label: "Filial",
+            name: "endereco_filial",
+            label: "Endereço",
+            type: "text",
+          },
+          {
+            name: "telefone_filial",
+            label: "Telefone",
             type: "text"
           },
           {
@@ -50,20 +55,15 @@ export default function FilialPage() {
             label: "Gestor",
             type: "text"
           },
-          {
-            name: "endereco_filial",
-            label: "Endereço",
-            type: "text",
-          }
         ]}
         keywordName={null}
         keywordPlaceholder="buscar filial"
         detailRoute="/filial/detalhes"
         idField="id_filial"
         showFields={[
-          { value: "id_filial", label: "ID"},
           { value: "nome_filial", label: "Filial"},
-          { value: "endereco_filial",label: "Endereço"},
+          { value: "endereco_filial", label: "Endereço"},
+          { value: "telefone_filial", label: "Telefone"},
           { value: "gestor_filial", label: "Gestor"},
         ]}
         addButtonUrl="/filial/registrar"

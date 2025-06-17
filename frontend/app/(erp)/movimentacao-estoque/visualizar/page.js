@@ -6,20 +6,12 @@ import styles from "./visualizar.module.css";
 
 export default function MovimentacaoEstoqueFormPage() {
   const [estoques, setEstoques] = useState([]);
-  const [tipo, setTipo] = useState("Entrada");
+  const [tipo, setTipo] = useState("entrada");
   const [quantidade, setQuantidade] = useState(0);
   const [selecionado, setSelecionado] = useState("");
+
   const [mensagem, setMensagem] = useState("");
 
-  const tipos = [
-    { value: 'Entrada', label: 'Entrada' },
-    { value: 'Reposição', label: 'Reposição' },
-    { value: 'Vendido', label: 'Vendido' },
-    { value: 'Quebrado', label: 'Quebrado' },
-    { value: 'Vencido', label: 'Vencido' },
-  ];
-
-  // Carrega estoques
   const loadEstoques = async () => {
     try {
       const resp = await fetch("http://localhost:5000/estoque");
@@ -38,10 +30,12 @@ export default function MovimentacaoEstoqueFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensagem("");
-    if (!selecionado || quantidade < 0) {
+
+    if (!selecionado || quantidade <= 0) {
       setMensagem("Selecione o estoque e informe quantidade válida.");
       return;
     }
+
     try {
       const resp = await fetch("http://localhost:5000/movimentacaoEstoque", {
         method: "POST",
@@ -57,7 +51,7 @@ export default function MovimentacaoEstoqueFormPage() {
         setMensagem("Movimentação registrada com sucesso. ID: " + result.id_movimentacao);
         setQuantidade(0);
         setSelecionado("");
-        await loadEstoques();
+        loadEstoques();
       } else {
         setMensagem(result.error || result.message || "Erro ao registrar movimentação.");
       }
@@ -69,43 +63,60 @@ export default function MovimentacaoEstoqueFormPage() {
 
   return (
     <div className={styles.container}>
-      <BoxComponent>
-        <h2>Registrar Movimentação de Estoque</h2>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <label>
-            Estoque:
-            <select value={selecionado} onChange={(e) => setSelecionado(e.target.value)}>
-              <option value="">Selecione</option>
-              {estoques.map((e) => (
-                <option key={e.id_estoque} value={e.id_estoque}>
-                  {`${e.nome_produto} (${e.local_armazenamento}) — Qtde: ${e.quantidade}`}
-                </option>
-              ))}
-            </select>
-          </label>
+      <BoxComponent className={styles.mainBoxStyle}>
+        <h2 className={styles.title}>Registrar Movimentação de Estoque</h2> 
 
-          <label>
-            Tipo:
-            <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-              {tipos.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </label>
+        {/* Esta é a div CINZA CLARA dos filtros */}
+        <div className={styles.filterSection}>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <label>
+              Estoque:
+              <select
+                value={selecionado}
+                onChange={(e) => setSelecionado(e.target.value)}
+              >
+                <option value="">Selecione</option>
+                {estoques.map((e) => (
+                  <option key={e.id_estoque} value={e.id_estoque}>
+                    {`${e.nome_produto} (${e.local_armazenamento}) — Qtde: ${e.quantidade}`}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label>
-            Quantidade:
-            <input
-              type="number"
-              min="0"
-              value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
-            />
-          </label>
+            <label>
+              Tipo:
+              <select
+                value={tipo}
+                onChange={(e) => setTipo(e.target.value)}
+              >
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+              </select>
+            </label>
 
-          <button type="submit">Registrar</button>
-        </form>
-        {mensagem && <p>{mensagem}</p>}
+            <label>
+              Quantidade:
+              <input
+                type="number"
+                min="0"
+                value={quantidade}
+                onChange={(e) => setQuantidade(Number(e.target.value))}
+              />
+            </label>
+
+            {/* O botão "Registrar" AGORA ESTÁ DENTRO DA TAG FORM */}
+            {/* Ele será estilizado pela regra .form button no CSS */}
+            <button type="submit">Registrar</button> 
+          </form>
+        </div> {/* Fim da div filterSection */}
+
+        {/* O buttonGroup não é mais necessário aqui, pois o botão está dentro do form e da filterSection */}
+        {/* <div className={styles.buttonGroup}>
+          <button type="submit" onClick={handleSubmit}>Registrar</button>
+        </div> */}
+
+        {mensagem && <p className={styles.message}>{mensagem}</p>}
       </BoxComponent>
     </div>
   );

@@ -44,10 +44,17 @@ export default function ProdutosPage() {
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-          title=""
+          title="Produtos"
           endpoint="produtos"
           hookParams={{ limit: 10 }}
+          // <<--- ALTERAÇÃO DOS FILTROS ---
           filters={[
+            {
+              name: "nome_produto",
+              label: "Produto",
+              type: "text",
+              placeholder: "Digite nome do produto",
+            },
             {
               name: "id_grupo",
               label: "Grupo",
@@ -67,16 +74,12 @@ export default function ProdutosPage() {
               })),
             },
             {
-              name: "nome_produto",
-              label: "Produto",
-              placeholder: "Digite nome do produto",
-            },
-            {
-              name: "sku",
-              label: "SKU",
-              placeholder: "Store Keeping Unit",
+              name: "codigo_barras", // <<--- ALTERADO DE 'sku' PARA 'codigo_barras'
+              label: "Código de Barras", // <<--- ALTERADO DE 'SKU' PARA 'Código de Barras'
+              placeholder: "Digite o código de barras", // <<--- Ajustado placeholder
             },
           ]}
+          // <<------------------------------------------
           keywordName={null}
           keywordPlaceholder="Buscar produto..."
           detailRoute="/produtos/detalhes"
@@ -84,8 +87,8 @@ export default function ProdutosPage() {
           showFields={[
             { value: "nome_produto", label: "Produto"},
             { value: "nome_grupo", label: "Grupo"},
-            { value: "sku", label: "SKU"},
             { value: "nome_fornecedor", label: "Fornecedor"},
+            { value: "valor_produto", label: "Preço de Venda"},
           ]}
           addButtonUrl="/produtos/registrar"
           addButtonLabel="Registrar Produto"
