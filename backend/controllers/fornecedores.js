@@ -5,7 +5,6 @@ export const listarFornecedores = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  // filtros e exclusão lógica
   const { id_fornecedor, nome_fornecedor, tipo_pessoa, cnpj_cpf } = req.query;
 
   const conditions = ['ativo = TRUE'];
@@ -37,8 +36,8 @@ export const listarFornecedores = async (req, res) => {
     );
     const [rows] = await pool.query(
       `SELECT * FROM Fornecedor
-         ${whereClause}
-         LIMIT ? OFFSET ?`,
+          ${whereClause}
+          LIMIT ? OFFSET ?`,
       [...values, limit, offset]
     );
 
@@ -86,6 +85,30 @@ export const criarFornecedor = async (req, res) => {
   }
 
   try {
+    // --- INÍCIO: VERIFICAÇÃO DE DUPLICIDADE ---
+    // 1. Verificar por CNPJ/CPF existente
+    const [existingByCnpjCpf] = await pool.query(
+      `SELECT id_fornecedor FROM Fornecedor WHERE cnpj_cpf = ? AND ativo = TRUE`,
+      [cnpj_cpf]
+    );
+
+    if (existingByCnpjCpf.length > 0) {
+      return res.status(409).json({ message: 'Fornecedor já cadastrado com este CNPJ/CPF.' });
+    }
+
+    // 2. Verificar por E-mail existente (se email_fornecedor não for vazio e for considerado único)
+    if (email_fornecedor) { // Apenas verifica se o email foi fornecido
+      const [existingByEmail] = await pool.query(
+        `SELECT id_fornecedor FROM Fornecedor WHERE email_fornecedor = ? AND ativo = TRUE`,
+        [email_fornecedor]
+      );
+
+      if (existingByEmail.length > 0) {
+        return res.status(409).json({ message: 'Fornecedor já cadastrado com este E-mail.' });
+      }
+    }
+    // --- FIM: VERIFICAÇÃO DE DUPLICIDADE ---
+
     const [result] = await pool.query(
       `INSERT INTO Fornecedor (
         nome_fornecedor,
@@ -119,22 +142,51 @@ export const criarFornecedor = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao criar fornecedor:', error);
-    res.status(500).json({ message: 'Erro ao criar fornecedor.', error });
+    res.status(500).json({ message: 'Erro interno ao criar fornecedor.', error });
   }
 };
 
 export const atualizarFornecedor = async (req, res) => {
   const { id } = req.params;
-  const { nome_fornecedor, endereco_fornecedor, email_fornecedor, tipo_pessoa, observacao, telefone_fornecedor, cnpj_cpf  } = req.body;
+  const { nome_fornecedor, endereco_fornecedor, email_fornecedor, tipo_pessoa, observacao, telefone_fornecedor, cnpj_cpf } = req.body;
+
+  // --- INÍCIO: VERIFICAÇÃO DE DUPLICIDADE AO ATUALIZAR ---
+  // Ao atualizar, o CNPJ/CPF ou E-mail não deve pertencer a OUTRO fornecedor ativo.
+  try {
+    // 1. Verificar CNPJ/CPF existente (que não seja o do próprio fornecedor que está sendo atualizado)
+    const [existingByCnpjCpf] = await pool.query(
+      `SELECT id_fornecedor FROM Fornecedor WHERE cnpj_cpf = ? AND id_fornecedor != ? AND ativo = TRUE`,
+      [cnpj_cpf, id]
+    );
+    if (existingByCnpjCpf.length > 0) {
+      return res.status(409).json({ message: 'CNPJ/CPF já cadastrado para outro fornecedor ativo.' });
+    }
+
+    // 2. Verificar E-mail existente (que não seja o do próprio fornecedor e se email_fornecedor não for vazio)
+    if (email_fornecedor) {
+      const [existingByEmail] = await pool.query(
+        `SELECT id_fornecedor FROM Fornecedor WHERE email_fornecedor = ? AND id_fornecedor != ? AND ativo = TRUE`,
+        [email_fornecedor, id]
+      );
+      if (existingByEmail.length > 0) {
+        return res.status(409).json({ message: 'E-mail já cadastrado para outro fornecedor ativo.' });
+      }
+    }
+  } catch (error) {
+    console.error('Erro na verificação de duplicidade ao atualizar fornecedor:', error);
+    // Retorna um erro 500 se a verificação de duplicidade falhar inesperadamente
+    return res.status(500).json({ message: 'Erro interno na validação de duplicidade.' });
+  }
+  // --- FIM: VERIFICAÇÃO DE DUPLICIDADE AO ATUALIZAR ---
 
   try {
     const [result] = await pool.query(
       'UPDATE Fornecedor SET nome_fornecedor = ?, endereco_fornecedor = ?, email_fornecedor = ?, tipo_pessoa = ?, observacao = ?, telefone_fornecedor = ?, cnpj_cpf = ?, data_atualizacao = CURRENT_TIMESTAMP WHERE id_fornecedor = ?',
-      [nome_fornecedor,endereco_fornecedor, email_fornecedor, tipo_pessoa, observacao, telefone_fornecedor, cnpj_cpf, id]
+      [nome_fornecedor, endereco_fornecedor, email_fornecedor, tipo_pessoa, observacao, telefone_fornecedor, cnpj_cpf, id]
     );
 
     if (!result.affectedRows) {
-      return res.status(404).json({ message: 'Fornecedor não encontrado' });
+      return res.status(404).json({ message: 'Fornecedor não encontrado ou dados idênticos' }); // Adicionado "ou dados idênticos"
     }
 
     res.json({ message: 'Fornecedor atualizado com sucesso' });
@@ -150,9 +202,9 @@ export const removerFornecedor = async (req, res) => {
   try {
     const [result] = await pool.query(
       `UPDATE Fornecedor
-         SET ativo = FALSE,
-             data_atualizacao = CURRENT_TIMESTAMP
-       WHERE id_fornecedor = ? AND ativo = TRUE`,
+          SET ativo = FALSE,
+              data_atualizacao = CURRENT_TIMESTAMP
+        WHERE id_fornecedor = ? AND ativo = TRUE`,
       [id]
     );
 

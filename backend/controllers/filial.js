@@ -5,7 +5,6 @@ export const listarFilial = async (req, res) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
 
-  // filtros e exclusão lógica
   const { id_filial, nome_filial, endereco_filial, gestor_filial } = req.query;
 
   const conditions = ['ativo = TRUE'];
@@ -39,9 +38,9 @@ export const listarFilial = async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT * FROM Filial
-        ${whereClause}
-        ORDER BY id_filial ASC
-        LIMIT ? OFFSET ?`,
+          ${whereClause}
+          ORDER BY id_filial ASC
+          LIMIT ? OFFSET ?`,
       [...values, limit, offset]
     );
 
@@ -76,10 +75,34 @@ export const visualizarFilial = async (req, res) => {
 export const criarFilial = async (req, res) => {
   const { nome_filial, endereco_filial, telefone_filial, email_filial, gestor_filial, observacao } = req.body;
 
-  if (!nome_filial) return res.status(400).json({ message: 'Nome obrigatório' });
-  if (!endereco_filial) return res.status(400).json({ message: 'Endereço obrigatório' });
+  if (!nome_filial) return res.status(400).json({ message: 'Nome da Filial é obrigatório.' });
+  if (!endereco_filial) return res.status(400).json({ message: 'Endereço da Filial é obrigatório.' });
 
   try {
+    // --- INÍCIO: VERIFICAÇÃO DE DUPLICIDADE (CRIAR) ---
+    // 1. Verificar por nome_filial existente
+    const [existingByName] = await pool.query(
+      `SELECT id_filial FROM Filial WHERE nome_filial = ? AND ativo = TRUE`,
+      [nome_filial]
+    );
+
+    if (existingByName.length > 0) {
+      return res.status(409).json({ message: 'Filial já cadastrada com este nome.' });
+    }
+
+    // 2. Verificar por E-mail existente (se email_filial não for vazio e for considerado único)
+    if (email_filial) {
+      const [existingByEmail] = await pool.query(
+        `SELECT id_filial FROM Filial WHERE email_filial = ? AND ativo = TRUE`,
+        [email_filial]
+      );
+
+      if (existingByEmail.length > 0) {
+        return res.status(409).json({ message: 'Filial já cadastrada com este E-mail.' });
+      }
+    }
+    // --- FIM: VERIFICAÇÃO DE DUPLICIDADE (CRIAR) ---
+
     const [result] = await pool.query(
       'INSERT INTO Filial (nome_filial, endereco_filial, telefone_filial, email_filial, gestor_filial, observacao) VALUES (?, ?, ?, ?, ?, ?)',
       [nome_filial, endereco_filial, telefone_filial, email_filial, gestor_filial, observacao]
@@ -93,23 +116,21 @@ export const criarFilial = async (req, res) => {
 
 export const atualizarFilial = async (req, res) => {
   const { id } = req.params;
-  const dados = req.body;
+  const { nome_filial, endereco_filial, telefone_filial, email_filial, gestor_filial, observacao } = req.body; // Desestrutura os campos
 
+  // Campos que podem ser atualizados
   const camposPermitidos = [
-    'nome_filial',
-    'endereco_filial',
-    'telefone_filial',
-    'email_filial',
-    'gestor_filial',
-    'observacao'
+    'nome_filial', 'endereco_filial', 'telefone_filial', 'email_filial',
+    'gestor_filial', 'observacao'
   ];
 
   const fields = [];
   const values = [];
   for (const campo of camposPermitidos) {
-    if (dados[campo] !== undefined) {
+    // Adiciona o campo à lista de atualização apenas se ele estiver presente no corpo da requisição
+    if (req.body[campo] !== undefined) { 
       fields.push(`${campo} = ?`);
-      values.push(dados[campo]);
+      values.push(req.body[campo]);
     }
   }
 
@@ -117,12 +138,42 @@ export const atualizarFilial = async (req, res) => {
     return res.status(400).json({ message: 'Nenhuma alteração enviada.' });
   }
 
+  // --- INÍCIO: VERIFICAÇÃO DE DUPLICIDADE (ATUALIZAR) ---
+  try {
+    // 1. Verificar nome_filial existente (que não seja o da própria filial)
+    if (nome_filial !== undefined) { // Verifica se nome_filial está sendo atualizado
+      const [existingByName] = await pool.query(
+        `SELECT id_filial FROM Filial WHERE nome_filial = ? AND id_filial != ? AND ativo = TRUE`,
+        [nome_filial, id]
+      );
+      if (existingByName.length > 0) {
+        return res.status(409).json({ message: 'Nome da filial já cadastrado para outra filial ativa.' });
+      }
+    }
+
+    // 2. Verificar email_filial existente (que não seja o da própria filial)
+    if (email_filial !== undefined && email_filial) { // Verifica se email_filial está sendo atualizado e não é vazio
+      const [existingByEmail] = await pool.query(
+        `SELECT id_filial FROM Filial WHERE email_filial = ? AND id_filial != ? AND ativo = TRUE`,
+        [email_filial, id]
+      );
+      if (existingByEmail.length > 0) {
+        return res.status(409).json({ message: 'E-mail já cadastrado para outra filial ativa.' });
+      }
+    }
+  } catch (error) {
+    console.error('Erro na verificação de duplicidade ao atualizar filial:', error);
+    return res.status(500).json({ message: 'Erro interno na validação de duplicidade.' });
+  }
+  // --- FIM: VERIFICAÇÃO DE DUPLICIDADE (ATUALIZAR) ---
+
   try {
     const sql = `UPDATE Filial SET ${fields.join(', ')}, data_atualizacao = CURRENT_TIMESTAMP WHERE id_filial = ?`;
     const [result] = await pool.query(sql, [...values, id]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Filial não encontrada.' });
+      // Se 0 linhas foram afetadas, pode ser que a filial não foi encontrada ou os dados eram idênticos
+      return res.status(404).json({ message: 'Filial não encontrada ou nenhum dado foi alterado.' });
     }
 
     res.json({ message: 'Filial atualizada com sucesso!' });
