@@ -5,10 +5,13 @@ import styles from "./password.module.css";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  // MUDANÇA 1: O estado da mensagem agora é um objeto
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage({ text: "", type: "" }); // Limpa a mensagem anterior
+
     try {
       const res = await fetch("http://localhost:5000/forgot-password", {
         method: "POST",
@@ -16,10 +19,15 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      setMessage(data.message);
+      
+      // MUDANÇA 2: Define o texto e o tipo da mensagem
+      const messageType = data.type || (res.ok ? 'success' : 'error');
+      setMessage({ text: data.message, type: messageType });
+
     } catch (error) {
       console.error("Erro:", error);
-      setMessage("Erro ao enviar o e-mail de redefinição");
+      // MUDANÇA 3: Define uma mensagem de erro em caso de falha na comunicação
+      setMessage({ text: "Erro ao conectar com o servidor.", type: "error" });
     }
   };
 
@@ -36,8 +44,6 @@ export default function ForgotPasswordPage() {
         <div className={styles.container}>
           <div className={styles.box}>
             <h2 className={styles.header}>Redefinir Senha</h2>
-            
-            {/* ALTERAÇÃO AQUI: Adicionada a classe para o formulário */}
             <form className={styles.form} onSubmit={handleSubmit}>
               <input
                 type="email"
@@ -52,7 +58,12 @@ export default function ForgotPasswordPage() {
               </button>
             </form>
 
-            {message && <p className={styles.message}>{message}</p>}
+            {/* MUDANÇA 4: Aplica as classes de estilo dinamicamente */}
+            {message.text && (
+              <p className={`${styles.message} ${styles[message.type]}`}>
+                {message.text}
+              </p>
+            )}
           </div>
         </div>
       </div>

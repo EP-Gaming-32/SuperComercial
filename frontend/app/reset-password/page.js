@@ -1,17 +1,22 @@
 "use client";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Head from "next/head";
 import styles from "./reset.module.css";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get("token");
+  
   const [newPassword, setNewPassword] = useState("");
-  const [message, setMessage] = useState("");
+  // MUDANÇA 1: O estado da mensagem agora é um objeto
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage({ text: "", type: "" });
+
     try {
       const res = await fetch(`http://localhost:5000/reset-password/${token}`, {
         method: "POST",
@@ -19,10 +24,22 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ newPassword }),
       });
       const data = await res.json();
-      setMessage(data.message);
+
+      // MUDANÇA 2: Define o texto e o tipo da mensagem
+      const messageType = data.type || (res.ok ? 'success' : 'error');
+      setMessage({ text: data.message, type: messageType });
+
+      // Se a senha for redefinida com sucesso, redireciona para o login
+      if (res.ok) {
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 2000); // Atraso de 2s para o usuário ler a mensagem
+      }
+
     } catch (error) {
       console.error("Erro:", error);
-      setMessage("Erro ao redefinir a senha");
+      // MUDANÇA 3: Define uma mensagem de erro em caso de falha na comunicação
+      setMessage({ text: "Erro ao redefinir a senha.", type: "error" });
     }
   };
 
@@ -52,7 +69,13 @@ export default function ResetPasswordPage() {
                 Redefinir Senha
               </button>
             </form>
-            {message && <p className={styles.message}>{message}</p>}
+            
+            {/* MUDANÇA 4: Aplica as classes de estilo dinamicamente */}
+            {message.text && (
+              <p className={`${styles.message} ${styles[message.type]}`}>
+                {message.text}
+              </p>
+            )}
           </div>
         </div>
       </div>
