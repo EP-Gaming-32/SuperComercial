@@ -10,7 +10,6 @@ export default function ResetPasswordPage() {
   const token = searchParams.get("token");
   
   const [newPassword, setNewPassword] = useState("");
-  // MUDANÇA 1: O estado da mensagem agora é um objeto
   const [message, setMessage] = useState({ text: "", type: "" });
 
   const handleSubmit = async (e) => {
@@ -18,6 +17,7 @@ export default function ResetPasswordPage() {
     setMessage({ text: "", type: "" });
 
     try {
+      // URL CORRIGIDA E FINAL (sem /auth)
       const res = await fetch(`http://localhost:5000/reset-password/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,20 +25,17 @@ export default function ResetPasswordPage() {
       });
       const data = await res.json();
 
-      // MUDANÇA 2: Define o texto e o tipo da mensagem
       const messageType = data.type || (res.ok ? 'success' : 'error');
       setMessage({ text: data.message, type: messageType });
 
-      // Se a senha for redefinida com sucesso, redireciona para o login
       if (res.ok) {
         setTimeout(() => {
           router.push("/auth/login");
-        }, 2000); // Atraso de 2s para o usuário ler a mensagem
+        }, 2000);
       }
 
     } catch (error) {
       console.error("Erro:", error);
-      // MUDANÇA 3: Define uma mensagem de erro em caso de falha na comunicação
       setMessage({ text: "Erro ao redefinir a senha.", type: "error" });
     }
   };
@@ -70,7 +67,6 @@ export default function ResetPasswordPage() {
               </button>
             </form>
             
-            {/* MUDANÇA 4: Aplica as classes de estilo dinamicamente */}
             {message.text && (
               <p className={`${styles.message} ${styles[message.type]}`}>
                 {message.text}

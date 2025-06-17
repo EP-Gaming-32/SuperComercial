@@ -5,12 +5,23 @@ import styles from "./password.module.css";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  // MUDANÇA 1: O estado da mensagem agora é um objeto
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // MUDANÇA 1: Nova função para lidar com a alteração do e-mail
+  const handleEmailChange = (e) => {
+    // Atualiza o valor do e-mail
+    setEmail(e.target.value);
+    // Reseta o estado do botão e da mensagem, permitindo um novo envio
+    setIsSubmitting(false);
+    setMessage({ text: "", type: "" });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage({ text: "", type: "" }); // Limpa a mensagem anterior
+    
+    setIsSubmitting(true);
+    setMessage({ text: "", type: "" });
 
     try {
       const res = await fetch("http://localhost:5000/forgot-password", {
@@ -20,14 +31,17 @@ export default function ForgotPasswordPage() {
       });
       const data = await res.json();
       
-      // MUDANÇA 2: Define o texto e o tipo da mensagem
       const messageType = data.type || (res.ok ? 'success' : 'error');
       setMessage({ text: data.message, type: messageType });
 
+      if (!res.ok) {
+        setIsSubmitting(false);
+      }
+
     } catch (error) {
       console.error("Erro:", error);
-      // MUDANÇA 3: Define uma mensagem de erro em caso de falha na comunicação
       setMessage({ text: "Erro ao conectar com o servidor.", type: "error" });
+      setIsSubmitting(false);
     }
   };
 
@@ -49,16 +63,20 @@ export default function ForgotPasswordPage() {
                 type="email"
                 placeholder="Digite seu e-mail"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                // MUDANÇA 2: O 'onChange' agora chama a nossa nova função
+                onChange={handleEmailChange}
                 required
                 className={styles.input}
               />
-              <button type="submit" className={styles.button}>
-                Enviar Link
+              <button 
+                type="submit" 
+                className={styles.button}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Enviando...' : 'Enviar Link'}
               </button>
             </form>
 
-            {/* MUDANÇA 4: Aplica as classes de estilo dinamicamente */}
             {message.text && (
               <p className={`${styles.message} ${styles[message.type]}`}>
                 {message.text}
