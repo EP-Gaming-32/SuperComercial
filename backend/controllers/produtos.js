@@ -16,17 +16,15 @@ const buildWhereClause = (filters, params) => {
         clauses.push('pf.id_fornecedor = ? AND pf.ativo = TRUE'); 
         params.push(filters.id_fornecedor);
     }
-    // <<--- ADIÇÃO AQUI: FILTRO PARA CODIGO_BARRAS ---
     if (filters.codigo_barras) {
         clauses.push('p.codigo_barras LIKE ?');
         params.push(`%${filters.codigo_barras}%`);
     }
-    // <<------------------------------------------------
 
-    return clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+    return clauses.length > 1 ? 'WHERE ' + clauses.join(' AND ') : 'WHERE p.ativo = TRUE';
 };
 
-// Helper para gerar SKU automaticamente (já existente)
+// Helper para gerar SKU automaticamente - CORRIGIDO
 const generateSku = async (nomeProduto, idGrupo) => {
     let groupPrefix = '';
     let productInitials = '';
@@ -64,7 +62,8 @@ const generateSku = async (nomeProduto, idGrupo) => {
 
     const generateUniqueSuffix = () => Math.random().toString(36).substring(2, 6).toUpperCase();
 
-    let newSku = `<span class="math-inline">\{groupPrefix\}\-</span>{productInitials}-${generateUniqueSuffix()}`;
+    // <<-- CORREÇÃO 1: Usando template literal para criar o SKU -->>
+    let newSku = `${groupPrefix}-${productInitials}-${generateUniqueSuffix()}`;
 
     let isUnique = false;
     let counter = 0;
@@ -76,7 +75,8 @@ const generateSku = async (nomeProduto, idGrupo) => {
             if (existingSkuRows.length === 0) {
                 isUnique = true;
             } else {
-                newSku = `<span class="math-inline">\{groupPrefix\}\-</span>{productInitials}-${generateUniqueSuffix()}`;
+                // <<-- CORREÇÃO 2: Gerando novo SKU corretamente no loop -->>
+                newSku = `${groupPrefix}-${productInitials}-${generateUniqueSuffix()}`;
                 counter++;
             }
         } catch (dbError) {
@@ -86,7 +86,8 @@ const generateSku = async (nomeProduto, idGrupo) => {
     }
 
     if (!isUnique) {
-        newSku = `<span class="math-inline">\{groupPrefix\}\-</span>{productInitials}-${Date.now().toString().slice(-6)}`;
+        // <<-- CORREÇÃO 3: Gerando SKU de fallback corretamente -->>
+        newSku = `${groupPrefix}-${productInitials}-${Date.now().toString().slice(-6)}`;
         console.warn(`SKU gerado após múltiplas colisões: ${newSku}`);
     }
 
@@ -97,11 +98,8 @@ export const listarProdutos = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
-
-    // <<--- MUDANÇA AQUI: EXTRAINDO codigo_barras DO req.query ---
     const { nome_produto, id_grupo, id_fornecedor, codigo_barras } = req.query;
     const values = [];
-    // <<--- MUDANÇA AQUI: PASSANDO codigo_barras PARA buildWhereClause ---
     const whereClause = buildWhereClause({ nome_produto, id_grupo, id_fornecedor, codigo_barras }, values);
 
     try {
@@ -144,7 +142,20 @@ export const listarProdutosUnicos = async (req, res) => {
 
     const { nome_produto, id_grupo } = req.query;
     const values = [];
-    const whereClause = buildWhereClause({ nome_produto, id_grupo }, values); // Note: this buildWhereClause is local, not the general one above.
+    // Esta função buildWhereClause é local e diferente da de cima, mantendo seu código.
+    const buildWhereClause = (filters, params) => {
+        const clauses = ['p.ativo = TRUE'];
+        if (filters.id_grupo) {
+            clauses.push('p.id_grupo = ?');
+            params.push(parseInt(filters.id_grupo, 10));
+        }
+        if (filters.nome_produto) {
+            clauses.push('p.nome_produto LIKE ?');
+            params.push(`%${filters.nome_produto}%`);
+        }
+        return clauses.length > 1 ? 'WHERE ' + clauses.join(' AND ') : 'WHERE p.ativo = TRUE';
+    };
+    const whereClause = buildWhereClause({ nome_produto, id_grupo }, values);
 
     try {
         const [countResult] = await pool.query(
@@ -190,8 +201,6 @@ export const criarProduto = async (req, res) => {
     }
 
     try {
-        // --- INÍCIO: VERIFICAÇÃO DE DUPLICIDADE (CRIAR) ---
-        // 1. Verificar por nome_produto existente (se for considerado único)
         const [existingByName] = await pool.query(
             `SELECT id_produto FROM Produtos WHERE nome_produto = ? AND ativo = TRUE`,
             [nome_produto]
@@ -200,7 +209,6 @@ export const criarProduto = async (req, res) => {
             return res.status(409).json({ message: 'Produto já cadastrado com este nome.' });
         }
 
-        // 2. Verificar por código_barras existente (se fornecido)
         if (codigo_barras) {
             const [existingByBarcode] = await pool.query(
                 `SELECT id_produto FROM Produtos WHERE codigo_barras = ? AND ativo = TRUE`,
@@ -210,20 +218,18 @@ export const criarProduto = async (req, res) => {
                 return res.status(409).json({ message: 'Produto já cadastrado com este código de barras.' });
             }
         }
-        // --- FIM: VERIFICAÇÃO DE DUPLICIDADE (CRIAR) ---
 
-        // Geração do SKU
         let generatedSku;
         try {
             generatedSku = await generateSku(nome_produto, id_grupo);
         } catch (skuError) {
             console.error('Erro ao gerar SKU:', skuError);
-            return res.status(500).json({ message: skuError.message || 'Erro interno ao gerar SKU do produto' }); // Mudado para 'message'
+            return res.status(500).json({ message: skuError.message || 'Erro interno ao gerar SKU do produto' });
         }
 
         const [result] = await pool.query(
             `INSERT INTO Produtos
-             (sku, nome_produto, id_grupo, valor_produto, codigo_barras)
+               (sku, nome_produto, id_grupo, valor_produto, codigo_barras)
              VALUES (?, ?, ?, ?, ?)`,
             [generatedSku, nome_produto, id_grupo || null, valor_produto, codigo_barras || null]
         );
@@ -232,28 +238,24 @@ export const criarProduto = async (req, res) => {
         if (id_fornecedor) {
             await pool.query(
                 `INSERT INTO ProdutoFornecedor
-                 (id_produto, id_fornecedor, condicoes_pagamento, preco)
+                   (id_produto, id_fornecedor, condicoes_pagamento, preco)
                  VALUES (?, ?, ?, ?)`,
                 [productId, id_fornecedor, condicoes_pagamento || null, valor_produto]
             );
         }
 
-        res.status(201).json({ message: 'Produto registrado com sucesso!', id_produto: productId, sku: generatedSku }); // Mudado para 'message'
+        res.status(201).json({ message: 'Produto registrado com sucesso!', id_produto: productId, sku: generatedSku });
     } catch (error) {
         console.error('Erro em criar produto', error);
-        // O ER_DUP_ENTRY aqui pode pegar SKU duplicado se o generateSku falhou em garantir unicidade,
-        // ou codigo_barras duplicado se ele não foi tratado acima.
         if (error.code === 'ER_DUP_ENTRY') {
-            // Tentar identificar qual campo causou a duplicação
-            if (error.sqlMessage.includes('sku')) { // Se a mensagem do erro SQL contém 'sku'
+            if (error.sqlMessage.includes('sku')) {
                 return res.status(409).json({ message: 'SKU duplicado. Tente novamente ou entre em contato com o suporte.' });
-            } else if (error.sqlMessage.includes('codigo_barras')) { // Se a mensagem do erro SQL contém 'codigo_barras'
+            } else if (error.sqlMessage.includes('codigo_barras')) {
                 return res.status(409).json({ message: 'Código de barras duplicado. Verifique os dados e tente novamente.' });
             }
-            // Fallback para outros tipos de ER_DUP_ENTRY
             return res.status(409).json({ message: 'Entrada duplicada. Verifique os dados e tente novamente.' });
         }
-        res.status(500).json({ message: 'Erro interno ao criar produto' }); // Mudado para 'message'
+        res.status(500).json({ message: 'Erro interno ao criar produto' });
     }
 };
 
@@ -289,12 +291,12 @@ export const atualizarProduto = async (req, res) => {
     const { id } = req.params;
     const dados = req.body;
     const {
-        sku, // Necessário para a verificação de duplicidade
-        nome_produto, // Necessário para a verificação de duplicidade
-        codigo_barras, // Necessário para a verificação de duplicidade
+        sku,
+        nome_produto,
+        codigo_barras,
         id_fornecedor,
         condicoes_pagamento
-    } = req.body; // Desestrutura também os campos que serão usados para verificação de duplicidade
+    } = req.body;
 
     const camposPermitidos = [
         'sku', 'nome_produto', 'id_grupo', 'valor_produto', 'codigo_barras'
@@ -314,8 +316,6 @@ export const atualizarProduto = async (req, res) => {
     }
 
     try {
-        // --- INÍCIO: VERIFICAÇÃO DE DUPLICIDADE (ATUALIZAR) ---
-        // 1. Verificar por nome_produto existente (que não seja o do próprio produto)
         if (nome_produto !== undefined) {
             const [existingByName] = await pool.query(
                 `SELECT id_produto FROM Produtos WHERE nome_produto = ? AND id_produto != ? AND ativo = TRUE`,
@@ -326,8 +326,7 @@ export const atualizarProduto = async (req, res) => {
             }
         }
 
-        // 2. Verificar por SKU existente (que não seja o do próprio produto)
-        if (sku !== undefined && sku) { // Apenas verifica se SKU foi fornecido
+        if (sku !== undefined && sku) {
             const [existingBySku] = await pool.query(
                 `SELECT id_produto FROM Produtos WHERE sku = ? AND id_produto != ? AND ativo = TRUE`,
                 [sku, id]
@@ -337,8 +336,7 @@ export const atualizarProduto = async (req, res) => {
             }
         }
 
-        // 3. Verificar por código_barras existente (que não seja o do próprio produto)
-        if (codigo_barras !== undefined && codigo_barras) { // Apenas verifica se código_barras foi fornecido
+        if (codigo_barras !== undefined && codigo_barras) {
             const [existingByBarcode] = await pool.query(
                 `SELECT id_produto FROM Produtos WHERE codigo_barras = ? AND id_produto != ? AND ativo = TRUE`,
                 [codigo_barras, id]
@@ -347,7 +345,6 @@ export const atualizarProduto = async (req, res) => {
                 return res.status(409).json({ message: 'Código de barras já cadastrado para outro produto ativo.' });
             }
         }
-        // --- FIM: VERIFICAÇÃO DE DUPLICIDADE (ATUALIZAR) ---
 
         const [result] = await pool.query(
             `UPDATE Produtos
@@ -356,7 +353,7 @@ export const atualizarProduto = async (req, res) => {
             [...values, id]
         );
         if (!result.affectedRows) {
-            return res.status(404).json({ message: 'Produto não encontrado, inativo ou nenhum dado foi alterado.' }); // Adicionado mensagem mais clara
+            return res.status(404).json({ message: 'Produto não encontrado, inativo ou nenhum dado foi alterado.' });
         }
 
         if (id_fornecedor) {
@@ -366,31 +363,26 @@ export const atualizarProduto = async (req, res) => {
                  WHERE id_produto = ? AND id_fornecedor = ? AND ativo = TRUE`,
                 [condicoes_pagamento || null, dados.valor_produto, id, id_fornecedor]
             );
-
             if (pfUpdateResult.affectedRows === 0) {
-                // Tenta reativar se inativo
                 const [pfReactivateResult] = await pool.query(
                     `UPDATE ProdutoFornecedor SET ativo = TRUE, data_atualizacao = CURRENT_TIMESTAMP
                      WHERE id_produto = ? AND id_fornecedor = ? AND ativo = FALSE`,
                     [id, id_fornecedor]
                 );
-
                 if (pfReactivateResult.affectedRows === 0) {
-                    // Se não reativou, insere como novo vínculo
                     await pool.query(
                         `INSERT INTO ProdutoFornecedor
-                         (id_produto, id_fornecedor, condicoes_pagamento, preco)
+                           (id_produto, id_fornecedor, condicoes_pagamento, preco)
                          VALUES (?, ?, ?, ?)`,
                         [id, id_fornecedor, condicoes_pagamento || null, dados.valor_produto]
                     );
                 }
             }
         } else if (dados.valor_produto !== undefined || condicoes_pagamento !== undefined) {
-            // Caso não seja fornecedor específico, mas valor/condição global do produto mudou
             await pool.query(
                 `UPDATE ProdutoFornecedor
                  SET condicoes_pagamento = ?, preco = ?, data_atualizacao = CURRENT_TIMESTAMP
-                 WHERE id_produto = ? AND ativo = TRUE LIMIT 1`, // LIMIT 1 para evitar múltiplos updates se houver mais de um fornecedor para o mesmo produto
+                 WHERE id_produto = ? AND ativo = TRUE LIMIT 1`,
                 [condicoes_pagamento || null, dados.valor_produto, id]
             );
         }
@@ -398,7 +390,6 @@ export const atualizarProduto = async (req, res) => {
         res.json({ message: 'Produto atualizado com sucesso' });
     } catch (error) {
         console.error('Erro em atualizar produto', error);
-        // O ER_DUP_ENTRY aqui pode pegar SKU ou código de barras duplicado, se a verificação acima não for 100% abrangente
         if (error.code === 'ER_DUP_ENTRY') {
             if (error.sqlMessage.includes('sku')) {
                 return res.status(409).json({ message: 'SKU duplicado para outro produto. Verifique os dados e tente novamente.' });

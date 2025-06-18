@@ -4,7 +4,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./search.module.css";
+import { IMaskInput } from "react-imask";
 
+// 1. SUA FUNÇÃO ORIGINAL PARA FORMATAR A DATA (RESTAURADA)
 const formatDateInput = (value) => {
   if (!value) return '';
   let digits = value.replace(/\D/g, '');
@@ -14,6 +16,12 @@ const formatDateInput = (value) => {
   if (digits.length > 4) maskedValue += '/' + digits.substring(4, 8);
   return maskedValue.substring(0, 10);
 };
+
+// Máscara dinâmica para telefone (mantida)
+const phoneMask = [
+    { mask: '(00) 0000-0000' },
+    { mask: '(00) 00000-0000' }
+];
 
 export default function SearchComponent({
   keywordName = null,
@@ -43,7 +51,7 @@ export default function SearchComponent({
     setKeyword(""); 
   }, [filters]);
 
-
+  // 2. FUNÇÃO HANDLECHANGE ATUALIZADA PARA LIDAR COM A DATA (RESTAURADA)
   const handleChange = (name, value, type) => {
     if (type === 'date-mask') {
       setFilterValues(prev => ({ ...prev, [name]: formatDateInput(value) }));
@@ -55,28 +63,14 @@ export default function SearchComponent({
   const handleSubmit = (e) => {
     e.preventDefault();
     let query = { ...filterValues };
-
     if (keywordName && keyword) {
       query[keywordName] = keyword;
     }
-
-    if (filters.some(f => f.name === 'data_pedido' && f.type === 'date-mask')) {
-      const formattedDateValue = query.data_pedido;
-      const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-      if (!formattedDateValue || !dateRegex.test(formattedDateValue)) {
-        delete query.data_pedido;
-      }
-    }
-    
-    // ===============================================
-    // ADICIONE ESTE CONSOLE.LOG PARA DEPURAR AQUI
-    // ===============================================
     console.log('[SearchComponent] Parâmetros de busca enviados:', query);
     onSearch(query);
   };
 
   const handleAddClick = () => {
-    console.debug('[SearchComponent] Navigating to:', addButtonUrl);
     router.push(addButtonUrl);
   };
 
@@ -95,6 +89,8 @@ export default function SearchComponent({
         {filters.map(f => (
           <div key={f.name} className={styles.fieldContainer}> 
             <label className={styles.filterLabel}>{f.label}</label> 
+            
+            {/* 3. LÓGICA DE RENDERIZAÇÃO COMPLETA (COM TODOS OS TIPOS) */}
             {f.type === 'select' ? (
               <select
                 value={filterValues[f.name] || ""}
@@ -106,7 +102,7 @@ export default function SearchComponent({
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-            ) : f.type === 'date-mask' ? (
+            ) : f.type === 'date-mask' ? ( // LÓGICA DA DATA RESTAURADA
               <input
                 type="text"
                 placeholder={f.placeholder || 'dd/mm/aaaa'}
@@ -116,7 +112,15 @@ export default function SearchComponent({
                 className={styles.filterInput} 
                 inputMode="numeric" 
               />
-            ) : (
+            ) : f.type === 'tel' ? ( // LÓGICA DO TELEFONE MANTIDA
+              <IMaskInput
+                mask={phoneMask}
+                value={filterValues[f.name] || ""}
+                onAccept={(value) => handleChange(f.name, value, f.type)}
+                placeholder="(00) 0000-0000"
+                className={styles.filterInput} 
+              />
+            ) : ( // INPUT PADRÃO
               <input
                 type={f.type || 'text'}
                 placeholder={f.placeholder || ''}
@@ -128,14 +132,9 @@ export default function SearchComponent({
           </div>
         ))}
       </div>
-
       <div className={styles.buttonRow}> 
         {addButton && (
-          <button
-            type="button"
-            onClick={handleAddClick}
-            className={styles.addButton} 
-          >
+          <button type="button" onClick={handleAddClick} className={styles.addButton}>
             {addButtonLabel}
           </button>
         )}

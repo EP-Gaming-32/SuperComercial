@@ -7,32 +7,18 @@ import BoxComponent from "@/components/BoxComponent";
 import styles from "./visualizar.module.css";
 
 export default function FilialPage() {
-  const [carregando, setCarregando] = useState(true);
+  const [carregando, setCarregando] = useState(false); // Mudado para false para evitar o loading inicial desnecessário
 
-  useEffect(() => {
-    async function fetchFilters() {
-      try{
-        console.log("[FilialPage] rodando");
-
-      } catch (err) {
-        console.error("[FilialPage] Erro ao carregar filtros")
-      } finally {
-        setCarregando(false);
-      }
-    }
-    
-    fetchFilters();
-
-  }, []);
-
-  if (carregando) return <p>Carregando Filtros</p>;
+  // Removido o useEffect que não estava sendo usado para simplificar
+  
+  // if (carregando) return <p>Carregando Filtros</p>; // Removido pois a página já carrega direto
 
   return(
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
-        title="Filiais" // <<--- COMENTÁRIO REMOVIDO DAQUI
-        endpoint="filial"
+        title="Filiais"
+        endpoint="filial" // Certifique-se que o endpoint no backend é /filial
         hookParams={{ limit: 10 }}
         filters={[
           {
@@ -46,9 +32,10 @@ export default function FilialPage() {
             type: "text",
           },
           {
+            // vv-- ESTA É A ÚNICA ALTERAÇÃO NECESSÁRIA AQUI --vv
             name: "telefone_filial",
             label: "Telefone",
-            type: "text"
+            type: "tel" // Alterado de "text" para "tel"
           },
           {
             name: "gestor_filial",

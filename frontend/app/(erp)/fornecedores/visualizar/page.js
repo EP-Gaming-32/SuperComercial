@@ -1,67 +1,64 @@
-// app/(erp)/fornecedor/visualizar/page.js
+// app/(erp)/fornecedores/visualizar/page.js
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SearchPage from "@/components/searchPage/SearchPage";
 import BoxComponent from "@/components/BoxComponent";
 import styles from "./visualizar.module.css";
 
 export default function FornecedorPage() {
-  return(
+  return (
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
           title="Fornecedores"
           endpoint="fornecedores"
-          hookParams={{ limit: 10}}
-          // <<--- AQUI ESTÁ A ALTERAÇÃO DOS FILTROS ---
+          hookParams={{ limit: 10 }}
           filters={[
             {
-              name: "nome_fornecedor", // 1º - Nome do Fornecedor
+              name: "nome_fornecedor",
               label: "Fornecedor",
-              type: "text"
+              type: "text",
             },
             {
-              name: "cnpj_cpf", // 2º - CNPJ/CPF
+              name: "cnpj_cpf",
               label: "CNPJ/CPF",
               type: "text",
             },
             {
-              name: "email_fornecedor", // NOVO - Email
+              name: "email_fornecedor",
               label: "Email",
-              type: "text"
+              type: "text",
             },
             {
-              name: "telefone_fornecedor", // NOVO - Telefone
+              name: "telefone_fornecedor",
               label: "Telefone",
-              type: "text"
+              type: "tel", // Tipo corrigido para usar a máscara
             },
             {
-              name: "tipo_pessoa", // Mantido - Tipo
+              name: "tipo_pessoa",
               label: "Tipo",
               type: "select",
               options: [
-                { value: "Fisica", label: "Física"},
-                { value: "Juridica", label: "Jurídica"},
-              ]
+                { value: "Fisica", label: "Física" },
+                { value: "Juridica", label: "Jurídica" },
+              ],
             },
-            // <<--- REMOVIDO: O FILTRO DE ID ---
           ]}
-          // <<------------------------------------------
           keywordName={null}
           keywordPlaceholder="buscar fornecedor"
           detailRoute="/fornecedores/detalhes"
           idField="id_fornecedor"
           showFields={[
-            { value: "nome_fornecedor", label: "Fornecedor"},
-            { value: "cnpj_cpf", label: "CNPJ/CPF"},
-            { value: "email_fornecedor", label: "Email"},
-            { value: "telefone_fornecedor", label: "Telefone"},
+            { value: "nome_fornecedor", label: "Fornecedor" },
+            { value: "cnpj_cpf", label: "CNPJ/CPF" },
+            { value: "email_fornecedor", label: "Email" },
+            { value: "telefone_fornecedor", label: "Telefone" },
           ]}
           addButtonUrl="/fornecedores/registrar"
           addButtonLabel="Registrar Fornecedor"
         />
       </BoxComponent>
     </div>
-  )
+  );
 }
