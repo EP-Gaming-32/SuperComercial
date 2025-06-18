@@ -1,11 +1,12 @@
+// components/searchPage/SearchPage.js
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import SearchComponent from "@/components/SearchComponent";
-import ShowComponent from "@/components/ShowComponent";
-import PaginationComponent from "@/components/PaginationComponent";
-import { useSearch } from "../../hooks/useSearch";
+import SearchComponent from "@/components/SearchComponent"; // Caminho do seu componente SearchComponent
+import ShowComponent from "@/components/ShowComponent"; // Caminho do seu componente ShowComponent
+import PaginationComponent from "@/components/PaginationComponent"; // Caminho do seu componente PaginationComponent
+import { useSearch } from "../../hooks/useSearch"; // Caminho do seu hook useSearch
 
 export default function SearchPage({
   title,
@@ -32,8 +33,12 @@ export default function SearchPage({
   });
 
   const handleSearch = (params) => {
+    // ===============================================
+    // ADICIONADO: CONSOLE.LOG PARA DEPURAR AQUI
+    // ===============================================
+    console.log('[SearchPage] Parâmetros recebidos para useSearch:', params);
     setSearchParams(params);
-    setPage(1);
+    setPage(1); // Resetar para a primeira página em uma nova busca
   };
 
   const handleDetail = (item) => {
@@ -52,8 +57,8 @@ export default function SearchPage({
         keywordName={keywordName}
         keywordPlaceholder={keywordPlaceholder}
         filters={filters}
-        onSearch={handleSearch}
-        addButton
+        onSearch={handleSearch} // Passa o handler de busca para SearchComponent
+        addButton // shorthand para addButton={true}
         addButtonLabel={addButtonLabel}
         addButtonUrl={addButtonUrl}
       />
@@ -68,7 +73,7 @@ export default function SearchPage({
               data={results}
               fields={showFields}
               onItemClick={handleDetail}
-              endpoint={endpoint} // repassa endpoint para ShowComponent
+              endpoint={endpoint}
               idField={idField}
             />
           ) : (

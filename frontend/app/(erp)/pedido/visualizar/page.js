@@ -1,9 +1,10 @@
+// app/pedido/page.js
 "use client";
 
 import React, { useState, useEffect } from "react";
-import SearchPage from "@/components/searchPage/SearchPage";
-import BoxComponent from "@/components/BoxComponent";
-import styles from "./visualizar.module.css";
+import SearchPage from "@/components/searchPage/SearchPage"; // Confirme este caminho
+import BoxComponent from "@/components/BoxComponent"; // Confirme este caminho
+import styles from "./visualizar.module.css"; // Seus estilos para esta página específica
 
 export default function PedidoPage() {
   const [filiais, setFiliais] = useState([]);
@@ -61,7 +62,7 @@ export default function PedidoPage() {
             {
               name: "data_pedido",
               label: "Data do Pedido",
-              type: "text",
+              type: "date-mask", // Continua como 'date-mask'
             },
           ]}
           keywordName={null}

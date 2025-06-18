@@ -2,23 +2,35 @@
 
 "use client";
 import React from "react";
-import styles from "./ItemComponent.module.css";
+import styles from "./ItemComponent.module.css"; // Seus estilos para ItemComponent
 
-// Função para formatar a data
+// ===============================================
+// FUNÇÃO PARA FORMATAR A DATA PARA EXIBIÇÃO
+// ===============================================
+// Esta função agora é mais robusta para lidar com datas no formato ISO 8601 (vindo da API)
 const formatarData = (dataString) => {
     if (!dataString) return '';
 
-    // Tenta remover tags HTML se a string já vier com elas (para evitar problemas como o "math-inline")
+    // Tenta remover tags HTML (para segurança e limpeza)
     const cleanDataString = typeof dataString === 'string' 
                             ? dataString.replace(/<[^>]*>?/gm, '') 
                             : dataString;
     
+    // Tenta parsear a string como um objeto Date
     const dataObjeto = new Date(cleanDataString);
 
+    // Verifica se a data é válida (isNaN(getTime()) é a forma canônica de verificar validade de Date)
     if (isNaN(dataObjeto.getTime())) {
-        return 'Data Inválida';
+        // Se a data for inválida, e ela tem o formato dd/mm/yyyy (do input de busca), exibe como está.
+        // Isso cobre o caso em que a busca retorna algo que não é uma data válida ainda.
+        const dateRegexWithSlash = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+        if (typeof cleanDataString === 'string' && dateRegexWithSlash.test(cleanDataString)) {
+            return cleanDataString;
+        }
+        return 'Data Inválida'; // Se não conseguir parsear e não for dd/mm/yyyy, é inválida
     }
 
+    // Se for uma data válida, formata para DD/MM/YYYY
     const dia = String(dataObjeto.getUTCDate()).padStart(2, '0');
     const mes = String(dataObjeto.getUTCMonth() + 1).padStart(2, '0'); 
     const ano = dataObjeto.getUTCFullYear();
@@ -27,7 +39,7 @@ const formatarData = (dataString) => {
 };
 
 
-export default function ItemComponent({ item, fields, onClick, endpoint }) {
+export default function ItemComponent({ item, fields, onClick, endpoint, idField }) {
     const handleDelete = async (e) => {
         e.stopPropagation();
 
@@ -36,9 +48,8 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
         );
         if (!confirmDelete) return;
 
-        const idField = Object.keys(item).find((key) => key.startsWith("id_"));
-        if (!idField) {
-            alert("ID não identificado para inativação.");
+        if (!idField || !item[idField]) {
+            alert("ID do item não identificado para inativação.");
             return;
         }
 
@@ -61,8 +72,12 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
                 console.error("Erro detalhado do servidor:", errorText);
 
                 if (contentType?.includes("application/json")) {
-                    const data = JSON.parse(errorText);
-                    alert(data.message || "Erro ao inativar.");
+                    try {
+                        const data = JSON.parse(errorText);
+                        alert(data.message || "Erro ao inativar.");
+                    } catch (jsonError) {
+                        alert("Erro inesperado no servidor (JSON inválido). Veja console.");
+                    }
                 } else {
                     alert("Erro inesperado no servidor (não JSON). Veja console.");
                 }
@@ -88,10 +103,10 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
                     >
                         <span className={styles.fieldLabel}>{label}:</span>
                         <span className={styles.fieldValue}>
-                            {/* ATUALIZADO: Inclui 'data_pedido' E 'data_ordem' para formatação */}
-                            {(key === 'data_pedido' || key === 'data_ordem') // <--- CONDIÇÃO ATUALIZADA AQUI!
-                                ? formatarData(fieldValue) // Se for um dos campos de data, formata
-                                : fieldValue} {/* Caso contrário, exibe o valor normal */}
+                            {/* Formata a data se o campo for data_pedido ou data_ordem */}
+                            {(key === 'data_pedido' || key === 'data_ordem')
+                                ? formatarData(fieldValue)
+                                : fieldValue}
                         </span>
                     </div>
                 );
