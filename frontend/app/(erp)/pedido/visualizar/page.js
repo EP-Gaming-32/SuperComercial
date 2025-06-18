@@ -1,9 +1,10 @@
 // app/pedido/page.js
-"use client";
+"use client"; // Esta linha é crucial e deve ser a primeira no arquivo
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; // Adicionado useRef
 import SearchPage from "@/components/searchPage/SearchPage"; // Confirme este caminho
 import BoxComponent from "@/components/BoxComponent"; // Confirme este caminho
+import CustomAlert from "@/components/CustomAlert"; // <<<<< CAMINHO CORRIGIDO AQUI: Removida a subpasta extra <<<<<
 import styles from "./visualizar.module.css"; // Seus estilos para esta página específica
 
 export default function PedidoPage() {
@@ -14,6 +15,10 @@ export default function PedidoPage() {
     { value: "Cancelado", label: "Cancelado" },
   ]);
   const [carregando, setCarregando] = useState(true);
+  const [showAlert, setShowAlert] = useState(false); // Estado para controlar a visibilidade do alerta
+  const [alertMessage, setAlertMessage] = useState(""); // Estado para a mensagem do alerta
+
+  const searchPageRef = useRef(null); // <<<<< NOVO: Referência para o SearchPage
 
   useEffect(() => {
     async function fetchFilters() {
@@ -34,12 +39,36 @@ export default function PedidoPage() {
     fetchFilters();
   }, []);
 
+  // Função para lidar com erros de busca reportados pelo SearchPage/useSearch
+  const handleSearchError = (message) => {
+    console.log('[PedidoPage] handleSearchError chamado. Mensagem:', message);
+    setAlertMessage(message);
+    setAlertMessage(message); // Definir a mensagem de alerta
+    setShowAlert(true); // Mostrar o alerta
+    console.log('[PedidoPage] showAlert após handleSearchError:', true);
+  };
+
+  // Função para fechar o alerta
+  const closeAlert = () => {
+    console.log('[PedidoPage] closeAlert chamado.');
+    setShowAlert(false);
+    setAlertMessage(""); // Limpa a mensagem do alerta
+    console.log('[PedidoPage] showAlert após closeAlert:', false);
+
+    // <<<<< NOVO: Quando o alerta é fechado, "reinicia" o SearchPage
+    // para que ele não tente um novo fetch automático imediato.
+    if (searchPageRef.current && searchPageRef.current.resetSearch) {
+      searchPageRef.current.resetSearch();
+    }
+  };
+
   if (carregando) return <p>Carregando filtros...</p>;
 
   return (
     <div className={styles.container}>
       <BoxComponent>
         <SearchPage
+          ref={searchPageRef} // <<<<< NOVO: Atribui a ref ao SearchPage
           title="Pedidos de Reposição"
           endpoint="pedidoFilial"
           hookParams={{ limit: 10 }}
@@ -76,8 +105,14 @@ export default function PedidoPage() {
           ]}
           addButtonUrl="/pedido/registrar"
           addButtonLabel="Registrar Pedido"
+          onSearchError={handleSearchError} // Passa a função de tratamento de erro para SearchPage
         />
       </BoxComponent>
+
+      {/* Renderiza o CustomAlert se showAlert for true */}
+      {showAlert && (
+        <CustomAlert message={alertMessage} onClose={closeAlert} />
+      )}
     </div>
   );
 }
