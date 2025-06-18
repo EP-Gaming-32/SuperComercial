@@ -4,27 +4,50 @@
 import React from "react";
 import styles from "./ItemComponent.module.css";
 
-// Função para formatar a data
-const formatarData = (dataString) => {
+// Função para formatar a data (já existe)
+const formatarData = (dataString) => { 
     if (!dataString) return '';
-
-    // Tenta remover tags HTML se a string já vier com elas (para evitar problemas como o "math-inline")
-    const cleanDataString = typeof dataString === 'string' 
-                            ? dataString.replace(/<[^>]*>?/gm, '') 
-                            : dataString;
-    
+    const cleanDataString = typeof dataString === 'string' ? dataString.replace(/<[^>]*>?/gm, '') : dataString;
     const dataObjeto = new Date(cleanDataString);
-
-    if (isNaN(dataObjeto.getTime())) {
-        return 'Data Inválida';
-    }
-
+    if (isNaN(dataObjeto.getTime())) { return 'Data Inválida'; }
     const dia = String(dataObjeto.getUTCDate()).padStart(2, '0');
-    const mes = String(dataObjeto.getUTCMonth() + 1).padStart(2, '0'); 
+    const mes = String(dataObjeto.getUTCMonth() + 1).padStart(2, '0');
     const ano = dataObjeto.getUTCFullYear();
-
     return `${dia}/${mes}/${ano}`;
 };
+
+// Função para formatar telefone (já existe)
+const formatTelefone = (value) => {
+  if (!value) return '';
+  const cleanValue = value.replace(/\D/g, ''); 
+  if (cleanValue.length === 0) return '';
+  if (cleanValue.length <= 10) { 
+    return cleanValue
+      .replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d)/, '$1-$2');
+  } else { 
+    return cleanValue
+      .replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d{4})$/, '$1-$2');
+  }
+};
+
+// <<--- NOVA FUNÇÃO PARA FORMATAR MOEDA ---
+const formatCurrency = (value) => {
+    // Garante que o valor é um número. Se for nulo, indefinido, ou não um número, retorna R$ 0,00
+    if (value === null || value === undefined || isNaN(Number(value))) {
+        return 'R$ 0,00'; 
+    }
+    const numValue = Number(value);
+    // Usa Intl.NumberFormat para formatação robusta de moeda no padrão brasileiro
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',   // Estilo de moeda
+        currency: 'BRL',     // Código da moeda para Real Brasileiro
+        minimumFractionDigits: 2, // Garante pelo menos 2 casas decimais
+        maximumFractionDigits: 2, // Garante no máximo 2 casas decimais
+    }).format(numValue);
+};
+// <<--------------------------------------------------
 
 
 export default function ItemComponent({ item, fields, onClick, endpoint }) {
@@ -79,7 +102,24 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
                 const key = typeof fieldObj === "string" ? fieldObj : fieldObj.value;
                 const label = typeof fieldObj === "string" ? fieldObj : fieldObj.label;
 
-                const fieldValue = item[key]; // Valor bruto do campo
+                const fieldValue = item[key];
+
+                let displayedValue = fieldValue; // Valor a ser exibido, inicialmente o bruto
+
+                // <<--- APLICA FORMATAÇÃO CONDICIONAL PARA DATAS, TELEFONES E MOEDA ---
+                // Para datas
+                if (key === 'data_pedido' || key === 'data_ordem' || key === 'data_movimentacao') { 
+                    displayedValue = formatarData(fieldValue);
+                } 
+                // Para números de telefone
+                else if (key === 'telefone_fornecedor' || key === 'telefone_filial') { 
+                    displayedValue = formatTelefone(fieldValue);
+                }
+                // Para valores monetários (Preço de Venda, por enquanto)
+                else if (key === 'valor_produto') { 
+                    displayedValue = formatCurrency(fieldValue);
+                }
+                // <<-------------------------------------------------------------
 
                 return (
                     <div
@@ -88,10 +128,7 @@ export default function ItemComponent({ item, fields, onClick, endpoint }) {
                     >
                         <span className={styles.fieldLabel}>{label}:</span>
                         <span className={styles.fieldValue}>
-                            {/* ATUALIZADO: Inclui 'data_pedido' E 'data_ordem' para formatação */}
-                            {(key === 'data_pedido' || key === 'data_ordem') // <--- CONDIÇÃO ATUALIZADA AQUI!
-                                ? formatarData(fieldValue) // Se for um dos campos de data, formata
-                                : fieldValue} {/* Caso contrário, exibe o valor normal */}
+                            {displayedValue}
                         </span>
                     </div>
                 );
