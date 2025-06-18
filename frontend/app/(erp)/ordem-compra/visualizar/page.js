@@ -1,18 +1,22 @@
-'use client';
+// app/ordem-compra/page.js (ou o caminho correto do seu arquivo)
+"use client";
 
 import React, { useState, useEffect } from "react";
 import SearchPage from "@/components/searchPage/SearchPage";
 import BoxComponent from "@/components/BoxComponent";
-import styles from "./visualizar.module.css";
+import CustomAlert from "@/components/CustomAlert"; // Importar CustomAlert
+import styles from "./visualizar.module.css"; // Seus estilos para esta página específica
 
 export default function SearchPageOrdemCompra() {
   const [fornecedores, setFornecedores] = useState([]);
   const [statusOptions] = useState([
     { value: "Pendente", label: "Pendente" },
-    { value: "Recebido", label: "Recebido" },
+    { value: "Recebido", label: "Recebido" }, // Notei "Recebido" aqui, no Pedido era "Atendido"
     { value: "Cancelado", label: "Cancelado" },
   ]);
   const [carregando, setCarregando] = useState(true);
+  const [showAlert, setShowAlert] = useState(false); // Novo estado para controlar a visibilidade do alerta
+  const [alertMessage, setAlertMessage] = useState(""); // Novo estado para a mensagem do alerta
 
   useEffect(() => {
     async function fetchFornecedores() {
@@ -33,6 +37,18 @@ export default function SearchPageOrdemCompra() {
     }
     fetchFornecedores();
   }, []);
+
+  // Função para lidar com erros de busca reportados pelo SearchPage/useSearch
+  const handleSearchError = (message) => {
+    setAlertMessage(message);
+    setShowAlert(true);
+  };
+
+  // Função para fechar o alerta
+  const closeAlert = () => {
+    setShowAlert(false);
+    setAlertMessage("");
+  };
 
   if (carregando) return <p>Carregando filtros...</p>;
 
@@ -59,7 +75,7 @@ export default function SearchPageOrdemCompra() {
             {
               name: "data_ordem",
               label: "Data da Ordem",
-              type: "text",
+              type: "date-mask", // <<<<< ALTERADO PARA 'date-mask'
             },
           ]}
           keywordName={null}
@@ -74,8 +90,14 @@ export default function SearchPageOrdemCompra() {
           ]}
           addButtonUrl="/ordem-compra/registrar"
           addButtonLabel="Registrar Ordem"
+          onSearchError={handleSearchError} // <<<<< PASSA A FUNÇÃO DE ERRO
         />
       </BoxComponent>
+
+      {/* Renderiza o CustomAlert se showAlert for true */}
+      {showAlert && (
+        <CustomAlert message={alertMessage} onClose={closeAlert} />
+      )}
     </div>
   );
 }
