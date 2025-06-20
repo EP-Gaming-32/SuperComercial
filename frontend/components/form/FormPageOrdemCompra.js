@@ -27,7 +27,7 @@ export default function FormPageOrdemCompra({
     data_entrega_prevista: '',
     observacao: '',
     status: mode === 'create' ? 'Pendente' : '',
-    filial_destino: ''
+    id_filial: ''
   });
 
   const [itensOC, setItensOC] = useState([]);
@@ -46,7 +46,7 @@ export default function FormPageOrdemCompra({
             data_entrega_prevista: data.data_entrega_prevista?.split('T')[0] || '',
             observacao: data.observacao || '',
             status: data.status || 'Pendente',
-            filial_destino: data.filial_destino?.toString() || ''
+            id_filial: data.id_filial?.toString() || ''
           });
           setItensOC(data.itens.map(item => ({
             id_produto: item.id_produto,
@@ -122,7 +122,7 @@ export default function FormPageOrdemCompra({
       return;
     }
 
-    if (formData.status === 'Recebido na Filial' && !formData.filial_destino) {
+    if (formData.status === 'Recebido na Filial' && !formData.id_filial) {
       alert('Selecione a filial de destino.');
       return;
     }
@@ -130,8 +130,8 @@ export default function FormPageOrdemCompra({
     // ✅ Prepara payload
     const payload = {
       ...formData,
-      filial_destino: formData.filial_destino
-        ? parseInt(formData.filial_destino, 10)
+      id_filial: formData.id_filial
+        ? parseInt(formData.id_filial, 10)
         : null,
       itens: itensOC,
       valor_total: calcularValorTotal()
@@ -189,8 +189,8 @@ export default function FormPageOrdemCompra({
         <div className={styles.fieldGroup}>
           <label>Filial de Destino*</label>
           <select
-            value={formData.filial_destino}
-            onChange={e => handleFormChange('filial_destino', e.target.value)}
+            value={formData.id_filial}
+            onChange={e => handleFormChange('id_filial', e.target.value)}
             required
           >
             <option value="">Selecione...</option>
