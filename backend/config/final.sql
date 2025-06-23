@@ -334,3 +334,9 @@ DELIMITER ;
 
 ALTER TABLE ProdutoFornecedor
 MODIFY COLUMN prazo_entrega INT NULL;
+
+ALTER TABLE MovimentacaoEstoque
+  ADD COLUMN id_forma_pagamento INT NULL AFTER quantidade,
+  ADD CONSTRAINT fk_mov_fpag FOREIGN KEY (id_forma_pagamento)
+    REFERENCES FormaPagamento(id_forma_pagamento)
+    ON DELETE SET NULL;
