@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageEstoqueLote from "@/components/form/FormPageEstoqueLote";
-import CustomAlert from "@/components/CustomAlert"; // <<--- Importe o componente CustomAlert
+import CustomAlert from "@/components/CustomAlert"; 
 
 export default function DetalhesEstoquePage() {
   const { id } = useParams();
@@ -15,13 +15,11 @@ export default function DetalhesEstoquePage() {
   const [fornecedores, setFornecedores] = useState([]);
   const [filiais, setFiliais] = useState([]);
 
-  // <<--- NOVOS ESTADOS PARA O MODAL DE ALERTA E CARREGAMENTO ---
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false); 
-  const [loading, setLoading] = useState(true); // Controla o carregamento principal dos dados do produto
-  const [error, setError] = useState(null);     // Controla erros de carregamento
-  // <<---------------------------------------------------------
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null);     
 
   useEffect(() => {
     if (!id) {
@@ -30,10 +28,9 @@ export default function DetalhesEstoquePage() {
         return;
     }
 
-    // Função assíncrona para buscar todos os dados necessários
     async function fetchAllData() {
-        setLoading(true); // Inicia o loading
-        setError(null);   // Limpa erros anteriores
+        setLoading(true); 
+        setError(null);   
         try {
             // Busca dados do estoque principal e outros dados em paralelo
             const [estoqueRes, produtosRes, fornecedoresRes, filiaisRes] = await Promise.all([
@@ -55,20 +52,47 @@ export default function DetalhesEstoquePage() {
                 filiaisRes.json()
             ]);
 
-            setFormData(estoqueJson.data ?? estoqueJson); // Ajuste conforme a estrutura de resposta da API
-            setProdutos(produtosJson.data ?? []);
-            setFornecedores(fornecedoresJson.data ?? []);
-            setFiliais(filiaisJson.data ?? []);
+            setFormData(estoqueJson.data ?? estoqueJson);
+            
+            // <<--- MUDANÇA AQUI: FILTRAR PARA GARANTIR IDS ÚNICOS (PRODUTOS) ---
+            const uniqueProdutos = [];
+            const seenProductIds = new Set();
+            (produtosJson.data ?? []).forEach(p => {
+                if (!seenProductIds.has(p.id_produto)) {
+                    uniqueProdutos.push(p);
+                    seenProductIds.add(p.id_produto);
+                }
+            });
+            setProdutos(uniqueProdutos);
+
+            // <<--- MUDANÇA AQUI: FILTRAR PARA GARANTIR IDS ÚNICOS (FORNECEDORES) ---
+            const uniqueFornecedores = [];
+            const seenFornecedorIds = new Set();
+            (fornecedoresJson.data ?? []).forEach(f => {
+                if (!seenFornecedorIds.has(f.id_fornecedor)) {
+                    uniqueFornecedores.push(f);
+                    seenFornecedorIds.add(f.id_fornecedor);
+                }
+            });
+            setFornecedores(uniqueFornecedores);
+
+            // <<--- MUDANÇA AQUI: FILTRAR PARA GARANTIR IDS ÚNICOS (FILIAIS) ---
+            const uniqueFiliais = [];
+            const seenFilialIds = new Set();
+            (filiaisJson.data ?? []).forEach(f => {
+                if (!seenFilialIds.has(f.id_filial)) {
+                    uniqueFiliais.push(f);
+                    seenFilialIds.add(f.id_filial);
+                }
+            });
+            setFiliais(uniqueFiliais);
+            // <<--- FIM DAS MUDANÇAS ---
 
         } catch (err) {
             console.error("DetalhesEstoquePage: Erro ao carregar dados:", err);
             setError(err.message || "Não foi possível carregar os dados necessários.");
-            // Opcional: exibir o erro de carregamento no CustomAlert também
-            // setAlertMessage("Erro ao carregar dados: " + err.message);
-            // setAlertSuccess(false);
-            // setShowAlert(true);
         } finally {
-            setLoading(false); // Finaliza o loading
+            setLoading(false);
         }
     }
 
@@ -76,6 +100,7 @@ export default function DetalhesEstoquePage() {
   }, [id]);
 
   const handleUpdate = async (data) => {
+    setLoading(true); 
     try {
       const res = await fetch(`http://localhost:5000/estoque/${id}`, {
         method: "PUT",
@@ -86,30 +111,26 @@ export default function DetalhesEstoquePage() {
         const errorData = await res.json();
         throw new Error(errorData.message || "Erro desconhecido na atualização.");
       }
-      // <<--- SUBSTITUIÇÃO DO alert() para sucesso ---
       setAlertMessage("Estoque atualizado com sucesso!");
       setAlertSuccess(true);
       setShowAlert(true);
-      // router.push("/estoque/visualizar"); // <<--- REMOVIDO DAQUI, SERÁ FEITO APÓS FECHAR O MODAL
     } catch (err) {
       console.error(err);
-      // <<--- SUBSTITUIÇÃO DO alert() para erro ---
       setAlertMessage("Erro: " + err.message);
       setAlertSuccess(false);
       setShowAlert(true);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // <<--- NOVA FUNÇÃO PARA FECHAR O MODAL E REDIRECIONAR ---
   const handleCloseAlert = () => {
-    setShowAlert(false); // Fecha o modal
-    if (alertSuccess) { // Se o alerta foi de sucesso, então redireciona
+    setShowAlert(false); 
+    if (alertSuccess) { 
       router.push('/estoque/visualizar');
     }
   };
-  // <<----------------------------------------------------
 
-  // Mensagens de carregamento e erro
   if (loading) {
       return (
           <BoxComponent>
@@ -129,7 +150,6 @@ export default function DetalhesEstoquePage() {
       );
   }
 
-  // Se não estiver carregando e não tiver erro, mas productData ainda for null/undefined
   if (!formData) return <p>Estoque não encontrado ou dados ausentes.</p>; 
 
   return (
@@ -148,14 +168,12 @@ export default function DetalhesEstoquePage() {
         />
       </BoxComponent>
 
-      {/* <<--- RENDERIZAÇÃO CONDICIONAL DO MODAL CUSTOMIZADO --- */}
       {showAlert && (
         <CustomAlert 
           message={alertMessage} 
           onClose={handleCloseAlert} 
         />
       )}
-      {/* <<---------------------------------------------------- */}
     </div>
   );
 }
