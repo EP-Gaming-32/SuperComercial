@@ -5,6 +5,7 @@ import React from "react";
 import SearchPage from "@/components/searchPage/SearchPage";
 import BoxComponent from "@/components/BoxComponent";
 import styles from "./visualizar.module.css";
+import { formatCpfCnpj } from "@/utils/formatters";
 
 export default function FornecedorPage() {
   return (
