@@ -175,14 +175,25 @@ export const listarDetalhesOrdemCompra = async (req, res) => {
     if (!ordemRows.length) return res.status(404).json({ message: 'Ordem não encontrada' });
     const ordem = ordemRows[0];
 
-    // 2) Buscar itens da ordem
+    // 2) Buscar itens da ordem + vínculo em ProdutoFornecedor
     const [itensRows] = await pool.query(
-      `SELECT ioc.id_item_oc AS id, ioc.id_produto, p.nome_produto,
-              ioc.id_fornecedor, f.nome_fornecedor,
-              ioc.quantidade, ioc.preco_unitario
+      `SELECT
+         ioc.id_item_oc    AS id,
+         ioc.id_produto,
+         p.nome_produto,
+         ioc.id_fornecedor,
+         f.nome_fornecedor,
+         ioc.quantidade,
+         ioc.preco_unitario,
+         pf.id_produtoFornecedor AS id_produto_fornecedor,
+         pf.prazo_entrega
        FROM ItensOrdemCompra ioc
-       JOIN Produtos p ON p.id_produto = ioc.id_produto
+       JOIN Produtos p   ON p.id_produto = ioc.id_produto
        JOIN Fornecedor f ON f.id_fornecedor = ioc.id_fornecedor
+       LEFT JOIN ProdutoFornecedor pf
+         ON pf.id_produto   = ioc.id_produto
+        AND pf.id_fornecedor = ioc.id_fornecedor
+        AND pf.ativo = TRUE
        WHERE ioc.id_ordem_compra = ?`,
       [id]
     );
@@ -196,7 +207,7 @@ export const listarDetalhesOrdemCompra = async (req, res) => {
       [id]
     );
 
-    // 4) Montar e enviar resposta
+    // 4) Retornar
     res.json({
       data: {
         ...ordem,
@@ -224,19 +235,22 @@ export const criarOrdemCompleta = async (req, res) => {
   try {
     await conn.beginTransaction();
 
+    // calcula valor total
     const valor_total = itens.reduce(
       (sum, i) => sum + i.preco_unitario * i.quantidade,
       0
     );
 
+    // insere ordem
     const [ordemResult] = await conn.query(
       `INSERT INTO OrdemCompra
-        (data_ordem, data_entrega_prevista, valor_total, status, observacao)
-      VALUES (?, ?, ?, 'Pendente', ?)`,
+         (data_ordem, data_entrega_prevista, valor_total, status, observacao)
+       VALUES (?, ?, ?, 'Pendente', ?)`,
       [data_ordem, data_entrega_prevista, valor_total, observacao]
     );
     const id_ordem = ordemResult.insertId;
 
+    // vincula pedidos
     for (const id_ped of pedidos_filial) {
       await conn.query(
         `INSERT INTO OrdemCompraPedidoFilial (id_ordem_compra, id_pedido_filial)
@@ -245,19 +259,21 @@ export const criarOrdemCompleta = async (req, res) => {
       );
     }
 
-    for (const { id_produto, id_fornecedor: itemFornecedor, quantidade, preco_unitario } of itens) {
-      const [pfRes] = await conn.query(
-        `INSERT INTO ProdutoFornecedor (id_produto, id_fornecedor, preco, ativo)
+    // insere fornecedores e itens
+    for (const { id_produto, id_fornecedor, quantidade, preco_unitario } of itens) {
+      // grava vínculo em ProdutoFornecedor (histórico)
+      await conn.query(
+        `INSERT INTO ProdutoFornecedor
+           (id_produto, id_fornecedor, preco, ativo)
          VALUES (?, ?, ?, TRUE)`,
-        [id_produto, itemFornecedor, preco_unitario]
+        [id_produto, id_fornecedor, preco_unitario]
       );
-      const id_pf = pfRes.insertId;
-
+      // insere item de ordem apontando para id_fornecedor
       await conn.query(
         `INSERT INTO ItensOrdemCompra
-           (id_ordem_compra, id_produto, id_produto_fornecedor, quantidade, preco_unitario)
+           (id_ordem_compra, id_produto, id_fornecedor, quantidade, preco_unitario)
          VALUES (?, ?, ?, ?, ?)`,
-        [id_ordem, id_produto, id_pf, quantidade, preco_unitario]
+        [id_ordem, id_produto, id_fornecedor, quantidade, preco_unitario]
       );
     }
 
