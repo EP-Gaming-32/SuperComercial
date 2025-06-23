@@ -109,15 +109,15 @@
   font-weight: 400;
 }
 
-/* Grid de Relatórios */
+/* Grid de Relatórios - Layout Horizontal */
 .dashboardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   width: 100%;
 }
 
-/* Cards */
+/* Cards - Layout Horizontal */
 .card {
   background: white;
   border-radius: 16px;
@@ -126,6 +126,9 @@
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  width: 100%;
+  min-height: 400px;
+  padding: 1.5rem;
 }
 
 .card:hover {
@@ -181,10 +184,15 @@
   box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
 }
 
-/* Responsividade */
+/* Responsividade - Layout Horizontal */
 @media (max-width: 1200px) {
   .dashboardGrid {
-    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .card {
+    min-height: 350px;
+    padding: 1.25rem;
   }
 }
 
@@ -230,6 +238,11 @@
     font-size: 0.875rem;
   }
   
+  .card {
+    min-height: 300px;
+    padding: 1rem;
+  }
+  
   .cardHeader {
     position: static;
     margin-bottom: 1rem;
@@ -261,6 +274,8 @@
   
   .card {
     border-radius: 12px;
+    min-height: 250px;
+    padding: 0.75rem;
   }
   
   .newBadge,
