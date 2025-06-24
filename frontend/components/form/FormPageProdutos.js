@@ -1,5 +1,5 @@
 // src/components/form/FormPageProdutos.js
-'use client'; // MANTENHA ESTA LINHA NO TOPO!
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
@@ -12,16 +12,10 @@ export default function FormPageProdutos({
   onSubmit,
   onCancel
 }) {
-  // MOVA A FUNÇÃO formatCurrency PARA DENTRO DESTE ESCOPO OU LOGO ACIMA DESTE COMPONENTE
-  // Certifique-se de que ela esteja abaixo de 'use client'
   const formatCurrency = (value) => {
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
+    if (value === null || value === undefined || value === '') return '';
     const numberValue = Number(value);
-    if (isNaN(numberValue)) {
-      return '';
-    }
+    if (isNaN(numberValue)) return '';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -66,65 +60,123 @@ export default function FormPageProdutos({
       placeholderText: mode === 'add' ? 'SKU gerado automaticamente' : 'Digite o SKU'
     },
     { name: 'nome_produto', label: 'Nome', type: 'text', maxLength: 100 },
-    { name: 'id_grupo', label: 'Grupo', type: 'select', options: grupos || [], optionKey: 'id_grupo', optionLabel: 'nome_grupo' },
+    {
+      name: 'id_grupo',
+      label: 'Grupo',
+      type: 'select',
+      options: grupos || [],
+      optionKey: 'id_grupo',
+      optionLabel: 'nome_grupo'
+    },
     { name: 'valor_produto', label: 'Preço de Venda', type: 'currency' },
     { name: 'codigo_barras', label: 'Código de Barras', type: 'text', maxLength: 20 },
-    { name: 'id_fornecedor', label: 'Fornecedor', type: 'select', options: fornecedores || [], optionKey: 'id_fornecedor', optionLabel: 'nome_fornecedor' },
+    {
+      name: 'id_fornecedor',
+      label: 'Fornecedor',
+      type: 'select',
+      options: fornecedores || [],
+      optionKey: 'id_fornecedor',
+      optionLabel: 'nome_fornecedor'
+    },
     { name: 'condicoes_pagamento', label: 'Condições', type: 'text', maxLength: 100 }
   ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength, disabled, placeholderText }) => (
-        <div key={name} className={styles.field}>
-          <label htmlFor={name} className={styles.label}>{label}</label>
+      {campoConfig.map(
+        ({
+          name,
+          label,
+          type,
+          options,
+          optionKey,
+          optionLabel,
+          maxLength,
+          disabled,
+          placeholderText
+        }) => (
+          <div key={name} className={styles.field}>
+            <label htmlFor={name} className={styles.label}>
+              {label}
+            </label>
 
-          {type === 'select' ? (
-            <select
-              id={name}
-              name={name}
-              value={formData[name] || ''}
-              onChange={handleChange}
-              className={styles.input}
-            >
-              <option value="">Selecione...</option>
-              {(options || []).map(opt => (
-                <option key={opt[optionKey]} value={opt[optionKey]}>
-                  {opt[optionLabel]}
-                </option>
-              ))}
-            </select>
-          ) : type === 'currency' ? (
-            <input
-              id={name}
-              name={name}
-              type="text"
-              inputMode="decimal"
-              value={formatCurrency(formData[name])}
-              onChange={handleCurrencyChange}
-              className={styles.input}
-              placeholder="R$ 0,00"
-            />
-          ) : (
-            <input
-              id={name}
-              name={name}
-              type={type}
-              {...(type === 'number' ? { min: 0 } : {})}
-              value={formData[name] ?? ''}
-              onChange={handleChange}
-              className={`${styles.input} ${disabled ? styles.disabledInput : ''}`}
-              {...(type === 'text' && maxLength ? { maxLength } : {})}
-              {...(disabled ? { disabled: true } : {})}
-              {...(placeholderText ? { placeholder: placeholderText } : {})}
-            />
-          )}
-        </div>
-      ))}
+            {type === 'select' ? (
+              <select
+                id={name}
+                name={name}
+                value={formData[name] || ''}
+                onChange={handleChange}
+                className={styles.input}
+              >
+                <option value="">Selecione...</option>
+                {(options || []).map(opt => (
+                  <option key={opt[optionKey]} value={opt[optionKey]}>
+                    {opt[optionLabel]}
+                  </option>
+                ))}
+              </select>
+            ) : type === 'currency' ? (
+              <input
+                id={name}
+                name={name}
+                type="text"
+                inputMode="decimal"
+                value={formatCurrency(formData[name])}
+                onChange={handleCurrencyChange}
+                className={styles.input}
+                placeholder="R$ 0,00"
+              />
+            ) : (
+              <input
+                id={name}
+                name={name}
+                type={type}
+                {...(type === 'number' ? { min: 0 } : {})}
+                value={formData[name] ?? ''}
+                onChange={handleChange}
+                className={`${styles.input} ${disabled ? styles.disabledInput : ''}`}
+                {...(type === 'text' && maxLength ? { maxLength } : {})}
+                {...(disabled ? { disabled: true } : {})}
+                {...(placeholderText ? { placeholder: placeholderText } : {})}
+              />
+            )}
+          </div>
+        )
+      )}
 
+      {/* Seção de Fornecedores */}
+      <div className={styles.fornecedoresSection}>
+        <h2>Fornecedores do Produto</h2>
+        {(data?.fornecedores || []).length > 0 ? (
+          data.fornecedores.map(f => (
+            <div key={f.id_fornecedor} className={styles.fornecedorCard}>
+              <label>Fornecedor:</label>
+              <div>{f.nome_fornecedor}</div>
+
+              <label>Preço:</label>
+              <div>R$ {Number(f.preco).toFixed(2)}</div>
+
+              {f.condicoes_pagamento && (
+                <>
+                  <label>Condições de Pagamento:</label>
+                  <div>{f.condicoes_pagamento}</div>
+                </>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className={styles.semFornecedores}>Sem fornecedores vinculados.</p>
+        )}
+      </div>
+
+      {/* Botões */}
       <div className={styles.buttonGroup}>
         {onCancel && (
-          <button type="button" onClick={onCancel} className={styles.backButton}>
+          <button
+            type="button"
+            onClick={onCancel}
+            className={styles.backButton}
+          >
             Voltar
           </button>
         )}
