@@ -83,11 +83,23 @@ export default function RegistrarOrdemCompraPage() {
     <div className={styles.container}>
       <BoxComponent>
         <h1>Criar Ordem de Compra</h1>
-        <label>Filial:</label>
-        <select value={filialSel} onChange={e => { setFilialSel(e.target.value); setItens([]); }}>
+        <label className={styles.label}>Filial:</label>
+        <select
+          className={styles.input}
+          value={filialSel}
+          onChange={e => {
+            setFilialSel(e.target.value);
+            setItens([]);
+          }}
+        >
           <option value="">Selecione...</option>
-          {filiais.map(f => <option key={f.id_filial} value={f.id_filial}>{f.nome_filial}</option>)}
+          {filiais.map(f => (
+            <option key={f.id_filial} value={f.id_filial}>
+              {f.nome_filial}
+            </option>
+          ))}
         </select>
+
         <h3>Pedidos Pendentes</h3>
         <ul>
           {pedidos.map(p =>
