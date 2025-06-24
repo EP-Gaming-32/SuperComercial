@@ -23,7 +23,6 @@ export default function Dashboard() {
   const relatoriosOriginais = [
     { component: PedidosByFilial, title: "Pedidos por Filial", category: "Operacional" },
     { component: EstoqueUnificado, title: "Análise Completa de Estoque", category: "Estoque" },
-    { component: FilialVisual, title: "Filiais Visual", category: "Operacional" },
     { component: ProdutosVencidos, title: "Produtos Vencidos", category: "Estoque" }
   ];
 
