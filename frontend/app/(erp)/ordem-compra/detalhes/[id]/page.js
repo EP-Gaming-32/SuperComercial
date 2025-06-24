@@ -22,27 +22,29 @@ export default function DetalhesOrdemCompraPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      // 1) Requisições em paralelo
       const [resOrdem, resForn, resFilial] = await Promise.all([
         fetch(`http://localhost:5000/ordemCompra/detalhes/${id}`),
         fetch('http://localhost:5000/fornecedores'),
         fetch('http://localhost:5000/filial')
       ]);
 
-      // 2) Verifica status
       if (!resOrdem.ok) throw new Error('Erro ao buscar detalhes da ordem.');
       if (!resForn.ok)  throw new Error('Erro ao buscar fornecedores.');
       if (!resFilial.ok) throw new Error('Erro ao buscar filiais.');
 
-      // 3) Extrai JSON de cada response
       const [ordemJson, fornJson, filialJson] = await Promise.all([
         resOrdem.json(),
         resForn.json(),
         resFilial.json()
       ]);
 
-      // 4) Converte a data e popula initialData
       const o = ordemJson.data;
+      // Converte preco_unitario de decimal (ex: 14.00) para centavos (1400)
+      const itensComCentavos = o.itens.map(it => ({
+        ...it,
+        preco_unitario: Math.round(Number(it.preco_unitario) * 100)
+      }));
+
       const formData = {
         data_ordem: o.data_ordem.split('T')[0],
         status: o.status,
@@ -51,7 +53,7 @@ export default function DetalhesOrdemCompraPage() {
         id_filial: o.id_filial || ''
       };
 
-      setInitialData({ ...formData, itens: o.itens });
+      setInitialData({ ...formData, itens: itensComCentavos });
       setFornecedores(fornJson.data || []);
       setFiliais(filialJson.data || []);
     } catch (err) {
