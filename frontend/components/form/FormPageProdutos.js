@@ -1,31 +1,33 @@
 // src/components/form/FormPageProdutos.js
-'use client';
+'use client'; // MANTENHA ESTA LINHA NO TOPO!
+
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
-
-// Converte um valor numérico para uma string no formato BRL (R$ 1.234,56)
-const formatCurrency = (value) => {
-  if (value === null || value === undefined || value === '') {
-    return '';
-  }
-  const numberValue = Number(value);
-  if (isNaN(numberValue)) {
-    return '';
-  }
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(numberValue);
-};
 
 export default function FormPageProdutos({
   data,
   grupos = [],
   fornecedores = [],
-  mode, // 'mode' é a prop que usaremos para controlar o SKU
+  mode,
   onSubmit,
   onCancel
 }) {
+  // MOVA A FUNÇÃO formatCurrency PARA DENTRO DESTE ESCOPO OU LOGO ACIMA DESTE COMPONENTE
+  // Certifique-se de que ela esteja abaixo de 'use client'
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+    const numberValue = Number(value);
+    if (isNaN(numberValue)) {
+      return '';
+    }
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(numberValue);
+  };
+
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -55,8 +57,14 @@ export default function FormPageProdutos({
   };
 
   const campoConfig = [
-    // SKU: Adicionado a propriedade 'disabled' baseada no 'mode'
-    { name: 'sku', label: 'SKU', type: 'text', maxLength: 20, disabled: mode === 'add' },
+    {
+      name: 'sku',
+      label: 'SKU',
+      type: 'text',
+      maxLength: 20,
+      disabled: mode === 'add',
+      placeholderText: mode === 'add' ? 'SKU gerado automaticamente' : 'Digite o SKU'
+    },
     { name: 'nome_produto', label: 'Nome', type: 'text', maxLength: 100 },
     { name: 'id_grupo', label: 'Grupo', type: 'select', options: grupos || [], optionKey: 'id_grupo', optionLabel: 'nome_grupo' },
     { name: 'valor_produto', label: 'Preço de Venda', type: 'currency' },
@@ -67,7 +75,7 @@ export default function FormPageProdutos({
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength, disabled }) => ( // 'disabled' adicionado aqui
+      {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength, disabled, placeholderText }) => (
         <div key={name} className={styles.field}>
           <label htmlFor={name} className={styles.label}>{label}</label>
 
@@ -102,14 +110,13 @@ export default function FormPageProdutos({
               id={name}
               name={name}
               type={type}
-              // Para inputs do tipo "number", impede a inserção de valores negativos
               {...(type === 'number' ? { min: 0 } : {})}
               value={formData[name] ?? ''}
               onChange={handleChange}
-              // Aplica a classe CSS para estilização e o atributo 'disabled'
               className={`${styles.input} ${disabled ? styles.disabledInput : ''}`}
               {...(type === 'text' && maxLength ? { maxLength } : {})}
-              {...(disabled ? { disabled: true } : {})} // Aplica o atributo HTML 'disabled'
+              {...(disabled ? { disabled: true } : {})}
+              {...(placeholderText ? { placeholder: placeholderText } : {})}
             />
           )}
         </div>
