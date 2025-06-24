@@ -268,10 +268,13 @@ export const criarOrdemCompleta = async (req, res) => {
     await conn.beginTransaction();
 
     // calcula valor total
+    // calcula valor total ajustado para preço em centavos
     const valor_total = itens.reduce(
-      (sum, i) => sum + i.preco_unitario * i.quantidade,
+      (sum, i) => sum + (i.preco_unitario / 100) * i.quantidade,
       0
     );
+
+
 
     // insere ordem
     const [ordemResult] = await conn.query(
@@ -320,6 +323,7 @@ export const criarOrdemCompleta = async (req, res) => {
   }
 };
 
+// PATCH /ordemCompra/complete/:id — atualiza ordem completa
 // PATCH /ordemCompra/complete/:id — atualiza ordem completa
 export const atualizarOrdemCompleta = async (req, res) => {
   const id_ordem_compra = parseInt(req.params.id, 10);
@@ -400,6 +404,23 @@ export const atualizarOrdemCompleta = async (req, res) => {
         ]
       );
     }
+
+    // 5) Recalcula o valor_total com os itens atualizados
+    const [itensAtualizados] = await conn.query(
+      `SELECT quantidade, preco_unitario FROM ItensOrdemCompra WHERE id_ordem_compra = ?`,
+      [id_ordem_compra]
+    );
+
+    const novo_valor_total = itensAtualizados.reduce(
+      (sum, item) => sum + item.preco_unitario * item.quantidade,
+      0
+    );
+
+    // Atualiza valor_total na ordem
+    await conn.query(
+      `UPDATE OrdemCompra SET valor_total = ? WHERE id_ordem_compra = ?`,
+      [novo_valor_total, id_ordem_compra]
+    );
 
     await conn.commit();
     res.json({ message: 'Ordem de compra atualizada com sucesso.' });
