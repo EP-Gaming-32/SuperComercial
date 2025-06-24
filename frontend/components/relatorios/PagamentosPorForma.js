@@ -5,12 +5,14 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
   BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from "recharts";
-import { Tab, Tabs, CircularProgress, Typography } from '@mui/material';
+import {
+  Tab, Tabs, CircularProgress, Typography, Select, MenuItem
+} from '@mui/material';
 import Card from './Card';
 import useChartData from '@/hooks/useChartData';
 import styles from "./ModernVisuals.module.css";
 
-// Cores para cada forma, lowercase e sem acento
+// Cores definidas
 const PAYMENT_COLORS = {
   'pix': '#43e97b',
   'cartao de credito': '#4facfe', 
@@ -22,8 +24,8 @@ const PAYMENT_COLORS = {
   'default': '#fee140'
 };
 
-// Remove acento e deixa lowercase
-const normalizeKey = (key) => 
+// Remove acentos e normaliza
+const normalizeKey = (key) =>
   key
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -49,25 +51,51 @@ const CustomTooltip = ({ active, payload }) => {
 
 export default function PagamentosPorForma() {
   const [tabValue, setTabValue] = useState(0);
+  const [selectedFilial, setSelectedFilial] = useState("todas");
   const { data, loading, error } = useChartData('/relatorios/pagamentos-por-filial');
 
+  // Gera lista de filiais únicas para o filtro
+  const filiais = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    const lista = data.map(d => ({ id: d.id_filial, nome: d.nome_filial }));
+    const unicos = Array.from(new Map(lista.map(f => [f.id, f])).values());
+    return unicos;
+  }, [data]);
+
+  // Agrupamento por forma_pagamento
   const processedData = useMemo(() => {
     if (!Array.isArray(data)) return [];
 
-    const totalGeral = data.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+    const filtrado = selectedFilial === "todas"
+      ? data
+      : data.filter(d => d.id_filial === parseInt(selectedFilial));
 
-    return data.map(item => {
-      const nome = item.name || 'Não Informado';
-      const chave = normalizeKey(nome);
-      return {
-        name: nome,
-        value: parseFloat(item.value) || 0,
-        percentual: totalGeral > 0 ? (parseFloat(item.value) / totalGeral) * 100 : 0,
-        color: PAYMENT_COLORS[chave] || PAYMENT_COLORS.default,
-      };
-    }).sort((a, b) => b.value - a.value);
+    const agrupado = {};
 
-  }, [data]);
+    for (const item of filtrado) {
+      const chave = normalizeKey(item.forma_pagamento || "Não Informado");
+      const nome = item.forma_pagamento || "Não Informado";
+      const valor = parseFloat(item.total_quantidade) || 0;
+
+      if (!agrupado[chave]) {
+        agrupado[chave] = {
+          name: nome,
+          value: 0,
+          color: PAYMENT_COLORS[chave] || PAYMENT_COLORS.default,
+        };
+      }
+      agrupado[chave].value += valor;
+    }
+
+    const totalGeral = Object.values(agrupado).reduce((acc, curr) => acc + curr.value, 0);
+
+    return Object.values(agrupado)
+      .map(entry => ({
+        ...entry,
+        percentual: totalGeral > 0 ? (entry.value / totalGeral) * 100 : 0
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [data, selectedFilial]);
 
   if (loading) {
     return (
@@ -92,6 +120,23 @@ export default function PagamentosPorForma() {
   return (
     <Card title="Análise de Pagamentos por Forma">
       <div className={styles.modernContainer}>
+        {/* Filtro de Filial */}
+        <div style={{ marginBottom: 16, width: 300 }}>
+          <Select
+            fullWidth
+            value={selectedFilial}
+            onChange={(e) => setSelectedFilial(e.target.value)}
+            displayEmpty
+          >
+            <MenuItem value="todas">Todas as Filiais</MenuItem>
+            {filiais.map(f => (
+              <MenuItem key={f.id} value={f.id}>
+                {f.nome}
+              </MenuItem>
+            ))}
+          </Select>
+        </div>
+
         <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2 }}>
           <Tab label="Distribuição %" />
           <Tab label="Valor Absoluto" />
