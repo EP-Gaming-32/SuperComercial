@@ -99,20 +99,30 @@ export const relatorioPagamentosPorFilial = async (req, res) => {
       `SELECT
          f.id_filial,
          f.nome_filial,
-         COALESCE(SUM(pg.valor_pagamento), 0) AS total_pago,
-         COUNT(pg.id_pagamento) AS total_pagamentos
-       FROM Pagamentos pg
-       JOIN OrdemCompra oc ON pg.id_ordem_compra = oc.id_ordem_compra
-       JOIN OrdemCompraPedidoFilial ocpf ON oc.id_ordem_compra = ocpf.id_ordem_compra
-       JOIN PedidoFilial p ON ocpf.id_pedido_filial = p.id_pedido_filial
-       JOIN Filial f ON p.id_filial = f.id_filial
-       GROUP BY f.id_filial, f.nome_filial
-       ORDER BY f.nome_filial;`
+         fp.descricao AS forma_pagamento,
+         COUNT(me.id_movimentacao) AS total_movimentacoes,
+         COALESCE(SUM(me.quantidade), 0) AS total_quantidade
+       FROM MovimentacaoEstoque me
+       JOIN Estoque e
+         ON me.id_estoque = e.id_estoque
+       JOIN Filial f
+         ON e.id_filial = f.id_filial
+       LEFT JOIN FormaPagamento fp
+         ON me.id_forma_pagamento = fp.id_forma_pagamento
+       WHERE me.tipo_movimentacao = 'Vendido'
+       GROUP BY
+         f.id_filial,
+         f.nome_filial,
+         fp.descricao
+       ORDER BY
+         f.nome_filial,
+         fp.descricao;`
     );
+
     res.json(rows);
   } catch (error) {
-    console.error('Erro em relatorioPagamentosPorFilial:', error);
-    res.status(500).json({ error: 'Erro interno ao gerar relatório de pagamentos por filial' });
+    console.error('Erro em relatorioPagamentosPorFilial (movimentações Vendido):', error);
+    res.status(500).json({ error: 'Erro interno ao gerar relatório de formas de pagamento por filial' });
   }
 };
 
@@ -333,23 +343,37 @@ export const relatorioProdutosMaisVendidos = async (req, res) => {
   try {
     let query = `
       SELECT
+        f.id_filial,
+        f.nome_filial,
         p.id_produto,
         p.nome_produto,
         g.nome_grupo,
         SUM(me.quantidade) AS quantidade_vendida,
         SUM(me.quantidade * p.valor_produto) AS receita_total
       FROM MovimentacaoEstoque me
-      JOIN Estoque e ON me.id_estoque = e.id_estoque
-      JOIN Produtos p ON e.id_produto = p.id_produto
-      LEFT JOIN Grupos g ON p.id_grupo = g.id_grupo
+      JOIN Estoque e 
+        ON me.id_estoque = e.id_estoque
+      JOIN Filial f 
+        ON e.id_filial = f.id_filial
+      JOIN Produtos p 
+        ON e.id_produto = p.id_produto
+      LEFT JOIN Grupos g 
+        ON p.id_grupo = g.id_grupo
       WHERE me.tipo_movimentacao = 'Vendido'`;
+
     const params = [];
     if (id_filial) {
       query += ` AND e.id_filial = ?`;
       params.push(id_filial);
     }
+
     query += `
-      GROUP BY p.id_produto, p.nome_produto, g.nome_grupo
+      GROUP BY
+        f.id_filial,
+        f.nome_filial,
+        p.id_produto,
+        p.nome_produto,
+        g.nome_grupo
       ORDER BY receita_total DESC;`;
 
     const [rows] = await pool.query(query, params);

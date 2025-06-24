@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+
 // Relatórios originais
 import PedidosByFilial from "@/components/relatorios/PedidosByFilial";
 import EstoqueTreemap from "@/components/relatorios/EstoqueTreemap";
@@ -10,12 +11,14 @@ import PrevisaoPedidos from "@/components/relatorios/PrevisaoPedidos";
 import EstoqueUnificado from "@/components/relatorios/EstoqueUnificado";
 import ComprasVisual from "@/components/relatorios/ComprasVisual";
 import FilialVisual from "@/components/relatorios/FilialVisual";
+
 // Novos relatórios implementados
 import PagamentosPorForma from "@/components/relatorios/PagamentosPorForma";
 import RankingFornecedores from "@/components/relatorios/RankingFornecedores";
 import ProdutosMaisVendidos from "@/components/relatorios/ProdutosMaisVendidos";
 import GiroEstoque from "@/components/relatorios/GiroEstoque";
 import MapaCalorEstoque from "@/components/relatorios/MapaCalorEstoque";
+
 import styles from "./relatorios.module.css";
 
 export default function Dashboard() {
@@ -28,10 +31,8 @@ export default function Dashboard() {
 
   const novosRelatorios = [
     { component: PagamentosPorForma, title: "Pagamentos por Forma", category: "Financeiro" },
-    { component: ProdutosMaisVendidos, title: "Produtos Mais Vendidos", category: "Produtos" },
+    { component: ProdutosMaisVendidos, title: "Produtos Mais Vendidos", category: "Produtos" }
   ];
-
-  const todosRelatorios = [...relatoriosOriginais, ...novosRelatorios];
 
   return (
     <div className={styles.dashboardContainer}>
@@ -39,8 +40,8 @@ export default function Dashboard() {
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 3v18h18"/>
-            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+            <path d="M3 3v18h18" />
+            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
           </svg>
           Relatórios SuperComercial
         </h1>
@@ -50,40 +51,24 @@ export default function Dashboard() {
       </div>
 
       {/* Seção de Novos Relatórios */}
-      <div className={styles.sectionContainer}>
+      <section className={styles.sectionContainer}>
         <div className={styles.dashboardGrid}>
-          {novosRelatorios.map((relatorio, index) => {
+          {novosRelatorios.map((relatorio) => {
             const Component = relatorio.component;
-            return (
-              <div key={`novo-${index}`} className={`${styles.card} ${styles.newCard}`}>
-                <div className={styles.cardHeader}>
-                  <span className={styles.newBadge}>NOVO</span>
-                  <span className={styles.categoryBadge}>{relatorio.category}</span>
-                </div>
-                <Component />
-              </div>
-            );
+            return <Component key={relatorio.title} />;
           })}
         </div>
-      </div>
+      </section>
 
       {/* Seção de Relatórios Originais */}
-      <div className={styles.sectionContainer}>
-        
+      <section className={styles.sectionContainer}>
         <div className={styles.dashboardGrid}>
-          {relatoriosOriginais.map((relatorio, index) => {
+          {relatoriosOriginais.map((relatorio) => {
             const Component = relatorio.component;
-            return (
-              <div key={`original-${index}`} className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <span className={styles.categoryBadge}>{relatorio.category}</span>
-                </div>
-                <Component />
-              </div>
-            );
+            return <Component key={relatorio.title} />;
           })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
