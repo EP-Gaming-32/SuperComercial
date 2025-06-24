@@ -3,6 +3,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  flex-grow: 1; /* Permite que a lista de navegação ocupe todo o espaço disponível */
 }
 
 .navLink {
@@ -14,7 +15,7 @@
   border-radius: 4px;
   color: white;
   border-left: 4px solid transparent;
-  transform: translateZ(0); 
+  transform: translateZ(0);
 }
 
 .navLink:hover {
@@ -31,7 +32,7 @@
   box-sizing: border-box;
   overflow-y: auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Essencial para empurrar o footer para baixo */
 }
 
 /* A classe .brand agora controla o seu próprio espaçamento */
@@ -46,7 +47,7 @@
   text-align: left;
   padding-left: 20px;
   text-decoration: none;
-  display: block; 
+  display: block;
   margin-top: 25px;
   margin-bottom: 30px;
 }
@@ -120,7 +121,22 @@
 
 .brandHighlight {
   color: rgb(0, 149, 255);
-  text-shadow: 0 0 1px rgb(0, 149, 255), 
-               0 0 1px rgb(0, 149, 255), 
-               0 0 2px rgb(0, 149, 255);
+  text-shadow: 0 0 1px rgb(0, 149, 255),
+                0 0 1px rgb(0, 149, 255),
+                0 0 2px rgb(0, 149, 255);
+}
+
+/* NOVO ESTILO: Footer da Navbar */
+.navbarFooter {
+  margin-top: auto; /* Isso empurra o footer para a parte inferior */
+  padding-top: 20px; /* Espaçamento acima do texto */
+  text-align: center;
+  font-size: 0.85rem;
+  color: #a0a0a0; /* Um cinza mais suave para o texto de copyright */
+  border-top: 1px solid #2a2a40; /* Uma linha fina para separar do conteúdo */
+  padding-bottom: 10px; /* Um pouco de padding na parte de baixo */
+}
+
+.navbarFooter span {
+  margin-right: 5px; /* Espaçamento entre o ícone e o texto */
 }

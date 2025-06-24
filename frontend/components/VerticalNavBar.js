@@ -33,7 +33,7 @@ export default function VerticalNavBar() {
     else {
       setOpenCadastros(false);
     }
-  }, [isCadastrosActive, pathname]); // Depende de isCadastrosActive e pathname para reagir a mudanças de rota
+  }, [isCadastrosActive, pathname]);
 
   // Função auxiliar para verificar se o link atual está ativo
   const isActive = (href) => {
@@ -58,6 +58,7 @@ export default function VerticalNavBar() {
 
   return (
     <nav className={styles.verticalNavbar}>
+      {/* Adicionado flex-grow: 1 para o navList no CSS para empurrar o footer para baixo */}
       <ul className={styles.navList}>
         <li className={styles.brandContainer}>
           <Link href="/home" className={styles.brand}>
@@ -154,6 +155,11 @@ export default function VerticalNavBar() {
           </Link>
         </li>
       </ul>
+
+      {/* NOVO: Footer da Navbar */}
+      <div className={styles.navbarFooter}>
+        <span>&copy;</span> Todos os direitos reservados a Adam, Eduardo, Gabriel, Guilherme, Leonardo, Rafael.
+      </div>
     </nav>
   );
 }
