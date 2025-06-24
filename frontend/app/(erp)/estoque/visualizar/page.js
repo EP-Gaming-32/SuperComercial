@@ -110,7 +110,6 @@ export default function EstoquePage() {
           showFields={[
             { value: "nome_produto", label: "Produto"},
             { value: "nome_filial", label: "Filial"},
-            { value: "codigo_lote", label: "Código"},
             {value: "quantidade", label: "Quantidade"},
             {value: "status_estoque", label: "Status"},
             {value: "nome_fornecedor", label: "Fornecedor"}

@@ -87,7 +87,8 @@ export default function ProdutosPage() {
           showFields={[
             { value: "nome_produto", label: "Produto"},
             { value: "nome_grupo", label: "Grupo"},
-            { value: "nome_fornecedor", label: "Fornecedor"},
+            { value: "sku", label: "SKU"},
+            { value: "codigo_barras", label: "Código"},
             { value: "valor_produto", label: "Preço de Venda"},
           ]}
           addButtonUrl="/produtos/registrar"

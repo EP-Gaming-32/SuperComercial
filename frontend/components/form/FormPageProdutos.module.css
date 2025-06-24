@@ -335,6 +335,7 @@
 }
 
 .fornecedoresSection {
+  width: 100%;
   margin-top: 24px;
 }
 
@@ -344,14 +345,19 @@
   font-weight: bold;
 }
 
-.fornecedorCard {
+.fornecedoresGrid {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 8px 16px;
-  padding: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.fornecedorCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
-  margin-bottom: 12px;
   background-color: #fafafa;
 }
 
@@ -359,4 +365,12 @@
   color: #666;
   font-style: italic;
   margin-bottom: 12px;
+}
+
+.fieldsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: space-between;
+  width: 100%;
 }

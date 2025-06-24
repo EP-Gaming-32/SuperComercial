@@ -1,160 +1,123 @@
+// app/estoque/detalhes/[id]/page.js
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import styles from "./detalhes.module.css";
 import BoxComponent from "@/components/BoxComponent";
 import FormPageEstoqueLote from "@/components/form/FormPageEstoqueLote";
-import CustomAlert from "@/components/CustomAlert"; 
+import CustomAlert from "@/components/CustomAlert";
 
 export default function DetalhesEstoquePage() {
   const { id } = useParams();
   const router = useRouter();
-
   const [formData, setFormData] = useState(null);
   const [produtos, setProdutos] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
   const [filiais, setFiliais] = useState([]);
-
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [alertSuccess, setAlertSuccess] = useState(false); 
-  const [loading, setLoading] = useState(true); 
-  const [error, setError] = useState(null);     
+  const [alertSuccess, setAlertSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!id) {
-        setError("ID do estoque não fornecido.");
+    if (!id) { setError("ID não fornecido"); setLoading(false); return; }
+    async function fetchAll() {
+      setLoading(true);
+      try {
+        const [eRes, pRes, fRes, fiRes] = await Promise.all([
+          fetch(`http://localhost:5000/estoque/${id}`),
+          fetch("http://localhost:5000/produtos?limit=100"),
+          fetch("http://localhost:5000/fornecedores?limit=100"),
+          fetch("http://localhost:5000/filial?limit=100"),
+        ]);
+        if (!eRes.ok) throw new Error("Erro ao carregar estoque");
+        const eJson = await eRes.json();
+        const data = eJson.data ?? eJson;
+        setFormData({
+          ...data,
+          hasLote: !!data.id_lote,
+          codigo_lote: data.codigo_lote || "",
+          data_expedicao: data.data_expedicao || "",
+          data_validade: data.data_validade || "",
+          lote_quantidade: data.lote_quantidade || "",
+        });
+        setProdutos((await pRes.json()).data || []);
+        setFornecedores((await fRes.json()).data || []);
+        setFiliais((await fiRes.json()).data || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
         setLoading(false);
-        return;
+      }
     }
-
-    async function fetchAllData() {
-        setLoading(true); 
-        setError(null);   
-        try {
-            // Busca dados do estoque principal e outros dados em paralelo
-            const [estoqueRes, produtosRes, fornecedoresRes, filiaisRes] = await Promise.all([
-                fetch(`http://localhost:5000/estoque/${id}`),
-                fetch("http://localhost:5000/produtos?limit=100"),
-                fetch("http://localhost:5000/fornecedores?limit=100"),
-                fetch("http://localhost:5000/filial?limit=100")
-            ]);
-
-            if (!estoqueRes.ok) throw new Error(`Erro HTTP ${estoqueRes.status} ao carregar estoque.`);
-            if (!produtosRes.ok) throw new Error(`Erro HTTP ${produtosRes.status} ao carregar produtos.`);
-            if (!fornecedoresRes.ok) throw new Error(`Erro HTTP ${fornecedoresRes.status} ao carregar fornecedores.`);
-            if (!filiaisRes.ok) throw new Error(`Erro HTTP ${filiaisRes.status} ao carregar filiais.`);
-
-            const [estoqueJson, produtosJson, fornecedoresJson, filiaisJson] = await Promise.all([
-                estoqueRes.json(),
-                produtosRes.json(),
-                fornecedoresRes.json(),
-                filiaisRes.json()
-            ]);
-
-            setFormData(estoqueJson.data ?? estoqueJson);
-            
-            // <<--- MUDANÇA AQUI: FILTRAR PARA GARANTIR IDS ÚNICOS (PRODUTOS) ---
-            const uniqueProdutos = [];
-            const seenProductIds = new Set();
-            (produtosJson.data ?? []).forEach(p => {
-                if (!seenProductIds.has(p.id_produto)) {
-                    uniqueProdutos.push(p);
-                    seenProductIds.add(p.id_produto);
-                }
-            });
-            setProdutos(uniqueProdutos);
-
-            // <<--- MUDANÇA AQUI: FILTRAR PARA GARANTIR IDS ÚNICOS (FORNECEDORES) ---
-            const uniqueFornecedores = [];
-            const seenFornecedorIds = new Set();
-            (fornecedoresJson.data ?? []).forEach(f => {
-                if (!seenFornecedorIds.has(f.id_fornecedor)) {
-                    uniqueFornecedores.push(f);
-                    seenFornecedorIds.add(f.id_fornecedor);
-                }
-            });
-            setFornecedores(uniqueFornecedores);
-
-            // <<--- MUDANÇA AQUI: FILTRAR PARA GARANTIR IDS ÚNICOS (FILIAIS) ---
-            const uniqueFiliais = [];
-            const seenFilialIds = new Set();
-            (filiaisJson.data ?? []).forEach(f => {
-                if (!seenFilialIds.has(f.id_filial)) {
-                    uniqueFiliais.push(f);
-                    seenFilialIds.add(f.id_filial);
-                }
-            });
-            setFiliais(uniqueFiliais);
-            // <<--- FIM DAS MUDANÇAS ---
-
-        } catch (err) {
-            console.error("DetalhesEstoquePage: Erro ao carregar dados:", err);
-            setError(err.message || "Não foi possível carregar os dados necessários.");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    fetchAllData();
+    fetchAll();
   }, [id]);
 
   const handleUpdate = async (data) => {
-    setLoading(true); 
     try {
-      const res = await fetch(`http://localhost:5000/estoque/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Erro desconhecido na atualização.");
+      let id_lote = data.id_lote;
+      if (data.hasLote) {
+        if (id_lote) {
+          // atualizar lote existente
+          await fetch(`http://localhost:5000/lotes/${id_lote}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              codigo_lote: data.codigo_lote,
+              data_expedicao: data.data_expedicao,
+              data_validade: data.data_validade,
+              quantidade: data.lote_quantidade
+            })
+          });
+        } else {
+          // criar lote novo
+          const loteRes = await fetch("http://localhost:5000/lotes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id_produto: data.id_produto,
+              codigo_lote: data.codigo_lote,
+              data_expedicao: data.data_expedicao,
+              data_validade: data.data_validade,
+              quantidade: data.lote_quantidade
+            })
+          });
+          const loteJson = await loteRes.json();
+          id_lote = loteJson.id_lote || loteJson.data.id_lote;
+        }
+      } else {
+        id_lote = null;
       }
-      setAlertMessage("Estoque atualizado com sucesso!");
+      // atualizar estoque
+      const payload = { ...data, id_lote };
+      const res = await fetch(`http://localhost:5000/estoque/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Erro ao atualizar estoque');
+      setAlertMessage('Estoque atualizado com sucesso!');
       setAlertSuccess(true);
-      setShowAlert(true);
     } catch (err) {
-      console.error(err);
-      setAlertMessage("Erro: " + err.message);
+      setAlertMessage('Erro: ' + err.message);
       setAlertSuccess(false);
-      setShowAlert(true);
     } finally {
-      setLoading(false);
+      setShowAlert(true);
     }
   };
 
   const handleCloseAlert = () => {
-    setShowAlert(false); 
-    if (alertSuccess) { 
-      router.push('/estoque/visualizar');
-    }
+    setShowAlert(false);
+    if (alertSuccess) router.push('/estoque/visualizar');
   };
 
-  if (loading) {
-      return (
-          <BoxComponent>
-              <h1>Carregando Estoque...</h1>
-              <p>Aguarde enquanto carregamos os dados.</p>
-          </BoxComponent>
-      );
-  }
-
-  if (error) {
-      return (
-          <BoxComponent>
-              <h1>Erro ao Carregar Estoque</h1>
-              <p style={{ color: 'red' }}>{error}</p>
-              <button onClick={() => router.back()}>Voltar</button>
-          </BoxComponent>
-      );
-  }
-
-  if (!formData) return <p>Estoque não encontrado ou dados ausentes.</p>; 
+  if (loading) return <BoxComponent><p>Carregando...</p></BoxComponent>;
+  if (error) return <BoxComponent><p style={{color:'red'}}>{error}</p></BoxComponent>;
+  if (!formData) return <p>Dados não encontrados</p>;
 
   return (
     <div className={styles.container}>
-      
       <BoxComponent className={styles.formWrapper}>
         <h1>Editar Estoque</h1>
         <FormPageEstoqueLote
@@ -167,13 +130,7 @@ export default function DetalhesEstoquePage() {
           onCancel={() => router.back()}
         />
       </BoxComponent>
-
-      {showAlert && (
-        <CustomAlert 
-          message={alertMessage} 
-          onClose={handleCloseAlert} 
-        />
-      )}
+      {showAlert && <CustomAlert message={alertMessage} onClose={handleCloseAlert} />}
     </div>
   );
 }
