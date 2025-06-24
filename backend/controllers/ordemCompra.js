@@ -1,7 +1,10 @@
 import pool from '../config/db.js';
 
+// As funções são agora declaradas com 'const' em vez de 'export const'
+// Serão exportadas todas juntas no final do ficheiro para evitar erros de redeclaração.
+
 // GET /ordemCompra/itensPedidoFilial?id_pedido_filial=...
-export const listarItensPedidoFilial = async (req, res) => {
+const listarItensPedidoFilial = async (req, res) => {
   const { id_pedido_filial } = req.query;
   try {
     const [rows] = await pool.query(
@@ -23,7 +26,7 @@ export const listarItensPedidoFilial = async (req, res) => {
 };
 
 // GET /ordemCompra/produtoFornecedor
-export const listarProdutoFornecedor = async (req, res) => {
+const listarProdutoFornecedor = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT id_produtoFornecedor AS id,
@@ -42,7 +45,7 @@ export const listarProdutoFornecedor = async (req, res) => {
 };
 
 // POST /ordemCompra — criação básica de ordem (sem itens)
-export const criarOrdemCompra = async (req, res) => {
+const criarOrdemCompra = async (req, res) => {
   const { data_ordem, data_entrega_prevista, valor_total, observacao } = req.body;
   try {
     const [result] = await pool.query(
@@ -59,7 +62,7 @@ export const criarOrdemCompra = async (req, res) => {
 };
 
 // POST /ordemCompra/vincularPedido
-export const vincularOrdemPedido = async (req, res) => {
+const vincularOrdemPedido = async (req, res) => {
   const { id_ordem_compra, id_pedido_filial } = req.body;
   try {
     await pool.query(
@@ -75,7 +78,7 @@ export const vincularOrdemPedido = async (req, res) => {
 };
 
 // POST /ordemCompra/itens — grava histórico e insere item usando id_fornecedor
-export const criarItemOrdemCompra = async (req, res) => {
+const criarItemOrdemCompra = async (req, res) => {
   const { id_ordem_compra, id_produto, id_fornecedor, quantidade, preco_unitario } = req.body;
   try {
     // 1) Histórico em ProdutoFornecedor
@@ -101,28 +104,117 @@ export const criarItemOrdemCompra = async (req, res) => {
   }
 };
 
-// GET /ordemCompra — lista todas as ordens
-export const listarOrdensCompra = async (req, res) => {
+// GET /ordemCompra — lista todas as ordens com filtragem e paginação
+const listarOrdensCompra = async (req, res) => {
+  const { page = 1, limit = 10, status, id_fornecedor, data_ordem, keyword } = req.query;
+  const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+
+  // Consulta principal para obter os dados das ordens de compra
+  let query = `
+    SELECT
+        oc.id_ordem_compra,
+        oc.data_ordem,
+        oc.data_entrega_prevista,
+        oc.valor_total,
+        oc.status,
+        oc.observacao,
+        GROUP_CONCAT(DISTINCT f.nome_fornecedor SEPARATOR ', ') AS nomes_fornecedores,
+        GROUP_CONCAT(DISTINCT p.nome_produto SEPARATOR ', ') AS nomes_produtos
+    FROM
+        OrdemCompra oc
+    LEFT JOIN
+        ItensOrdemCompra ioc ON oc.id_ordem_compra = ioc.id_ordem_compra
+    LEFT JOIN
+        Fornecedor f ON ioc.id_fornecedor = f.id_fornecedor
+    LEFT JOIN
+        Produtos p ON ioc.id_produto = p.id_produto
+    WHERE 1=1
+  `;
+  // Consulta para contagem total de itens para paginação
+  let countQuery = `
+    SELECT COUNT(DISTINCT oc.id_ordem_compra) AS total
+    FROM OrdemCompra oc
+    LEFT JOIN ItensOrdemCompra ioc ON oc.id_ordem_compra = ioc.id_ordem_compra
+    LEFT JOIN Fornecedor f ON ioc.id_fornecedor = f.id_fornecedor
+    LEFT JOIN Produtos p ON ioc.id_produto = p.id_produto
+    WHERE 1=1
+  `;
+  const params = [];
+  const countParams = [];
+
+  // Adicionar filtro por status
+  // Ignora o filtro se for 'Todos' ou vazio
+  if (status && status !== 'Todos') {
+    query += ` AND oc.status = ?`;
+    countQuery += ` AND oc.status = ?`;
+    params.push(status);
+    countParams.push(status);
+  }
+
+  // Adicionar filtro por id_fornecedor
+  if (id_fornecedor) {
+    query += ` AND ioc.id_fornecedor = ?`;
+    countQuery += ` AND ioc.id_fornecedor = ?`;
+    params.push(id_fornecedor);
+    countParams.push(id_fornecedor);
+  }
+
+  // Adicionar filtro por data_ordem (se necessário, certifique-se do formato)
+  if (data_ordem) {
+      // Assumindo formato 'DD/MM/AAAA' do frontend e convertendo para 'YYYY-MM-DD'
+      const [day, month, year] = data_ordem.split('/');
+      // Validação básica para garantir que a data tem o formato esperado
+      if (day && month && year && day.length === 2 && month.length === 2 && year.length === 4) {
+          const formattedDate = `${year}-${month}-${day}`;
+          query += ` AND DATE(oc.data_ordem) = ?`;
+          countQuery += ` AND DATE(oc.data_ordem) = ?`;
+          params.push(formattedDate);
+          countParams.push(formattedDate);
+      } else {
+          // Se o formato da data estiver incorreto, envia um erro amigável.
+          // Este erro será capturado pelo onSearchError no frontend.
+          return res.status(400).json({ message: 'Por favor, digite uma data válida no formato DD/MM/AAAA para a busca.' });
+      }
+  }
+
+  // Adicionar filtro por palavra-chave (pesquisa em nome do produto ou fornecedor)
+  if (keyword) {
+    const searchKeyword = `%${keyword}%`;
+    query += ` AND (p.nome_produto LIKE ? OR f.nome_fornecedor LIKE ?)`;
+    countQuery += ` AND (p.nome_produto LIKE ? OR f.nome_fornecedor LIKE ?)`;
+    params.push(searchKeyword, searchKeyword);
+    countParams.push(searchKeyword, searchKeyword);
+  }
+
+  // Adicionar GROUP BY para evitar duplicação de ordens devido aos JOINs e para usar GROUP_CONCAT
+  query += `
+    GROUP BY oc.id_ordem_compra
+    ORDER BY oc.data_ordem DESC
+    LIMIT ? OFFSET ?
+  `;
+  params.push(parseInt(limit, 10), offset);
+
   try {
-    const [rows] = await pool.query(
-      `SELECT id_ordem_compra,
-              data_ordem,
-              data_entrega_prevista,
-              valor_total,
-              status,
-              observacao
-       FROM OrdemCompra
-       ORDER BY data_ordem DESC`
-    );
-    res.json({ data: rows });
+    const [rows] = await pool.query(query, params);
+    const [countRows] = await pool.query(countQuery, countParams);
+    const totalItems = countRows[0].total;
+    const totalPages = Math.ceil(totalItems / parseInt(limit, 10));
+
+    res.json({
+      data: rows,
+      currentPage: parseInt(page, 10),
+      totalPages: totalPages,
+      totalItems: totalItems,
+      limit: parseInt(limit, 10)
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Erro ao listar ordens de compra' });
+    res.status(500).json({ message: 'Erro ao listar ordens de compra com filtros: ' + err.message });
   }
 };
 
 // DELETE /ordemCompra/:id — cancela e remove vínculos de estoque
-export const cancelarOrdemCompra = async (req, res) => {
+const cancelarOrdemCompra = async (req, res) => {
   const { id } = req.params;
   const conn = await pool.getConnection();
   try {
@@ -150,7 +242,7 @@ export const cancelarOrdemCompra = async (req, res) => {
 };
 
 // GET /ordemCompra/historico?id_ordem_compra=...
-export const listarHistoricoStatusOrdemCompra = async (req, res) => {
+const listarHistoricoStatusOrdemCompra = async (req, res) => {
   const { id_ordem_compra } = req.query;
   try {
     const [rows] = await pool.query(
@@ -176,7 +268,7 @@ export const listarHistoricoStatusOrdemCompra = async (req, res) => {
 };
 
 // GET /ordemCompra/detalhes/:id — detalhes sem duplicar (pega último vínculo)
-export const listarDetalhesOrdemCompra = async (req, res) => {
+const listarDetalhesOrdemCompra = async (req, res) => {
   const { id } = req.params;
   try {
     // 1) Dados da Ordem
@@ -254,7 +346,7 @@ export const listarDetalhesOrdemCompra = async (req, res) => {
 };
 
 // POST /ordemCompra/complete — cria ordem + itens (histórico em ProdutoFornecedor)
-export const criarOrdemCompleta = async (req, res) => {
+const criarOrdemCompleta = async (req, res) => {
   const {
     data_ordem,
     data_entrega_prevista,
@@ -324,8 +416,7 @@ export const criarOrdemCompleta = async (req, res) => {
 };
 
 // PATCH /ordemCompra/complete/:id — atualiza ordem completa
-// PATCH /ordemCompra/complete/:id — atualiza ordem completa
-export const atualizarOrdemCompleta = async (req, res) => {
+const atualizarOrdemCompleta = async (req, res) => {
   const id_ordem_compra = parseInt(req.params.id, 10);
   const { status, data_entrega_prevista, id_filial = null, itens = [] } = req.body;
   const conn = await pool.getConnection();
@@ -432,4 +523,20 @@ export const atualizarOrdemCompleta = async (req, res) => {
   } finally {
     conn.release();
   }
+};
+
+// Exporta todas as funções como propriedades de um objeto
+// Isso evita a redeclaração de variáveis globais e é um padrão mais robusto
+export {
+  listarItensPedidoFilial,
+  listarProdutoFornecedor,
+  criarOrdemCompra,
+  vincularOrdemPedido,
+  criarItemOrdemCompra,
+  listarOrdensCompra,
+  cancelarOrdemCompra,
+  listarHistoricoStatusOrdemCompra,
+  listarDetalhesOrdemCompra,
+  criarOrdemCompleta,
+  atualizarOrdemCompleta,
 };

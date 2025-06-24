@@ -9,10 +9,15 @@ import styles from "./visualizar.module.css"; // Seus estilos para esta página 
 
 export default function SearchPageOrdemCompra() {
   const [fornecedores, setFornecedores] = useState([]);
+  // Atualizado para incluir todos os status possíveis para OrdemCompra
   const [statusOptions] = useState([
+    { value: "Todos", label: "Todos" }, // Adicionado "Todos" para o filtro
     { value: "Pendente", label: "Pendente" },
-    { value: "Recebido", label: "Recebido" }, // Notei "Recebido" aqui, no Pedido era "Atendido"
+    { value: "Atendido", label: "Atendido" },
     { value: "Cancelado", label: "Cancelado" },
+    { value: "Em Separação no CD", label: "Em Separação no CD" },
+    { value: "Enviado para Filial", label: "Enviado para Filial" },
+    { value: "Recebido na Filial", label: "Recebido na Filial" },
   ]);
   const [carregando, setCarregando] = useState(true);
   const [showAlert, setShowAlert] = useState(false); // Novo estado para controlar a visibilidade do alerta
@@ -70,13 +75,14 @@ export default function SearchPageOrdemCompra() {
               name: "status",
               label: "Status",
               type: "select",
-              options: statusOptions,
+              options: statusOptions, // Agora contém todas as opções de status
             },
-            {
-              name: "data_ordem",
-              label: "Data da Ordem",
-              type: "date-mask", // <<<<< ALTERADO PARA 'date-mask'
-            },
+            // O objeto abaixo foi removido para remover o filtro "Data da Ordem"
+            // {
+            //   name: "data_ordem",
+            //   label: "Data da Ordem",
+            //   type: "date-mask",
+            // },
           ]}
           keywordName={null}
           keywordPlaceholder="Buscar ordem de compra"
