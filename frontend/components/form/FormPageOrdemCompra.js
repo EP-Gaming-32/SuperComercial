@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import styles from './FormPageProdutos.module.css';
 
@@ -31,9 +29,9 @@ export default function FormPageOrdemCompra({
     observacao: '',
     id_filial: ''
   });
-  const [itens, setItens] = useState([]);
+  const [itensEdit, setItensEdit] = useState([]);
 
-  // em edit, popula de initialData
+  // popula em edit
   useEffect(() => {
     if (mode === 'edit' && initialData) {
       setFormData({
@@ -43,54 +41,59 @@ export default function FormPageOrdemCompra({
         observacao: initialData.observacao,
         id_filial: initialData.id_filial
       });
-      setItens(initialData.itens);
+      setItensEdit(initialData.itens.map(it => ({
+        ...it,
+        preco_unitario: it.preco_unitario.toString()
+      })));
     }
   }, [mode, initialData]);
 
-  // em create, sincroniza com propItens
-  useEffect(() => {
-    if (mode === 'create') setItens(propItens);
-  }, [mode, propItens]);
+  const itens = mode === 'create' ? propItens : itensEdit;
 
-  const handleFormChange = (f, v) => setFormData(prev => ({ ...prev, [f]: v }));
+  const handleFormChange = (field, value) =>
+    setFormData(prev => ({ ...prev, [field]: value }));
 
-  const handleItemChange = (idx, field, val) => {
-    let v = val;
-    if (['quantidade', 'preco_unitario'].includes(field)) {
-      v = val === '' ? '' : parseFloat(val);
-      if (isNaN(v)) v = '';
-    }
-    const upd = itens.map((it, i) => i === idx ? { ...it, [field]: v } : it);
-    mode === 'create' ? onItemChange(upd) : setItens(upd);
+  const handleItemChange = (idx, field, value) => {
+    const updated = itens.map((it, i) =>
+      i === idx ? { ...it, [field]: value } : it
+    );
+    if (mode === 'create') onItemChange(updated);
+    else setItensEdit(updated);
   };
 
   const handleRemove = id => {
-    const upd = itens.filter(it => it.id_produto !== id);
-    mode === 'create' ? onItemRemove(id) : setItens(upd);
+    if (mode === 'create') onItemRemove(id);
+    else setItensEdit(prev => prev.filter(it => it.id_produto !== id));
   };
 
-  const total = itens.reduce((s, it) => s + (Number(it.quantidade) || 0) * (Number(it.preco_unitario) || 0), 0);
+  const total = itens.reduce(
+    (sum, it) => sum + (Number(it.quantidade) || 0) * (parseFloat(it.preco_unitario) || 0),
+    0
+  );
 
   const submit = e => {
     e.preventDefault();
     if (itens.some(it => !it.id_fornecedor)) return alert('Selecione fornecedor.');
     if (formData.status === 'Recebido na Filial' && !formData.id_filial)
       return alert('Selecione filial destino.');
+
     const payload = {
       ...formData,
       itens: itens.map(it => ({
         id_produto: it.id_produto,
         id_fornecedor: it.id_fornecedor,
         quantidade: Number(it.quantidade),
-        preco_unitario: Number(it.preco_unitario) / 100
+        preco_unitario: parseFloat(it.preco_unitario)
       })),
-      valor_total: total / 100
+      valor_total: total
     };
 
     onSubmit(payload);
   };
 
-  const disabled = itens.length === 0 || itens.some(it => !it.id_fornecedor || !it.quantidade);
+  const disabled =
+    itens.length === 0 ||
+    itens.some(it => !it.id_fornecedor || !it.quantidade || !it.preco_unitario);
 
   const campos = [
     { n: 'data_ordem', l: 'Data Ordem*', t: 'date', req: true },
@@ -100,8 +103,13 @@ export default function FormPageOrdemCompra({
   ];
   if (formData.status === 'Recebido na Filial')
     campos.push({
-      n: 'id_filial', l: 'Filial Destino*', t: 'select',
-      opts: filiais, key: 'id_filial', label: 'nome_filial', req: true
+      n: 'id_filial',
+      l: 'Filial Destino*',
+      t: 'select',
+      opts: filiais,
+      key: 'id_filial',
+      label: 'nome_filial',
+      req: true
     });
 
   return (
@@ -110,10 +118,12 @@ export default function FormPageOrdemCompra({
         <div key={c.n} className={styles.field}>
           <label className={styles.label}>{c.l}</label>
           {c.t === 'select' ? (
-            <select value={formData[c.n] || ''}
+            <select
+              value={formData[c.n] || ''}
               onChange={e => handleFormChange(c.n, e.target.value)}
               required={c.req}
-              className={styles.input}>
+              className={styles.input}
+            >
               <option value="">Selecione...</option>
               {c.opts.map(o => (
                 <option key={o.value || o[c.key]} value={o.value || o[c.key]}>
@@ -146,10 +156,12 @@ export default function FormPageOrdemCompra({
         {itens.map((it, idx) => (
           <div key={it.id_produto} className={styles.itemRowGrid}>
             <span>{it.nome_produto}</span>
+
             <select
               value={it.id_fornecedor || ''}
               onChange={e => handleItemChange(idx, 'id_fornecedor', e.target.value)}
-              className={styles.input}>
+              className={styles.input}
+            >
               <option value="">Selecione...</option>
               {fornecedores.map(f => (
                 <option key={f.id_fornecedor} value={f.id_fornecedor}>
@@ -157,6 +169,7 @@ export default function FormPageOrdemCompra({
                 </option>
               ))}
             </select>
+
             <input
               type="number"
               min="1"
@@ -164,37 +177,28 @@ export default function FormPageOrdemCompra({
               onChange={e => handleItemChange(idx, 'quantidade', e.target.value)}
               className={styles.input}
             />
+
             <input
               type="text"
-              inputMode="numeric"
-              value={Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format((Number(it.preco_unitario) / 100) || 0)}
-              onChange={e => {
-                const raw = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
-                const precoCentavos = raw.slice(0, 9); // Limita tamanho se quiser
-                handleItemChange(idx, 'preco_unitario', precoCentavos);
-              }}
+              inputMode="decimal"
+              placeholder="14.00"
+              value={it.preco_unitario}
+              onChange={e => handleItemChange(idx, 'preco_unitario', e.target.value)}
               className={styles.input}
             />
-
-
-
-
 
             <button type="button" onClick={() => handleRemove(it.id_produto)}>
               Remover
             </button>
           </div>
         ))}
+
         <div className={styles.total}>
           Total: {new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
-          }).format(total / 100)}
+          }).format(total)}
         </div>
-
       </div>
 
       <div className={styles.buttonGroup}>
@@ -206,4 +210,3 @@ export default function FormPageOrdemCompra({
     </form>
   );
 }
-

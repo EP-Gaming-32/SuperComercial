@@ -1,10 +1,10 @@
 'use client';
 
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
-import styles from './detalhes.module.css';
 import BoxComponent from '@/components/BoxComponent';
 import FormPageOrdemCompra from '@/components/form/FormPageOrdemCompra';
+import styles from './detalhes.module.css';
 import CustomAlert from '@/components/CustomAlert';
 
 export default function DetalhesOrdemCompraPage() {
@@ -27,7 +27,6 @@ export default function DetalhesOrdemCompraPage() {
         fetch('http://localhost:5000/fornecedores'),
         fetch('http://localhost:5000/filial')
       ]);
-
       if (!resOrdem.ok) throw new Error('Erro ao buscar detalhes da ordem.');
       if (!resForn.ok)  throw new Error('Erro ao buscar fornecedores.');
       if (!resFilial.ok) throw new Error('Erro ao buscar filiais.');
@@ -39,21 +38,19 @@ export default function DetalhesOrdemCompraPage() {
       ]);
 
       const o = ordemJson.data;
-      // Converte preco_unitario de decimal (ex: 14.00) para centavos (1400)
-      const itensComCentavos = o.itens.map(it => ({
-        ...it,
-        preco_unitario: Math.round(Number(it.preco_unitario) * 100)
-      }));
-
-      const formData = {
+      const formFields = {
         data_ordem: o.data_ordem.split('T')[0],
-        status: o.status,
         data_entrega_prevista: o.data_entrega_prevista.split('T')[0],
+        status: o.status,
         observacao: o.observacao,
         id_filial: o.id_filial || ''
       };
+      const itensString = o.itens.map(item => ({
+        ...item,
+        preco_unitario: item.preco_unitario.toString()
+      }));
 
-      setInitialData({ ...formData, itens: itensComCentavos });
+      setInitialData({ ...formFields, itens: itensString });
       setFornecedores(fornJson.data || []);
       setFiliais(filialJson.data || []);
     } catch (err) {
@@ -70,14 +67,15 @@ export default function DetalhesOrdemCompraPage() {
     if (id) fetchAll();
   }, [id, fetchAll]);
 
-  const handleUpdate = async payload => {
+  const handleUpdate = async formData => {
     try {
       const res = await fetch(`http://localhost:5000/ordemCompra/complete/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(formData)
       });
       if (!res.ok) throw new Error((await res.json()).message);
+
       setAlertMessage('Atualizado com sucesso!');
       setAlertSuccess(true);
       setShowAlert(true);

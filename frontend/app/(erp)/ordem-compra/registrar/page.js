@@ -29,7 +29,10 @@ export default function RegistrarOrdemCompraPage() {
   }, []);
 
   useEffect(() => {
-    if (!filialSel) return setPedidos([]);
+    if (!filialSel) {
+      setPedidos([]);
+      return;
+    }
     fetch(`http://localhost:5000/pedidoFilial?id_filial=${filialSel}&status=Pendente`)
       .then(r => r.json())
       .then(j => setPedidos(j.data));
@@ -39,9 +42,13 @@ export default function RegistrarOrdemCompraPage() {
     fetch(`http://localhost:5000/ordemCompra/itensPedidoFilial?id_pedido_filial=${pedido.id_pedido_filial}`)
       .then(r => r.json())
       .then(j => {
-        const novos = j.data.filter(item =>
-          !itens.some(i => i.id_produto === item.id_produto)
-        ).map(item => ({ ...item, id_fornecedor: '', preco_unitario: '' }));
+        const novos = j.data
+          .filter(item => !itens.some(i => i.id_produto === item.id_produto))
+          .map(item => ({
+            ...item,
+            id_fornecedor: '',
+            preco_unitario: ''
+          }));
         setItens(prev => [...prev, ...novos]);
       });
   };
@@ -50,20 +57,16 @@ export default function RegistrarOrdemCompraPage() {
     try {
       const payload = {
         ...formData,
-        pedidos_filial: pedidos.map(p => p.id_pedido_filial),
-        itens: itens.map(i => ({
-          id_produto: i.id_produto,
-          id_fornecedor: i.id_fornecedor,
-          quantidade: Number(i.quantidade),
-          preco_unitario: Number(i.preco_unitario)
-        }))
+        pedidos_filial: pedidos.map(p => p.id_pedido_filial)
       };
+
       const res = await fetch('http://localhost:5000/ordemCompra/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error((await res.json()).message);
+
       setAlertMessage('Cadastrado com sucesso!');
       setAlertSuccess(true);
       setShowAlert(true);
@@ -83,6 +86,7 @@ export default function RegistrarOrdemCompraPage() {
     <div className={styles.container}>
       <BoxComponent>
         <h1>Criar Ordem de Compra</h1>
+
         <label className={styles.label}>Filial:</label>
         <select
           className={styles.input}
@@ -102,12 +106,15 @@ export default function RegistrarOrdemCompraPage() {
 
         <h3>Pedidos Pendentes</h3>
         <ul>
-          {pedidos.map(p =>
+          {pedidos.map(p => (
             <li key={p.id_pedido_filial}>
-              <button onClick={() => addPedido(p)}>Pedido #{p.id_pedido_filial}</button>
+              <button onClick={() => addPedido(p)}>
+                Pedido #{p.id_pedido_filial}
+              </button>
             </li>
-          )}
+          ))}
         </ul>
+
         <FormPageOrdemCompra
           mode="create"
           itens={itens}
@@ -119,6 +126,7 @@ export default function RegistrarOrdemCompraPage() {
           onCancel={() => router.back()}
         />
       </BoxComponent>
+
       {showAlert && <CustomAlert message={alertMessage} onClose={handleClose} />}
     </div>
   );
