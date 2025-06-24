@@ -3,12 +3,12 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  ComposedChart, Bar, Pie, PieChart, Cell, XAxis, YAxis, CartesianGrid, 
+  ComposedChart, Bar, Pie, PieChart, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, Sector
 } from "recharts";
-import { 
-  Select, MenuItem, FormControl, InputLabel, Box, CircularProgress, 
-  Typography, Alert, Tabs, Tab, Card as MuiCard, CardContent 
+import {
+  Select, MenuItem, FormControl, InputLabel, Box, CircularProgress,
+  Typography, Alert, Tabs, Tab, Card as MuiCard, CardContent
 } from '@mui/material';
 import Card from './Card';
 import useChartData, { fetchFiliais } from '@/hooks/useChartData';
@@ -47,7 +47,7 @@ const PieTooltip = ({ active, payload }) => {
     const data = payload[0];
     const total = payload[0].payload.total || 100;
     const percentage = ((data.value / total) * 100).toFixed(1);
-    
+
     return (
       <div className={styles.modernTooltip}>
         <p style={{ margin: 0, fontWeight: 600 }}>{data.name}</p>
@@ -75,7 +75,7 @@ const renderActiveShape = (props) => {
   const sx = cx + (outerRadius + 10) * cos;
   const sy = cy + (outerRadius + 10) * sin;
   const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
+  const my = cy; // Mudar para my = cy; para que a linha horizontal seja mais reta a partir do centro
   const ex = mx + (cos >= 0 ? 1 : -1) * 22;
   const ey = my;
   const textAnchor = cos >= 0 ? 'start' : 'end';
@@ -118,18 +118,18 @@ const renderActiveShape = (props) => {
 
 // Cores modernas para os gráficos
 const STATUS_COLORS = {
-  'normal': { solid: "#4facfe", gradient: "url(#gradientNormal)" },
-  'baixo': { solid: "#43e97b", gradient: "url(#gradientBaixo)" },
-  'critico': { solid: "#fa709a", gradient: "url(#gradientCritico)" },
-  'default': [
-    { solid: "#667eea", gradient: "url(#gradient0)" },
-    { solid: "#f093fb", gradient: "url(#gradient1)" },
-    { solid: "#38f9d7", gradient: "url(#gradient2)" }
+  'normal': { solid: "#4facfe" }, // Gradientes serão aplicados dinamicamente se necessário
+  'baixo': { solid: "#43e97b" },
+  'critico': { solid: "#fa709a" },
+  'default': [ // Cores padrão caso o nome do status não corresponda
+    { solid: "#667eea" },
+    { solid: "#f093fb" },
+    { solid: "#38f9d7" }
   ]
 };
 
 const PRODUCT_COLORS = [
-  '#667eea', '#764ba2', '#f093fb', '#4facfe', 
+  '#667eea', '#764ba2', '#f093fb', '#4facfe',
   '#43e97b', '#fa709a', '#38f9d7', '#fee140'
 ];
 
@@ -158,20 +158,20 @@ export default function EstoqueUnificado() {
   }, [selectedFilialId, selectedGrupoId]);
 
   // Hooks para buscar dados de status e produtos
-  const { 
-    data: statusData, 
-    loading: statusLoading, 
-    error: statusError, 
+  const {
+    data: statusData,
+    loading: statusLoading,
+    error: statusError,
     setParams: setStatusParams,
-    refetch: refetchStatus 
+    refetch: refetchStatus
   } = useChartData('/relatorios/status-por-estoque', chartParams);
 
-  const { 
-    data: productData, 
-    loading: productLoading, 
-    error: productError, 
+  const {
+    data: productData,
+    loading: productLoading,
+    error: productError,
     setParams: setProductParams,
-    refetch: refetchProduct 
+    refetch: refetchProduct
   } = useChartData('/relatorios/estoque-por-produto', chartParams);
 
   // Recarrega dados quando a filial ou grupo selecionado muda
@@ -217,15 +217,16 @@ export default function EstoqueUnificado() {
   // Processa os dados de status para o gráfico de pizza
   const processedStatusData = React.useMemo(() => {
     if (!statusData || !Array.isArray(statusData) || statusData.length === 0) return [];
-    
+
     const total = statusData.reduce((sum, item) => sum + item.value, 0);
     const order = ['normal', 'baixo', 'critico'];
-    
+
     return statusData
       .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
       .map((item, index) => ({
         ...item,
         total: total,
+        // Usa a cor sólida diretamente para o 'color' da fatia
         color: STATUS_COLORS[item.name]?.solid || STATUS_COLORS.default[index % STATUS_COLORS.default.length].solid,
       }));
   }, [statusData]);
@@ -233,7 +234,7 @@ export default function EstoqueUnificado() {
   // Processa os dados de produtos para o gráfico de barras
   const processedProductData = React.useMemo(() => {
     if (!productData || !Array.isArray(productData)) return [];
-    
+
     return productData.map((item, index) => ({
       ...item,
       color: PRODUCT_COLORS[index % PRODUCT_COLORS.length],
@@ -241,26 +242,26 @@ export default function EstoqueUnificado() {
     }));
   }, [productData]);
 
-  const onPieEnter = (_, index) => {
+  const onPieEnter = useCallback((_, index) => {
     setActiveIndex(index);
-  };
+  }, []);
 
-  const onPieLeave = () => {
+  const onPieLeave = useCallback(() => {
     setActiveIndex(-1);
-  };
+  }, []);
 
   // Gerencia mensagens de erro
   const errorMessage = (statusError || productError || filiaisError || gruposError) ?
-    (statusError ? (statusError.message || "Erro ao carregar dados de status.") : 
-     productError ? (productError.message || "Erro ao carregar dados de produtos.") :
-     filiaisError ? (filiaisError.message || "Erro ao carregar filiais.") :
-     (gruposError.message || "Erro ao carregar grupos."))
+    (statusError ? (statusError.message || "Erro ao carregar dados de status.") :
+      productError ? (productError.message || "Erro ao carregar dados de produtos.") :
+        filiaisError ? (filiaisError.message || "Erro ao carregar filiais.") :
+          (gruposError.message || "Erro ao carregar grupos."))
     : null;
 
   // Calcular estatísticas unificadas
   const unifiedStats = React.useMemo(() => {
     if (!processedStatusData.length && !processedProductData.length) return null;
-    
+
     const statusStats = processedStatusData.length > 0 ? {
       total: processedStatusData.reduce((sum, item) => sum + item.value, 0),
       normal: processedStatusData.find(item => item.name === 'normal')?.value || 0,
@@ -274,7 +275,7 @@ export default function EstoqueUnificado() {
       produtosBaixoEstoque: processedProductData.filter(item => item.isLowStock).length,
       mediaEstoque: Math.round(processedProductData.reduce((sum, item) => sum + item.estoque_quantidade, 0) / processedProductData.length),
     } : null;
-    
+
     return {
       statusStats,
       productStats
@@ -316,9 +317,10 @@ export default function EstoqueUnificado() {
       <div className={styles.modernContainer}>
         <h2 className={styles.modernTitle}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
-            <line x1="12" y1="22.08" x2="12" y2="12"/>
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <line x1="3.27" y1="6.96" x2="12" y2="12.01" /> {/* Changed from polyline to line for clarity with single segments */}
+            <line x1="12" y1="12.01" x2="20.73" y2="6.96" /> {/* Changed from polyline to line for clarity with single segments */}
+            <line x1="12" y1="22.08" x2="12" y2="12" />
           </svg>
           Análise Completa de Estoque
         </h2>
@@ -396,28 +398,15 @@ export default function EstoqueUnificado() {
             {processedStatusData.length === 0 ? (
               <div className={styles.modernEmpty}>
                 <svg className={styles.modernEmptyIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 6v6l4 2"/>
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
                 </svg>
                 <span>Nenhum dado de status de estoque disponível</span>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
-                  <defs>
-                    <radialGradient id="gradientNormal" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#4facfe" stopOpacity={1}/>
-                      <stop offset="100%" stopColor="#00f2fe" stopOpacity={0.8}/>
-                    </radialGradient>
-                    <radialGradient id="gradientBaixo" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#43e97b" stopOpacity={1}/>
-                      <stop offset="100%" stopColor="#38f9d7" stopOpacity={0.8}/>
-                    </radialGradient>
-                    <radialGradient id="gradientCritico" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#fa709a" stopOpacity={1}/>
-                      <stop offset="100%" stopColor="#fee140" stopOpacity={0.8}/>
-                    </radialGradient>
-                  </defs>
+                  {/* Definições de gradiente removidas daqui para usar 'fill' diretamente da célula */}
                   <Pie
                     activeIndex={activeIndex}
                     activeShape={renderActiveShape}
@@ -431,20 +420,27 @@ export default function EstoqueUnificado() {
                     nameKey="name"
                     onMouseEnter={onPieEnter}
                     onMouseLeave={onPieLeave}
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    // labelLine e label removidos para não sobrepor renderActiveShape
                   >
-                    {processedStatusData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={
-                          STATUS_COLORS[entry.name]?.gradient || 
-                          STATUS_COLORS.default[index % STATUS_COLORS.default.length].gradient
-                        }
-                        stroke="#ffffff"
-                        strokeWidth={2}
-                      />
-                    ))}
+           {processedStatusData.map((entry, index) => {
+  const nome = entry.name?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+  const color = nome === 'critico' ? '#e74c3c' : '#2ecc71'; // vermelho para critico, verde para normal
+
+  return (
+    <Cell
+      key={`cell-${index}`}
+      fill={color}      // Usando a cor calculada aqui!
+      stroke="#ffffff"
+      strokeWidth={2}
+    />
+  );
+})}
+
+
+
+
+
                   </Pie>
                   <Tooltip content={<PieTooltip />} />
                   <Legend />
@@ -459,8 +455,8 @@ export default function EstoqueUnificado() {
             {processedProductData.length === 0 ? (
               <div className={styles.modernEmpty}>
                 <svg className={styles.modernEmptyIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                  <line x1="7" y1="7" x2="7.01" y2="7"/>
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                  <line x1="7" y1="7" x2="7.01" y2="7" />
                 </svg>
                 <span>Nenhum dado de produtos disponível</span>
               </div>
@@ -473,18 +469,18 @@ export default function EstoqueUnificado() {
                   <defs>
                     {PRODUCT_COLORS.map((color, index) => (
                       <linearGradient key={index} id={`productGradient${index}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={color} stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor={color} stopOpacity={0.3}/>
+                        <stop offset="0%" stopColor={color} stopOpacity={0.8} />
+                        <stop offset="100%" stopColor={color} stopOpacity={0.3} />
                       </linearGradient>
                     ))}
                   </defs>
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
-                    stroke="#e2e8f0" 
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#e2e8f0"
                     strokeOpacity={0.5}
                   />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     tick={{ fontSize: 11, fill: '#64748b' }}
                     axisLine={{ stroke: '#e2e8f0' }}
                     tickLine={{ stroke: '#e2e8f0' }}
@@ -492,7 +488,7 @@ export default function EstoqueUnificado() {
                     textAnchor="end"
                     height={80}
                   />
-                  <YAxis 
+                  <YAxis
                     allowDecimals={false}
                     tick={{ fontSize: 12, fill: '#64748b' }}
                     axisLine={{ stroke: '#e2e8f0' }}
@@ -506,16 +502,16 @@ export default function EstoqueUnificado() {
                   />
                   <Tooltip content={<BarTooltip />} />
                   <Legend />
-                  <Bar 
-                    dataKey="estoque_quantidade" 
+                  <Bar
+                    dataKey="estoque_quantidade"
                     name="Quantidade em Estoque"
                     radius={[6, 6, 0, 0]}
                     stroke="#667eea"
                     strokeWidth={1}
                   >
                     {processedProductData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
+                      <Cell
+                        key={`cell-${index}`}
                         fill={entry.isLowStock ? '#fa709a' : `url(#productGradient${index % PRODUCT_COLORS.length})`}
                       />
                     ))}
@@ -550,8 +546,8 @@ export default function EstoqueUnificado() {
                         nameKey="name"
                       >
                         {processedStatusData.map((entry, index) => (
-                          <Cell 
-                            key={`status-cell-${index}`} 
+                          <Cell
+                            key={`status-cell-${index}`}
                             fill={entry.color}
                             stroke="#ffffff"
                             strokeWidth={1}
@@ -579,25 +575,26 @@ export default function EstoqueUnificado() {
                       margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.3} />
-                      <XAxis 
-                        dataKey="name" 
+                      <XAxis
+                        dataKey="name"
                         tick={{ fontSize: 9, fill: '#64748b' }}
                         angle={-45}
                         textAnchor="end"
                         height={60}
                       />
-                      <YAxis 
+                      <YAxis
                         tick={{ fontSize: 10, fill: '#64748b' }}
                         width={40}
                       />
                       <Tooltip content={<BarTooltip />} />
-                      <Bar 
-                        dataKey="estoque_quantidade" 
+                      <Bar
+                        dataKey="estoque_quantidade"
+                        name="Quantidade em Estoque"
                         radius={[4, 4, 0, 0]}
                       >
                         {processedProductData.slice(0, 5).map((entry, index) => (
-                          <Cell 
-                            key={`product-cell-${index}`} 
+                          <Cell
+                            key={`product-cell-${index}`}
                             fill={entry.isLowStock ? '#fa709a' : PRODUCT_COLORS[index % PRODUCT_COLORS.length]}
                           />
                         ))}
@@ -666,4 +663,3 @@ export default function EstoqueUnificado() {
     </Card>
   );
 }
-

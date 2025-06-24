@@ -92,38 +92,45 @@ export const relatorioFornecedoresPorFilial = async (req, res) => {
     }
 };
 
-// RELATÓRIO: Pagamentos por filial
+// RELATÓRIO: Pagamentos por Forma (corrigido para exibir uma única entrada por forma de pagamento e valores numéricos)
 export const relatorioPagamentosPorFilial = async (req, res) => {
-    try {
-        const [rows] = await pool.query(
-            `SELECT
-                f.id_filial,
-                f.nome_filial,
-                fp.descricao AS forma_pagamento,
-                COUNT(me.id_movimentacao) AS total_movimentacoes,
-                COALESCE(SUM(me.quantidade), 0) AS total_quantidade
-                FROM MovimentacaoEstoque me
-                JOIN Estoque e
-                    ON me.id_estoque = e.id_estoque
-                JOIN Filial f
-                    ON e.id_filial = f.id_filial
-                LEFT JOIN FormaPagamento fp
-                    ON me.id_forma_pagamento = fp.id_forma_pagamento
-                WHERE me.tipo_movimentacao = 'Vendido'
-                GROUP BY
-                    f.id_filial,
-                    f.nome_filial,
-                    fp.descricao
-                ORDER BY
-                    f.nome_filial,
-                    fp.descricao;`
-        );
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+          fp.descricao AS name,
+          SUM(p.valor_pagamento) AS value_sum_raw
+      FROM Pagamentos p
+      JOIN FormaPagamento fp ON p.id_forma_pagamento = fp.id_forma_pagamento
+      GROUP BY fp.descricao
+      ORDER BY SUM(p.valor_pagamento) DESC;`
+    );
 
-        res.json(rows);
-    } catch (error) {
-        console.error('Erro em relatorioPagamentosPorFilial (movimentações Vendido):', error);
-        res.status(500).json({ error: 'Erro interno ao gerar relatório de formas de pagamento por filial' });
+    console.log('[Backend] relatorioPagamentosPorFilial - rows:', rows);
+
+    if (!rows.length) {
+      return res.status(404).json({ error: 'Nenhum dado encontrado' });
     }
+
+    const agrupado = {};
+
+    rows.forEach(row => {
+      const key = row.name.trim().toLowerCase();
+      if (!agrupado[key]) agrupado[key] = 0;
+      agrupado[key] += parseFloat(row.value_sum_raw);
+    });
+
+    const formattedRows = Object.entries(agrupado).map(([name, value]) => ({
+      name,
+      value
+    }));
+
+    console.log('[Backend] relatorioPagamentosPorFilial - formattedRows:', formattedRows);
+
+    res.json(formattedRows);
+  } catch (error) {
+    console.error('Erro em relatorioPagamentosPorFilial:', error);
+    res.status(500).json({ error: 'Erro interno ao gerar relatório de pagamentos por forma' });
+  }
 };
 
 // RELATÓRIO: Previsão de Pedidos (baseado no histórico de PedidoFilial)
@@ -473,19 +480,14 @@ export const relatorioGiroEstoque = async (req, res) => {
             LEFT JOIN MovimentacaoEstoque me
                 ON me.id_estoque = e.id_estoque
                 AND me.tipo_movimentacao = 'Vendido'
-                ${(data_inicio && data_fim) ? 'AND me.data_movimentacao BETWEEN ? AND ?' : ''} -- Este filtro de período precisa ser adicionado aqui também para a sub-condição do LEFT JOIN
-            ${whereClause} -- WHERE principal para todos os filtros
+                ${(data_inicio && data_fim) ? 'AND me.data_movimentacao BETWEEN ? AND ?' : ''}
+            ${whereClause}
             GROUP BY p.id_produto, p.nome_produto, g.nome_grupo, e.quantidade
             ORDER BY vendas_periodo DESC;
             `,
-            // Para o segundo conjunto de parâmetros do BETWEEN na sub-condição, você precisa garantir que eles sejam adicionados na ordem correta.
-            // Para simplificar e evitar duplicação ou ordem incorreta, é melhor que o BETWEEN seja parte do WHERE principal.
-            // A forma como as conditions e params estão sendo construídas para o WHERE principal já é mais robusta.
-            // A sub-condição no LEFT JOIN foi removida para usar apenas o WHERE principal.
             params
         );
 
-        // Apenas devolver o JSON cru ao front-end:
         res.json(rows);
     } catch (error) {
         console.error("Erro em relatorioGiroEstoque:", error);
