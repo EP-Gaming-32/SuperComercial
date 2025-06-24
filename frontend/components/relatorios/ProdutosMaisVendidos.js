@@ -76,7 +76,7 @@ export default function ProdutosMaisVendidos() {
     return selectedFilialId ? { id_filial: selectedFilialId } : {};
   }, [selectedFilialId]);
   
-  const { data, loading, error, refetch } = useChartData(
+  const { data, loading, error, setParams, refetch } = useChartData(
     '/relatorios/produtos-mais-vendidos',
     chartParams
   );

@@ -44,16 +44,17 @@ export default function PedidosByFilial() {
     return selectedFilialId ? { id_filial: selectedFilialId } : {};
   }, [selectedFilialId]);
 
-  const { data, loading, error, refetch } = useChartData(
+  const { data, loading, error, setParams, refetch } = useChartData(
     '/relatorios/pedidos-por-filial',
     chartParams
   );
 
   useEffect(() => {
-    if (refetch) {
-      refetch();
+    console.log('[PedidosByFilial] Parâmetros alterados:', chartParams);
+    if (setParams) {
+      setParams(chartParams);
     }
-  }, [selectedFilialId, refetch]);
+  }, [chartParams, setParams]);
 
   useEffect(() => {
     const getFiliais = async () => {

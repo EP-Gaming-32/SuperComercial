@@ -74,7 +74,7 @@ export default function RankingFornecedores() {
     return selectedFilialId ? { id_filial: selectedFilialId } : {};
   }, [selectedFilialId]);
   
-  const { data, loading, error, refetch } = useChartData(
+  const { data, loading, error, setParams, refetch } = useChartData(
     '/relatorios/fornecedores-por-filial',
     chartParams
   );

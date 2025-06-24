@@ -46,17 +46,18 @@ export default function AlertasCriticosEstoque() {
     return selectedFilialId ? { id_filial: selectedFilialId } : {};
   }, [selectedFilialId]);
   
-  const { data, loading, error, refetch } = useChartData(
+  const { data, loading, error, setParams, refetch } = useChartData(
     '/relatorios/estoque-alertas',
     chartParams
   );
 
   // Recarrega dados quando a filial selecionada muda
   useEffect(() => {
-    if (refetch) {
-      refetch();
+    console.log('[AlertasCriticosEstoque] Parâmetros alterados:', chartParams);
+    if (setParams) {
+      setParams(chartParams);
     }
-  }, [selectedFilialId, refetch]);
+  }, [chartParams, setParams]);
 
   // Carrega a lista de filiais
   useEffect(() => {

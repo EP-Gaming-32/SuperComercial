@@ -45,9 +45,12 @@ export default function GiroEstoque() {
   const [tab, setTab] = useState(0);
 
   const params = filial ? { id_filial: filial } : {};
-  const { data, loading, error, refetch } = useChartData('/relatorios/giro-estoque', params);
+  const { data, loading, error, setParams, refetch } = useChartData('/relatorios/giro-estoque', params);
 
-  useEffect(() => { if(refetch) refetch(); }, [filial, refetch]);
+  useEffect(() => { 
+    console.log('[GiroEstoque] Parâmetros alterados:', { id_filial: filial });
+    if(setParams) setParams({ id_filial: filial }); 
+  }, [filial, setParams]);
   useEffect(() => {
     fetchFiliais().then(setFiliais).catch(setFiliaisError).finally(() => setFiliaisLoading(false));
   }, []);

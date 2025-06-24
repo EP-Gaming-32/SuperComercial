@@ -113,7 +113,7 @@ export default function EstoqueVisual() {
     return params;
   }, [selectedFilialId]);
   
-  const { data, loading, error, refetch } = useChartData(
+  const { data, loading, error, setParams, refetch } = useChartData(
     '/relatorios/status-por-estoque',
     chartParams
   );

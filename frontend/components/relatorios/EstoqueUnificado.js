@@ -162,6 +162,7 @@ export default function EstoqueUnificado() {
     data: statusData, 
     loading: statusLoading, 
     error: statusError, 
+    setParams: setStatusParams,
     refetch: refetchStatus 
   } = useChartData('/relatorios/status-por-estoque', chartParams);
 
@@ -169,14 +170,20 @@ export default function EstoqueUnificado() {
     data: productData, 
     loading: productLoading, 
     error: productError, 
+    setParams: setProductParams,
     refetch: refetchProduct 
   } = useChartData('/relatorios/estoque-por-produto', chartParams);
 
   // Recarrega dados quando a filial ou grupo selecionado muda
   useEffect(() => {
-    if (refetchStatus) refetchStatus();
-    if (refetchProduct) refetchProduct();
-  }, [selectedFilialId, selectedGrupoId, refetchStatus, refetchProduct]);
+    console.log('[EstoqueUnificado] Parâmetros alterados:', chartParams);
+    if (setStatusParams) {
+      setStatusParams(chartParams);
+    }
+    if (setProductParams) {
+      setProductParams(chartParams);
+    }
+  }, [chartParams, setStatusParams, setProductParams]);
 
   // Carrega a lista de filiais
   useEffect(() => {

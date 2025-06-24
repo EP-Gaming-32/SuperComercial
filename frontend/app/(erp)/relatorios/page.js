@@ -23,14 +23,13 @@ export default function Dashboard() {
   const relatoriosOriginais = [
     { component: PedidosByFilial, title: "Pedidos por Filial", category: "Operacional" },
     { component: EstoqueUnificado, title: "Análise Completa de Estoque", category: "Estoque" },
-    { component: PrevisaoPedidos, title: "Previsão de Pedidos", category: "Previsão" },
+    { component: FilialVisual, title: "Filiais Visual", category: "Operacional" },
     { component: ProdutosVencidos, title: "Produtos Vencidos", category: "Estoque" }
   ];
 
   const novosRelatorios = [
     { component: PagamentosPorForma, title: "Pagamentos por Forma", category: "Financeiro" },
     { component: ProdutosMaisVendidos, title: "Produtos Mais Vendidos", category: "Produtos" },
-    { component: GiroEstoque, title: "Giro de Estoque", category: "Estoque" },
   ];
 
   const todosRelatorios = [...relatoriosOriginais, ...novosRelatorios];
@@ -53,8 +52,6 @@ export default function Dashboard() {
 
       {/* Seção de Novos Relatórios */}
       <div className={styles.sectionContainer}>
-        <div className={styles.sectionHeader}>
-        </div>
         <div className={styles.dashboardGrid}>
           {novosRelatorios.map((relatorio, index) => {
             const Component = relatorio.component;
@@ -73,8 +70,7 @@ export default function Dashboard() {
 
       {/* Seção de Relatórios Originais */}
       <div className={styles.sectionContainer}>
-        <div className={styles.sectionHeader}>
-        </div>
+        
         <div className={styles.dashboardGrid}>
           {relatoriosOriginais.map((relatorio, index) => {
             const Component = relatorio.component;
