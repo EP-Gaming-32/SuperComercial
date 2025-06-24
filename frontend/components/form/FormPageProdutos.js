@@ -83,22 +83,11 @@ export default function FormPageProdutos({
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      {campoConfig.map(
-        ({
-          name,
-          label,
-          type,
-          options,
-          optionKey,
-          optionLabel,
-          maxLength,
-          disabled,
-          placeholderText
-        }) => (
+      {/* Campos principais */}
+      <div className={styles.fieldsWrapper}>
+        {campoConfig.map(({ name, label, type, options, optionKey, optionLabel, maxLength, disabled, placeholderText }) => (
           <div key={name} className={styles.field}>
-            <label htmlFor={name} className={styles.label}>
-              {label}
-            </label>
+            <label htmlFor={name} className={styles.label}>{label}</label>
 
             {type === 'select' ? (
               <select
@@ -131,7 +120,6 @@ export default function FormPageProdutos({
                 id={name}
                 name={name}
                 type={type}
-                {...(type === 'number' ? { min: 0 } : {})}
                 value={formData[name] ?? ''}
                 onChange={handleChange}
                 className={`${styles.input} ${disabled ? styles.disabledInput : ''}`}
@@ -141,29 +129,31 @@ export default function FormPageProdutos({
               />
             )}
           </div>
-        )
-      )}
+        ))}
+      </div>
 
-      {/* Seção de Fornecedores */}
+      {/* Fornecedores */}
       <div className={styles.fornecedoresSection}>
         <h2>Fornecedores do Produto</h2>
-        {(data?.fornecedores || []).length > 0 ? (
-          data.fornecedores.map(f => (
-            <div key={f.id_fornecedor} className={styles.fornecedorCard}>
-              <label>Fornecedor:</label>
-              <div>{f.nome_fornecedor}</div>
+        {data?.fornecedores?.length > 0 ? (
+          <div className={styles.fornecedoresGrid}>
+            {data.fornecedores.map(f => (
+              <div key={f.id_fornecedor} className={styles.fornecedorCard}>
+                <label>Fornecedor:</label>
+                <div>{f.nome_fornecedor}</div>
 
-              <label>Preço:</label>
-              <div>R$ {Number(f.preco).toFixed(2)}</div>
+                <label>Preço:</label>
+                <div>R$ {Number(f.preco).toFixed(2)}</div>
 
-              {f.condicoes_pagamento && (
-                <>
-                  <label>Condições de Pagamento:</label>
-                  <div>{f.condicoes_pagamento}</div>
-                </>
-              )}
-            </div>
-          ))
+                {f.condicoes_pagamento && (
+                  <>
+                    <label>Condições de Pagamento:</label>
+                    <div>{f.condicoes_pagamento}</div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <p className={styles.semFornecedores}>Sem fornecedores vinculados.</p>
         )}
@@ -172,11 +162,7 @@ export default function FormPageProdutos({
       {/* Botões */}
       <div className={styles.buttonGroup}>
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className={styles.backButton}
-          >
+          <button type="button" onClick={onCancel} className={styles.backButton}>
             Voltar
           </button>
         )}

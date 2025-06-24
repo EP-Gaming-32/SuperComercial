@@ -111,28 +111,36 @@ export const visualizarEstoque = async (req, res) => {
 };
 
 export const criarEstoque = async (req, res) => {
-  const { id_produto, id_fornecedor, id_filial, id_lote, local_armazenamento, quantidade, estoque_minimo, estoque_maximo } = req.body;
-  if (!id_produto||!id_fornecedor||!id_filial||quantidade==null||estoque_minimo==null||estoque_maximo==null) {
+  const {
+    id_produto,
+    id_fornecedor,
+    id_filial,
+    local_armazenamento,
+    quantidade,
+    estoque_minimo,
+    estoque_maximo,
+    id_lote
+  } = req.body;
+
+  if (!id_produto || !id_fornecedor || !id_filial || quantidade == null) {
     return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
   }
-  try {
-    // Calcula estoque mínimo e máximo
-    const estoque_minimo = Math.ceil(quantidade * 0.2);
-    const estoque_maximo = quantidade * 2;
 
+  try {
     const [result] = await pool.query(
       `INSERT INTO Estoque
          (id_produto, id_fornecedor, id_filial, local_armazenamento,
-          quantidade, estoque_minimo, estoque_maximo)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          quantidade, estoque_minimo, estoque_maximo, id_lote)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id_produto,
         id_fornecedor,
         id_filial,
         local_armazenamento,
         quantidade,
-        estoque_minimo,
-        estoque_maximo
+        estoque_minimo ?? Math.ceil(quantidade * 0.2),
+        estoque_maximo ?? quantidade * 2,
+        id_lote || null
       ]
     );
     res.status(201).json({
@@ -147,22 +155,67 @@ export const criarEstoque = async (req, res) => {
 
 export const atualizarEstoque = async (req, res) => {
   const { id } = req.params;
-  const campos = ['id_produto','id_fornecedor','id_filial','id_lote','local_armazenamento','quantidade','estoque_minimo','estoque_maximo'];
-  const updates = [];
+  const {
+    id_lote,
+    id_produto,
+    id_fornecedor,
+    id_filial,
+    local_armazenamento,
+    quantidade,
+    estoque_minimo,
+    estoque_maximo
+  } = req.body;
+
+  // Monta os campos dinâmicos de atualização
+  const updatesArr = [];
   const vals = [];
-  campos.forEach(c => {
-    if (req.body[c] !== undefined) {
-      updates.push(`${c} = ?`);
-      vals.push(req.body[c]);
-    }
-  });
-  if (!updates.length) return res.status(400).json({ message: 'Nenhuma alteração enviada' });
+
+  if (id_produto !== undefined) {
+    updatesArr.push('id_produto = ?');
+    vals.push(id_produto);
+  }
+  if (id_fornecedor !== undefined) {
+    updatesArr.push('id_fornecedor = ?');
+    vals.push(id_fornecedor);
+  }
+  if (id_filial !== undefined) {
+    updatesArr.push('id_filial = ?');
+    vals.push(id_filial);
+  }
+  if (local_armazenamento !== undefined) {
+    updatesArr.push('local_armazenamento = ?');
+    vals.push(local_armazenamento);
+  }
+  if (quantidade !== undefined) {
+    updatesArr.push('quantidade = ?');
+    vals.push(quantidade);
+  }
+  if (estoque_minimo !== undefined) {
+    updatesArr.push('estoque_minimo = ?');
+    vals.push(estoque_minimo);
+  }
+  if (estoque_maximo !== undefined) {
+    updatesArr.push('estoque_maximo = ?');
+    vals.push(estoque_maximo);
+  }
+  // Sempre atualiza id_lote (pode ser null)
+  updatesArr.push('id_lote = ?');
+  vals.push(id_lote || null);
+
+  if (!updatesArr.length) {
+    return res.status(400).json({ message: 'Nenhuma alteração enviada' });
+  }
+
+  const updates = updatesArr.join(', ');
+
   try {
-    const [r] = await pool.query(
-      `UPDATE Estoque SET ${updates.join(', ')} WHERE id_estoque = ?`,
+    const [result] = await pool.query(
+      `UPDATE Estoque SET ${updates} WHERE id_estoque = ?`,
       [...vals, id]
     );
-    if (!r.affectedRows) return res.status(404).json({ message: 'Estoque não encontrado' });
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: 'Estoque não encontrado' });
+    }
     res.json({ message: 'Estoque atualizado com sucesso' });
   } catch (err) {
     console.error(err);
